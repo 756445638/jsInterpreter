@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "js.h"
 
+
 int main(int argc,char **argv){
     FILE *fp;
     if(argc != 2){
@@ -13,7 +14,6 @@ int main(int argc,char **argv){
         exit(1);
     }
     
-
-
+    return 0;
 
 }
