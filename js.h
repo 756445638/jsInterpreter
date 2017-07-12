@@ -3,7 +3,7 @@
 
 typedef enum {
     JS_BOOL_TRUE =1 ,
-    JS_BOOL_FLASE = 0,
+    JS_BOOL_FLASE = 0
 } JSBOOL;
 
 
@@ -11,7 +11,7 @@ typedef enum {
     JS_VALUE_TYPE_BOOL = 1,
     JS_VALUE_TYPE_INT,
     JS_VALUE_TYPE_FLOAT,
-    JS_VALUE_TYPE_OBJECT,
+    JS_VALUE_TYPE_OBJECT
 } JS_VALUE_TYPE;
 
 typedef struct JS_OBEJCT_tag JS_OBJECT;
@@ -30,8 +30,8 @@ typedef struct JS_VALUE_tag {
 typedef enum {
     JS_OBJECT_TYPE_ARRAY = 1,
     JS_OBJECT_TYPE_STRING,
-    JS_OBJECT_TYPE_OBJECT,  // JS OBJECT
-    JS_OBJECT_TYPE_FUNCTION,
+    JS_OBJECT_TYPE_OBJECT,
+    JS_OBJECT_TYPE_FUNCTION
 } JS_OBJECT_TYPE;
 
 typedef struct JS_OBEJCT_ARRAY_tag {
@@ -41,7 +41,8 @@ typedef struct JS_OBEJCT_ARRAY_tag {
 }JS_OBEJCT_ARRAY;
 
 typedef struct JS_OBEJCT_STRING_tag {
-    char* s;  // len(s) == length+1
+    char* s;  
+    /*len(s) == length+1*/ 
     int length;
 }JS_OBEJCT_STRING;
 
@@ -55,21 +56,18 @@ struct JS_OBEJCT_tag{
 
 
 
-// typedef struct JS_KEY_PAIR_tag{
-//     char* key;
-//     JS_VALUE* value;
-// }JS_KEY_PAIR;
+/* typedef struct JS_KEY_PAIR_tag{
+     char* key;
+     JS_VALUE* value;
+ }JS_KEY_PAIR;
 
-// typedef struct JS_OBEJCT_OBJECT_tag{
-//     JS_KEY_PAIR* pairs;
-// }JS_OBEJCT_OBJECT;
-
-
-
+ typedef struct JS_OBEJCT_OBJECT_tag{
+     JS_KEY_PAIR* pairs;
+ }JS_OBEJCT_OBJECT;
+*/
 
 
-//////////////////////////////////////////////////////////  basic js 
-//////////////////////////////////////////////////////////
+
 
 
 typedef struct IdentifierList_tag{
@@ -123,7 +121,7 @@ typedef enum {
     EXPRESSION_TYPE_METHOD_CALL,
     EXPRESSION_TYPE_FUNCTION_CALL,
     EXPRESSION_TYPE_INCREMENT,
-    EXPRESSION_TYPE_DECREMENT,
+    EXPRESSION_TYPE_DECREMENT
 }EXPRESSION_TYPE;
 
 
@@ -146,7 +144,7 @@ typedef enum {
     STATEMENT_TYPE_FOR,
     STATEMENT_TYPE_WHILE,
     STATEMENT_TYPE_CONTINUE,
-    STATEMENT_TYPE_RETURN,
+    STATEMENT_TYPE_RETURN
 }STATEMENT_TYPE;
 
 
@@ -168,6 +166,8 @@ typedef struct StatementElsif_tag {
     Block* block;
     Expression* condition;
 }StatementElsif;
+
+typedef  StatementElsif Elsif;
 
 typedef struct StatementFor_tag {
     Block* block;
@@ -214,9 +214,7 @@ typedef struct StatementList_tag {
 
 struct Block_tag{
     StatementList* list;
-}
-
-
+};
 
 
 
@@ -224,20 +222,3 @@ struct Block_tag{
 
 #endif /*JS_H*/
 
-
-
-// typedef struct JS_OBEJCT_FUNCTION_tag{
-//     JS_OBEJCT_OBJECT* inter;  // function is also a object
-
-// }JS_OBEJCT_FUNCTION;
-
-
-// typedef struct JS_VARIABLE_tag{
-//     char* name ; //variable name
-//     struct JS_VARIABLE_tag * next;
-// } JS_VARIABLE;
-
-// typedef struct JS_INTERPRETER_tag{
-//     JS_VARIABLE* global_vars;
-
-// } JS_INTERPRETER;

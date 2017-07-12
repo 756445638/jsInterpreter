@@ -84,11 +84,10 @@ extern int yydebug;
     MOD = 294,
     TRUE_T = 295,
     FALSE_T = 296,
-    GLOBAL_T = 297,
-    DOT = 298,
-    VAR = 299,
-    INCREMENT = 300,
-    DECREMENT = 301
+    DOT = 297,
+    VAR = 298,
+    INCREMENT = 299,
+    DECREMENT = 300
   };
 #endif
 /* Tokens.  */
@@ -131,11 +130,10 @@ extern int yydebug;
 #define MOD 294
 #define TRUE_T 295
 #define FALSE_T 296
-#define GLOBAL_T 297
-#define DOT 298
-#define VAR 299
-#define INCREMENT 300
-#define DECREMENT 301
+#define DOT 297
+#define VAR 298
+#define INCREMENT 299
+#define DECREMENT 300
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -153,9 +151,8 @@ union YYSTYPE
     StatementList       *statement_list;
     Block               *block;
     Elsif               *elsif;
-    IdentifierList      *identifier_list;
 
-#line 159 "y.tab.h" /* yacc.c:1909  */
+#line 156 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

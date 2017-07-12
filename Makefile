@@ -28,7 +28,6 @@ lex.yy.c : js.l js.y y.tab.h
 	flex js.l
 
 
-
 clean:
-	rm *.o rm y.tab.c y.tab.h
+	rm *.o  y.tab.c y.tab.h
 

@@ -1,21 +1,15 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "DBG.h"
-#include "crowbar.h"
+#include "js.h"
 #include "y.tab.h"
-
+#include "util.h"
 int
 yywrap(void)
 {
     return 1;
 }
 
-static void
-increment_line_number(void)
-{
-    crb_get_current_interpreter()->current_line_number++;
-}
 %}
 %start COMMENT STRING_LITERAL_STATE
 %%
@@ -31,7 +25,6 @@ increment_line_number(void)
 <INITIAL>"null"         return NULL_T;
 <INITIAL>"true"         return TRUE_T;
 <INITIAL>"false"        return FALSE_T;
-<INITIAL>"global"       return GLOBAL_T;
 <INITIAL>"("            return LP;
 <INITIAL>")"            return RP;
 <INITIAL>"{"            return LC;

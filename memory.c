@@ -2,9 +2,37 @@
 #include "memory.h"
 
 
-void* memory_alloc(Memory *m,int size){
+Memory* MEM_open_storage(){
+    Memory* m= (Memory*)malloc(sizeof(Memory));
+    if(m == NULL){
+        return NULL;
+    }
+    m->pointer = NULL;
+    m->line = -1 ;
+    m->next = NULL;
+    m->prev = NULL;
+    return m;
+}
+
+void MEM_close_storage(Memory* m){
+    if(m == NULL){
+        return ;
+    }
+    Memory* next = m->next;
+    Memory* p = next;
+    while(next != NULL && next != m){
+        p = next->next;
+        free(next->pointer);
+        free((void*)next);
+        next = p;
+    }
+    free(m);
+}
+
+
+void* MEM_alloc(Memory *m,int size,int line){
     Memory* new = (Memory*)malloc(sizeof(Memory));
-    if(newm == NULL){
+    if(new == NULL){
         return NULL;
     }
     void* p = malloc(size);
@@ -12,24 +40,25 @@ void* memory_alloc(Memory *m,int size){
         free(new);
         return NULL;
     }
-    new.pointer = p ;
-    Memory* last = m.prev;
-    m.prev = new;
-    new.next = m ;
-    if last == NULL{
+    new->pointer = p ;
+    new->line = line;
+    m->prev = new;
+    new->next = m ;
+    Memory* last = m->prev;
+    if (last == NULL){
        last = m ;
     }
-    last.next = new ;
-    new.prev = new;
+    last->next = new ;
+    new->prev = new;
     return p ;
 }
 
 
-void memory_free(Memory *head,void* p){
-    Memory* next = head.next;
+void MEM_free(Memory *head,void* p){
+    Memory* next = head->next;
     int found = 0 ;
     while(next != head && next != NULL){
-        if(next.pointer == p){
+        if(next->pointer == p){
             found  = 1;
             break;
         }
@@ -42,9 +71,9 @@ void memory_free(Memory *head,void* p){
 }
 
 
-void memory_dump(Memory *head){
-    Memory* next = head.next;
+void MEM_dump(Memory *head){
+    Memory* next = head->next;
     while(next != head && next != NULL){
-        printf("memofy@%x\n",next.pointer);
+        printf("memory:%x line:%d\n",next->pointer,next->line);
     }
 }

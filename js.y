@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "crowbar.h"
+#include "js.h"
 #define YYDEBUG 1
 %}
 %union {
@@ -13,7 +13,6 @@
     StatementList       *statement_list;
     Block               *block;
     Elsif               *elsif;
-    IdentifierList      *identifier_list;
 }
 %token <expression>     INT_LITERAL
 %token <expression>     DOUBLE_LITERAL
@@ -21,7 +20,7 @@
 %token <identifier>     IDENTIFIER
 %token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T CRLF
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR
-        EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T GLOBAL_T DOT VAR
+        EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
 %type   <parameter_list> parameter_list
 %type   <argument_list> argument_list
@@ -31,13 +30,12 @@
         additive_expression multiplicative_expression
         unary_expression postfix_expression primary_expression array_literal
 %type   <expression_list> expression_list
-%type   <statement> statement global_statement
+%type   <statement> statement 
         if_statement while_statement for_statement
         return_statement break_statement continue_statement
 %type   <statement_list> statement_list
 %type   <block> block
 %type   <elsif> elsif elsif_list
-%type   <identifier_list> identifier_list
 %%
 translation_unit
         : definition_or_statement
@@ -104,7 +102,6 @@ statement
         $$ = crb_create_expression_statement($1);
     }
     | if_statement
-    | global_statement
     | while_statement
     | for_statement
     | return_statement
@@ -148,23 +145,7 @@ elsif
          $$ = crb_create_elsif($3, $5);
     }
     ;
-global_statement
-    :GLOBAL_T identifier_list SEMICOLON
-    {
-         $$ = crb_create_global_statement($2);
-    }
-    ;
 
-identifier_list
-    :IDENTIFIER
-    {
-        $$ = crb_create_global_identifier($1);
-    }
-    |identifier_list COMMA IDENTIFIER
-    {
-         $$ = crb_chain_identifier($1, $3);
-    }
-    ;
 
 while_statement
     :WHILE LP expression RP block
