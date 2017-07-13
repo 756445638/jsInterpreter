@@ -1,3 +1,5 @@
+#include "memory.h"
+
 #ifndef JS_H
 #define JS_H
 
@@ -15,6 +17,8 @@ typedef enum {
 } JS_VALUE_TYPE;
 
 typedef struct JS_OBEJCT_tag JS_OBJECT;
+typedef struct JsFunction_tag JsFunction;
+
 
 typedef struct JS_VALUE_tag {
     JS_VALUE_TYPE typ;
@@ -51,23 +55,24 @@ struct JS_OBEJCT_tag{
     union{
         JS_OBEJCT_ARRAY* array;
         JS_OBEJCT_STRING* string;
+        JsFunction* func;/*js function is also a value*/
     } u;
 };
 
 
 
-/* typedef struct JS_KEY_PAIR_tag{
-     char* key;
-     JS_VALUE* value;
- }JS_KEY_PAIR;
-
- typedef struct JS_OBEJCT_OBJECT_tag{
-     JS_KEY_PAIR* pairs;
- }JS_OBEJCT_OBJECT;
-*/
+/* js values */
 
 
+typedef struct Variable_tag {
+    char* name;
+    JS_VALUE* value;
+}Variable;
 
+typedef struct VariableList_tag {
+    Variable* var;
+    struct VariableList_tag* next;
+}VariableList;
 
 
 typedef struct IdentifierList_tag{
@@ -216,6 +221,30 @@ struct Block_tag{
     StatementList* list;
 };
 
+
+typedef struct JsFunction_tag {
+    char* name;/*function name*/
+    Block* block;
+    ParameterList* parameter_list;
+}JsFunction;
+
+
+typedef  struct JsFucntionList_tag{
+    JsFunction* func;
+    struct JsFucntionList_tag* next;
+}JsFucntionList;
+
+
+/*runtime struct*/
+
+typedef struct  JsInterpreter_tag {
+    Memory* interpreter_memory;
+    Memory* excute_memory;
+    JsFucntionList* funcs;
+    StatementList* statement_list;
+    int current_line_number;
+    VariableList* vars;
+}JsInterpreter;
 
 
 

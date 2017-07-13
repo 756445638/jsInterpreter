@@ -1,4 +1,4 @@
-static  int line_number = 0;
+#include "util.h"
 
 void increment_line_number(){
     line_number++;
@@ -7,4 +7,6 @@ void increment_line_number(){
 int get_line_number(){
     return line_number;
 }
+
+
 
