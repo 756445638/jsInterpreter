@@ -4,6 +4,7 @@
 #include "js.h"
 #include "y.tab.h"
 #include "util.h"
+#include "create.h"
 int
 yywrap(void)
 {
@@ -52,17 +53,17 @@ yywrap(void)
 <INITIAL>"."            return DOT;
 <INITIAL>"var"          return VAR;
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
-    yylval.identifier = crb_create_identifier(yytext);
+    yylval.identifier = CREATE_identifier(yytext);
     return IDENTIFIER;
 }
 <INITIAL>([1-9][0-9]*)|"0" {
-    Expression  *expression = crb_alloc_expression(INT_EXPRESSION);
+    Expression  *expression = CREATE_alloc_expression(EXPRESSION_TYPE_INT);
     sscanf(yytext, "%d", &expression->u.int_value);
     yylval.expression = expression;
     return INT_LITERAL;
 }
 <INITIAL>[0-9]+\.[0-9]+ {
-    Expression  *expression = crb_alloc_expression(DOUBLE_EXPRESSION);
+    Expression  *expression = CREATE_alloc_expression(EXPRESSION_TYPE_FLOAT);
     sscanf(yytext, "%lf", &expression->u.double_value);
     yylval.expression = expression;
     return DOUBLE_LITERAL;

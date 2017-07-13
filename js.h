@@ -2,14 +2,16 @@
 
 #ifndef JS_H
 #define JS_H
+#define LINE_BUF_SIZE (1024)
+
 
 typedef enum {
     JS_BOOL_TRUE =1 ,
     JS_BOOL_FLASE = 0
-} JSBOOL;
+} JSBool;
 
 
-typedef enum {
+/*typedef enum {
     JS_VALUE_TYPE_BOOL = 1,
     JS_VALUE_TYPE_INT,
     JS_VALUE_TYPE_FLOAT,
@@ -29,6 +31,9 @@ typedef struct JS_VALUE_tag {
         JS_OBJECT* object;
     }u;
 } JS_VALUE;
+*/
+
+typedef struct Expression_tag  Expression;
 
 
 typedef enum {
@@ -39,7 +44,7 @@ typedef enum {
 } JS_OBJECT_TYPE;
 
 typedef struct JS_OBEJCT_ARRAY_tag {
-    JS_VALUE* elements;
+    Expression* elements;
     int size;
     int alloc;
 }JS_OBEJCT_ARRAY;
@@ -55,7 +60,7 @@ struct JS_OBEJCT_tag{
     union{
         JS_OBEJCT_ARRAY* array;
         JS_OBEJCT_STRING* string;
-        JsFunction* func;/*js function is also a value*/
+        /*JsFunction* func;js function is also a value*/
     } u;
 };
 
@@ -66,7 +71,7 @@ struct JS_OBEJCT_tag{
 
 typedef struct Variable_tag {
     char* name;
-    JS_VALUE* value;
+    Expression* value;
 }Variable;
 
 typedef struct VariableList_tag {
@@ -82,7 +87,7 @@ typedef struct IdentifierList_tag{
 
 typedef IdentifierList ParameterList ;
 
-typedef struct Expression_tag  Expression;
+
 
 typedef struct ExpressionBinary_tag{
     Expression* left;
@@ -133,7 +138,9 @@ typedef enum {
 struct Expression_tag {
     EXPRESSION_TYPE typ;
     union{
-        JS_VALUE* value;
+        int int_value;
+        JSBool* bool_value;
+        double double_value;
         ExpressionBinary* binary;
         Expression* unary;
         ExpressionListFucntionCall* function_call;
@@ -194,7 +201,9 @@ typedef struct StatementContinue_tag {
 }StatementContinue;
 
 typedef struct StatementReturn_tag {
+    Expression* expression;
 }StatementReturn;
+
 
 typedef struct Statement_tag{
     STATEMENT_TYPE typ;
