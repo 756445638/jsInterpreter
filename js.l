@@ -5,6 +5,8 @@
 #include "y.tab.h"
 #include "util.h"
 #include "create.h"
+#include "error.h"
+#include "message.h"
 int
 yywrap(void)
 {
@@ -69,12 +71,15 @@ yywrap(void)
     return DOUBLE_LITERAL;
 }
 <INITIAL>\" {
-    crb_open_string_literal();
+    alloc_temprory_string();
     BEGIN STRING_LITERAL_STATE;
 }
 <INITIAL>[ \t] ;
-<INITIAL>\n {increment_line_number();}
-<INITIAL>#     BEGIN COMMENT;
+<INITIAL>\n {
+    increment_line_number();
+    return CRLF;    
+}
+<INITIAL>\/\/     BEGIN COMMENT;
 <INITIAL>.      {
     char buf[LINE_BUF_SIZE];
 
@@ -85,30 +90,28 @@ yywrap(void)
         sprintf(buf, "0x%02x", (unsigned char)yytext[0]);
     }
 
-    crb_compile_error(CHARACTER_INVALID_ERR,
-                      STRING_MESSAGE_ARGUMENT, "bad_char", buf,
-                      MESSAGE_ARGUMENT_END);
+    ERROR_compile_error(CHARACTER_INVALID_ERR, buf);
 }
 <COMMENT>\n     {
     increment_line_number();
     BEGIN INITIAL;
-    return CRLF;
 }
 <COMMENT>.      ;
 <STRING_LITERAL_STATE>\"        {
-    Expression *expression = crb_alloc_expression(STRING_EXPRESSION);
-    expression->u.string_value = crb_close_string_literal();
+    Expression *expression = CREATE_alloc_expression(EXPRESSION_TYPE_STRING);
+    expression->u.object->u.string = literal_string_holder;
+    expression->u.object->typ = JS_OBJECT_TYPE_STRING;
     yylval.expression = expression;
     BEGIN INITIAL;
     return STRING_LITERAL;
 }
 <STRING_LITERAL_STATE>\n        {
-    crb_add_string_literal('\n');
+    appendchar_temprory_string('\n');
     increment_line_number();
 }
-<STRING_LITERAL_STATE>\\\"      crb_add_string_literal('"');
-<STRING_LITERAL_STATE>\\n       crb_add_string_literal('\n');
-<STRING_LITERAL_STATE>\\t       crb_add_string_literal('\t');
-<STRING_LITERAL_STATE>\\\\      crb_add_string_literal('\\');
-<STRING_LITERAL_STATE>.         crb_add_string_literal(yytext[0]);
+<STRING_LITERAL_STATE>\\\"      appendchar_temprory_string('"');
+<STRING_LITERAL_STATE>\\n       appendchar_temprory_string('\n');
+<STRING_LITERAL_STATE>\\t       appendchar_temprory_string('\t');
+<STRING_LITERAL_STATE>\\\\      appendchar_temprory_string('\\');
+<STRING_LITERAL_STATE>.         appendchar_temprory_string(yytext[0]);
 %%

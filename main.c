@@ -4,7 +4,7 @@
 #include "util.h"
 
 int yyerror(char* str){
-    fprintf(stderr,"compile failed,err:%s\n",str);
+    fprintf(stderr,"compile failed,line:%d,err:%s\n",get_line_number(),str);
 }
 
 
@@ -19,23 +19,33 @@ int main(int argc,char **argv){
         fprintf(stderr,"no such file",argv[1]);
         exit(1);
     }
+
+
     /*create interpreter*/
     JsInterpreter* interpreter =  JS_create_interpreter();
     if(NULL == interpreter){
         fprintf(stderr,"create interpreter failed...");
         exit(1);
-    }  
+    }
+    temproryMem = interpreter->interpreter_memory;
     current_interpreter = interpreter;
     extern int yyparse(void);
     extern FILE *yyin;
 
-    crb_set_current_interpreter(interpreter);
+
 
     yyin = fp;
     if (yyparse()) {
         fprintf(stderr, "Error ! Error ! Error !\n");
         exit(1);
     }
+
+
+
+
+
+
+
     
 
     return 0;

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "js.h"
 #define YYDEBUG 1
+#include "message.h"
+#include "util.h"
 %}
 %union {
     char                *identifier;
@@ -13,6 +15,7 @@
     StatementList       *statement_list;
     Block               *block;
     Elsif               *elsif;
+    JsFunction          *function;
 }
 %token <expression>     INT_LITERAL
 %token <expression>     DOUBLE_LITERAL
@@ -36,6 +39,7 @@
 %type   <statement_list> statement_list
 %type   <block> block
 %type   <elsif> elsif elsif_list
+%type   <function> function_definition
 %%
 translation_unit
         : definition_or_statement
@@ -45,61 +49,55 @@ definition_or_statement
         : function_definition
         | statement
         {
-            CRB_Interpreter *inter = crb_get_current_interpreter();
-
-            inter->statement_list
-                = crb_chain_statement_list(inter->statement_list, $1);
+            current_interpreter->statement_list
+                = CREATE_chain_statement_list(current_interpreter->statement_list, $1);
         }
         ;
 function_definition
         : FUNCTION IDENTIFIER LP parameter_list RP block
         {
-            crb_function_define($2, $4, $6);
+            CREATE_global_function($2, $4, $6);
         }
         | FUNCTION IDENTIFIER LP RP block
         {
-            crb_function_define($2, NULL, $5);
+            CREATE_global_function($2, NULL, $5);
         }
         |FUNCTION LP RP block
         {
-            printf("no name function");
+            $$ = CREATE_function("", NULL, $4);
         }
         |FUNCTION LP parameter_list RP block
         {
-            printf("no name function");
+           $$ = CREATE_function("", $3, $5);
         }
         ;
 
 parameter_list
     : parameter_list COMMA IDENTIFIER
     {
-        $$ = crb_chain_parameter($1, $3);
+        $$ = CREATE_chain_parameter_list($1, $3);
     }
     | IDENTIFIER
     {
-         $$ = crb_create_parameter($1);
+         $$ = CREATE_parameter_list($1);
     }
     ;
 
 statement_list
     :statement
     {
-        $$ = crb_create_statement_list($1);
+        $$ = CREATE_statement_list($1);
     }
     |statement_list statement
     {
-        $$ = crb_chain_statement_list($1, $2);
+        $$ = CREATE_chain_statement_list($1, $2);
     }
     ;
 
 statement
-    :expression SEMICOLON
+    :expression 
     {
-         $$ = crb_create_expression_statement($1);
-    }
-    |expression
-    {
-        $$ = crb_create_expression_statement($1);
+        $$ = CREATE_expression_statement($1);
     }
     | if_statement
     | while_statement
@@ -112,37 +110,37 @@ statement
 break_statement
     :BREAK SEMICOLON
     {
-            $$ = crb_create_break_statement();
+            $$ = CREATE_break_statement();
     }
     ;
 
 if_statement
     :IF LP expression RP block
     {
-         $$ = crb_create_if_statement($3, $5, NULL, NULL);
+         $$ = CREATE_if_statement($3, $5, NULL, NULL);
     }
     | IF LP expression RP block ELSE block
     {
-        $$ = crb_create_if_statement($3, $5, NULL, $7);
+        $$ = CREATE_if_statement($3, $5, NULL, $7);
     }
     | IF LP expression RP block elsif_list
     {
-        $$ = crb_create_if_statement($3, $5, $6, NULL);
+        $$ = CREATE_if_statement($3, $5, $6, NULL);
     }
     | IF LP expression RP block elsif_list ELSE block
     {
-        $$ = crb_create_if_statement($3, $5, $6, $8);
+        $$ = CREATE_if_statement($3, $5, $6, $8);
     }
     ;
 elsif_list
     :elsif
     | elsif_list elsif
     {
-         $$ = crb_chain_elsif_list($1, $2);
+         $$ = CREATE_chain_elsif_list($1, $2);
     }
 elsif 
     :ELSIF LP expression RP block{
-         $$ = crb_create_elsif($3, $5);
+         $$ = CREATE_elsif_list($3, $5);
     }
     ;
 
@@ -150,38 +148,38 @@ elsif
 while_statement
     :WHILE LP expression RP block
     {
-        $$ = crb_create_while_statement($3, $5);
+        $$ = CREATE_while_statement($3, $5);
     }
     ;
 
 for_statement
     :FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP block
     {
-        $$ = crb_create_for_statement($3, $5, $7, $9);
+        $$ = CREATE_for_statement($3, $5, $7, $9);
     }
     ;
 
 return_statement
     :RETURN_T expression_opt SEMICOLON
     {
-        $$ = crb_create_return_statement($2);
+        $$ = CREATE_return_statement($2);
     }
     ;
 continue_statement
     :CONTINUE SEMICOLON
     {
-        $$ = crb_create_continue_statement();
+        $$ = CREATE_continue_statement();
     }
     ;
 
 block
     :LC statement_list RC
     {
-        $$ = crb_create_block($2);
+        $$ = CREATE_block($2);
     }
     |LC RC
     {
-        $$ = crb_create_block(NULL);
+        $$ = CREATE_block(NULL);
     }
     ;
 
@@ -197,34 +195,46 @@ expression_list
         }
         | expression
         {
-            $$ = crb_create_expression_list($1);
+            $$ = CREATE_expression_list($1);
         }
         | expression_list COMMA expression
         {
-            $$ = crb_chain_expression_list($1, $3);
+            $$ = CREATE_chain_expression_list($1, $3);
         }
         ;
 
 expression
     :logical_or_expression
-    |postfix_expression ASSIGN expression
+    |postfix_expression ASSIGN expression SEMICOLON
     {
-        $$ = crb_create_assign_expression($1, $3);
+        $$ = CREATE_assign_expression($1, $3);
     }
-    |VAR postfix_expression ASSIGN expression
+    |postfix_expression ASSIGN expression CRLF
     {
-        $$ = crb_create_assign_expression($2, $4);
+        $$ = CREATE_assign_expression($1, $3);
     }
-    |VAR postfix_expression SEMICOLON
+    |VAR postfix_expression ASSIGN expression SEMICOLON
     {
-        $$ = crb_create_assign_expression($2, NULL);
+        $$ = CREATE_assign_expression($2, $4);
+    }
+    |VAR postfix_expression ASSIGN expression CRLF
+    {
+        $$ = CREATE_assign_expression($2, $4);
+    }
+    |VAR postfix_expression SEMICOLON  /*postfix_expression must be identifier*/
+    {
+        $$ = CREATE_assign_expression($2, NULL);
+    }
+    |postfix_expression ASSIGN function_definition
+    {
+        printf("method for a object");/*not*/
     }
     ;
 logical_or_expression
     :logical_and_expression
     | logical_or_expression LOGICAL_OR logical_and_expression
     {
-        $$ = crb_create_binary_expression(LOGICAL_OR_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(LOGICAL_OR_EXPRESSION, $1, $3);
     }
     ;
 
@@ -232,37 +242,37 @@ logical_and_expression
     :equality_expression
     |logical_and_expression LOGICAL_AND equality_expression
     {
-        $$ = crb_create_binary_expression(LOGICAL_AND_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(LOGICAL_AND_EXPRESSION, $1, $3);
     }
     ;
 equality_expression
     :relational_expression
     |equality_expression EQ relational_expression
     {
-        $$ = crb_create_binary_expression(EQ_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EQ_EXPRESSION, $1, $3);
     }
     |equality_expression NE relational_expression
     {
-        $$ = crb_create_binary_expression(NE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(NE_EXPRESSION, $1, $3);
     }
     ;
 relational_expression
     :additive_expression
     |relational_expression GT additive_expression
     {
-        $$ = crb_create_binary_expression(GT_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(GT_EXPRESSION, $1, $3);
     }
     | relational_expression GE additive_expression
     {
-        $$ = crb_create_binary_expression(GE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(GE_EXPRESSION, $1, $3);
     }
     | relational_expression LT additive_expression
     {
-        $$ = crb_create_binary_expression(LT_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(LT_EXPRESSION, $1, $3);
     }
     | relational_expression LE additive_expression
     {
-        $$ = crb_create_binary_expression(LE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(LE_EXPRESSION, $1, $3);
     }
     ;
 
@@ -270,25 +280,25 @@ additive_expression
     : multiplicative_expression
     |additive_expression ADD multiplicative_expression
     {
-        $$ = crb_create_binary_expression(ADD_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(ADD_EXPRESSION, $1, $3);
     }
     | additive_expression SUB multiplicative_expression{
-        $$ = crb_create_binary_expression(SUB_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(SUB_EXPRESSION, $1, $3);
     }
     ;
 multiplicative_expression
     :unary_expression
     |multiplicative_expression MUL unary_expression
     {
-        $$ = crb_create_binary_expression(MUL_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(MUL_EXPRESSION, $1, $3);
     }
     |multiplicative_expression DIV unary_expression
     {
-        $$ = crb_create_binary_expression(DIV_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(DIV_EXPRESSION, $1, $3);
     }
     | multiplicative_expression MOD unary_expression
     {
-        $$ = crb_create_binary_expression(MOD_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(MOD_EXPRESSION, $1, $3);
     }
     ;
 

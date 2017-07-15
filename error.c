@@ -3,5 +3,6 @@
 
 
 void ERROR_compile_error(COMPILE_ERROR typ,char* buf){
-    printf("compile failed,err:%s buf:%s",CompileErrorMessage[typ],buf);
+    printf("compile failed,err:%s buf:%s",CompileErrorMessage[typ].message,buf);
+    exit(1);
 }

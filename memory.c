@@ -34,7 +34,7 @@ void* MEM_alloc(Memory *m,int size,int line){
     if(new == NULL){
         return NULL;
     }
-    new->pointer =(void*)((char*)new + sizeof(Memory)) ;
+    new->pointer =(void*)(new + 1) ;
     new->line = line;
     m->prev = new;
     new->next = m ;

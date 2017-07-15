@@ -1,8 +1,10 @@
-#include "memory.h"
-
 #ifndef JS_H
 #define JS_H
 #define LINE_BUF_SIZE (1024)
+
+#include "memory.h"
+#include "string.h"
+
 
 
 typedef enum {
@@ -49,20 +51,20 @@ typedef struct JS_OBEJCT_ARRAY_tag {
     int alloc;
 }JS_OBEJCT_ARRAY;
 
-typedef struct JS_OBEJCT_STRING_tag {
+/*typedef struct JS_OBEJCT_STRING_tag {
     char* s;  
-    /*len(s) == length+1*/ 
+    len(s) == length+1
     int length;
 }JS_OBEJCT_STRING;
-
-struct JS_OBEJCT_tag{
+*/
+typedef struct JS_OBEJCT_tag{
     JS_OBJECT_TYPE typ;
     union{
         JS_OBEJCT_ARRAY* array;
-        JS_OBEJCT_STRING* string;
+        STRING* string;
         /*JsFunction* func;js function is also a value*/
     } u;
-};
+}JsObecjt;
 
 
 
@@ -113,6 +115,7 @@ typedef enum {
     EXPRESSION_TYPE_INT,
     EXPRESSION_TYPE_FLOAT,
     EXPRESSION_TYPE_STRING,
+    EXPRESSION_TYPE_ARRAY,
     EXPRESSION_TYPE_OR,
     EXPRESSION_TYPE_AND,
     EXPRESSION_TYPE_ASSIGN,
@@ -144,6 +147,7 @@ struct Expression_tag {
         ExpressionBinary* binary;
         Expression* unary;
         ExpressionListFucntionCall* function_call;
+        JsObecjt* object;
     }u;
 };
 
@@ -156,17 +160,24 @@ typedef enum {
     STATEMENT_TYPE_FOR,
     STATEMENT_TYPE_WHILE,
     STATEMENT_TYPE_CONTINUE,
-    STATEMENT_TYPE_RETURN
+    STATEMENT_TYPE_RETURN,
+    STATEMENT_TYPE_BREAK
 }STATEMENT_TYPE;
 
 
 typedef struct Statement_tag Statement;
 typedef struct Block_tag Block;
 
+typedef struct StatementElsif_tag StatementElsif;
+typedef struct StatementElsifList_tag StatementElsifList;
+typedef  StatementElsifList Elsif;
+
 
 typedef struct StatementIf_tag {
     Expression* condition;
-    Block* block;
+    Block* then;
+    StatementElsifList* elseIfList;
+    Block* els;
 }StatementIf;
 
 typedef struct StatementElse_tag {
@@ -174,12 +185,20 @@ typedef struct StatementElse_tag {
 }StatementElse;
 
 
-typedef struct StatementElsif_tag {
+struct StatementElsif_tag {
     Block* block;
     Expression* condition;
-}StatementElsif;
+};
 
-typedef  StatementElsif Elsif;
+struct StatementElsifList_tag {
+    StatementElsif elsif;
+    StatementElsif* next;
+};
+
+
+
+
+typedef  StatementElsifList Elsif;
 
 typedef struct StatementFor_tag {
     Block* block;
@@ -187,9 +206,6 @@ typedef struct StatementFor_tag {
     Expression* condition;
     Expression* afterblock;
 }StatementFor;
-
-
-
 
 
 typedef struct StatementWhile_tag {
@@ -200,29 +216,29 @@ typedef struct StatementWhile_tag {
 typedef struct StatementContinue_tag {
 }StatementContinue;
 
+/*
 typedef struct StatementReturn_tag {
     Expression* expression;
 }StatementReturn;
-
+*/
 
 typedef struct Statement_tag{
     STATEMENT_TYPE typ;
     union{
-        Expression* expression;
+        Expression* expression_statement;
         StatementIf* if_statement;
-        StatementElse* else_statement;
-        StatementElsif * elseif_statement;
         StatementFor* for_statement;
         StatementWhile* while_statement;
         StatementContinue* continue_stament;
-        StatementReturn* return_statement;
+        Expression* return_expression;
     }u;
 }Statement;
 
 
 typedef struct StatementList_tag {
-    Statement* stament;
+    Statement* statement;
     Statement* next;
+    Statement* prev;
 }StatementList;
 
 
@@ -254,6 +270,8 @@ typedef struct  JsInterpreter_tag {
     int current_line_number;
     VariableList* vars;
 }JsInterpreter;
+
+
 
 
 

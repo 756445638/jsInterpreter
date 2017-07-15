@@ -1,19 +1,21 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include "js.h"
+#include "message.h"
+
 
 
 typedef enum {
     CHARACTER_INVALID_ERR = 1,
-
+    CANNOT_ALLOC_MEMORY,
 }COMPILE_ERROR;
 
 
 MessageFormat CompileErrorMessage[]= {
     {"dummy"},
     {"invalid charater"},
-    {"dummy"},
+    {"can`t alloc memory"},
+    {"dummy"}
 };
 
 
