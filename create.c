@@ -217,10 +217,7 @@ CREATE_elsif_list(Expression* condition,Block* block){
 StatementElsifList*
 CREATE_chain_elsif_list(StatementElsifList* list,StatementElsifList* els){
     if(NULL == list){
-        list = CREATE_elsif_list();
-        if(NULL == list){
-            return NULL;
-        }
+        return ;
     }
     StatementElsifList* next = list;
     while(NULL != next->next){
@@ -250,10 +247,10 @@ CREATE_for_statement(Expression* init,Expression* condition,Expression* afterblo
     }
     s->typ = STATEMENT_TYPE_FOR;
     s->u.for_statement = (StatementFor*)(s+1);
-    s->u.for_statement.init = init;
-    s->u.for_statement.condition = condition;
-    s->u.for_statement.afterblock = afterblock;
-    s->u.for_statement.block = block;
+    s->u.for_statement->init = init;
+    s->u.for_statement->condition = condition;
+    s->u.for_statement->afterblock = afterblock;
+    s->u.for_statement->block = block;
     return s;
 }
 Statement*
@@ -277,7 +274,7 @@ CREATE_continue_statement(){
     return s;
 }
 
-block*
+Block*
 CREATE_block(StatementList* list){
     Block* b = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Block),get_line_number());
     if(NULL == b){
@@ -289,7 +286,7 @@ CREATE_block(StatementList* list){
 
 ExpressionList*
 CREATE_expression_list(Expression* e){
-    list = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionList),get_line_number());
+    ExpressionList* list = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionList),get_line_number());
     if(NULL == list){
         return NULL;
     }
@@ -308,7 +305,7 @@ CREATE_chain_expression_list(ExpressionList* list,Expression* e){
         return list;
     }
     ExpressionList* next = list ;
-    while(NULL != next.list){
+    while(NULL != next->next){
         next = next->next;
     }
     next->next = new;
@@ -318,7 +315,7 @@ CREATE_chain_expression_list(ExpressionList* list,Expression* e){
 
 Expression*
 CREATE_assign_expression(Expression* e1,Expression* e2){
-    Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) + get_line_number()); 
+    Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) , get_line_number()); 
     if(NULL == e){
         return NULL;
     }
@@ -329,9 +326,10 @@ CREATE_assign_expression(Expression* e1,Expression* e2){
     return e;
 }
 
+
 Expression* 
 CREATE_binary_expression(EXPRESSION_TYPE typ,Expression* left,Expression* right){
-    Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) + get_line_number()); 
+    Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) , get_line_number()); 
     if(NULL == e){
         return NULL;
     }
@@ -342,14 +340,92 @@ CREATE_binary_expression(EXPRESSION_TYPE typ,Expression* left,Expression* right)
     return e;
 }
 
+Expression* 
+CREATE_minus_expression(Expression* e){
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) , get_line_number()); 
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_NEGATIVE;
+    new->u.unary = e;
+    return new;
+}
 
+Expression* 
+CREATE_index_expression(Expression* e,Expression* index){
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) , get_line_number()); 
+    if(NULL == new){
+        return NULL;
+    }
+    new->u.unary = e;
+    new->u.index = index;
+    return new;
+}
 
+Expression* 
+CREATE_method_call_expression(Expression* e,char* method,ArgumentList* args){
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionMethodCall) , get_line_number()); 
+    if(NULL == new){
+        return NULL;
+    }
+    new->u.method_call = (ExpressionMethodCall*)(e + 1);
+    new->u.method_call->args = args;
+    new->u.method_call->method = args;
+    return new;
+}
 
+Expression* 
+CREATE_incdec_expression(Expression* e,EXPRESSION_TYPE typ){
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) , get_line_number()); 
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = typ;
+    new->u.unary = e;
+    return new;
+}
 
+ExpressionList*
+CREATE_argument_list(Expression* e){
+    ExpressionList* list= MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionList) , get_line_number()); 
+    if(NULL == list){
+        return NULL;
+    }
+    list->next = NULL;
+    list->expression = e;
+    return list;
+}
+ExpressionList*
+CREATE_chain_argument_list(ExpressionList* list, Expression* e){
+    if(NULL == list){
+        return NULL;
+    }
+    ExpressionList* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionList) , get_line_number()); 
+    if(NULL == new){
+        return list;
+    }
+    new->next = NULL;
+    new->expression = e;
+    ExpressionList* next = list;
+    while(NULL != next->next){
+        next = next-next;
+    } 
+    next->next = new;
+    return list;
+}
 
-
-
-
+Expression*
+CREATE_function_call_expression(char* func,ArgumentList* args){
+    Expression* e = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionFunctionCall),get_line_number());
+    if(NULL == e){
+        return NULL;
+    }
+    e->typ = EXPRESSION_TYPE_FUNCTION_CALL;
+    e->u.function_call = (ExpressionFunctionCall*)(e +1);
+    e->u.function_call->func = func;
+    e->u.function_call->args = args;
+    return e;
+}
 
 
 

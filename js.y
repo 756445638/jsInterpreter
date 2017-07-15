@@ -306,30 +306,30 @@ unary_expression
     :postfix_expression
     |SUB unary_expression
     {
-        $$ = crb_create_minus_expression($2);
+        $$ = CREATE_minus_expression($2);
     }
 
 postfix_expression
     :primary_expression
     |postfix_expression LB expression RB
     {
-         $$ = crb_create_index_expression($1, $3);
+         $$ = CREATE_index_expression($1, $3);
     }
     |postfix_expression DOT IDENTIFIER LP argument_list RP
     {
-        $$ = crb_create_method_call_expression($1, $3, $5);
+        $$ = CREATE_method_call_expression($1, $3, $5);
     }
     |postfix_expression DOT IDENTIFIER LP RP
     {
-        $$ = crb_create_method_call_expression($1, $3, NULL);
+        $$ = CREATE_method_call_expression($1, $3, NULL);
     }
     |postfix_expression INCREMENT
     {
-        $$ = crb_create_incdec_expression($1, INCREMENT_EXPRESSION);
+        $$ = CREATE_incdec_expression($1, INCREMENT_EXPRESSION);
     }
     | postfix_expression DECREMENT
     {
-        $$ = crb_create_incdec_expression($1, DECREMENT_EXPRESSION);
+        $$ = CREATE_incdec_expression($1, DECREMENT_EXPRESSION);
     }
     |postfix_expression DOT IDENTIFIER ASSIGN function_definition
     {
@@ -339,18 +339,18 @@ postfix_expression
 argument_list
         : expression
         {
-            $$ = crb_create_argument_list($1);
+            $$ = CREATE_argument_list($1);
         }
         | argument_list COMMA expression
         {
-            $$ = crb_chain_argument_list($1, $3);
+            $$ = CREATE_chain_argument_list($1, $3);
         }
         ;
 
 primary_expression
         : IDENTIFIER LP argument_list RP
         {
-            $$ = crb_create_function_call_expression($1, $3);
+            $$ = CREATE_function_call_expression($1, $3);
         }
         | IDENTIFIER LP RP
         {

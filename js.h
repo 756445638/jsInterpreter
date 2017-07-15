@@ -98,15 +98,22 @@ typedef struct ExpressionBinary_tag{
 
 typedef struct ExpressionList_tag {
     Expression*  expression;
-    Expression* next;
+    struct ExpressionList_tag* next;
 }ExpressionList;
 
 typedef ExpressionList ArgumentList;
 
-typedef struct ExpressionListFucntionCall_tag {
-    char* name;
+typedef struct ExpressionMethodCall_tag {
+    char* method;
     ArgumentList* args;
-}ExpressionListFucntionCall;
+}ExpressionMethodCall;
+
+typedef struct ExpressionFunctionCall_tag {
+    char* func;
+    ArgumentList* args;
+}ExpressionFunctionCall;
+
+
 
 
 
@@ -134,7 +141,9 @@ typedef enum {
     EXPRESSION_TYPE_METHOD_CALL,
     EXPRESSION_TYPE_FUNCTION_CALL,
     EXPRESSION_TYPE_INCREMENT,
-    EXPRESSION_TYPE_DECREMENT
+    EXPRESSION_TYPE_DECREMENT,
+    EXPRESSION_TYPE_NEGATIVE,
+    
 }EXPRESSION_TYPE;
 
 
@@ -146,7 +155,9 @@ struct Expression_tag {
         double double_value;
         ExpressionBinary* binary;
         Expression* unary;
-        ExpressionListFucntionCall* function_call;
+        Expression* index;
+        ExpressionFunctionCall* function_call;
+        ExpressionMethodCall* method_call;
         JsObecjt* object;
     }u;
 };
