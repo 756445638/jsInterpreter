@@ -15,6 +15,7 @@ INCLUDES = \
 
 $(TARGET):$(OBJS)
 	$(CC) $(OBJS) -o $@ -lm
+	chmod +x $(TARGET)
 
 
 

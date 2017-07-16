@@ -16,11 +16,12 @@ int main(int argc,char **argv){
         fprintf(stderr,"Usage:%s filename",argv[0]);
         _exit(1);
     }
-    fp = open(argv[1],"r");
+    fp = fopen(argv[1],"r");
     if(fp == NULL){
         fprintf(stderr,"no such file:%s",argv[1]);
         _exit(1);
     }
+
 
 
     /*create interpreter*/
@@ -39,7 +40,6 @@ int main(int argc,char **argv){
         fprintf(stderr, "Error ! Error ! Error !\n");
         _exit(1);
     }
-
 
 
     
