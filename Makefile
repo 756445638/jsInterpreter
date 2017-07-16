@@ -8,7 +8,7 @@ OBJS = lex.yy.o\
   util.o\
   string.o\
   error.o\
-  js.o
+  expression.o
 
 CFLAGS = -c -g -Wall -Wswitch-enum -ansi -pedantic -DDEBUG
 INCLUDES = \
@@ -19,7 +19,7 @@ $(TARGET):$(OBJS)
 
 
 
-y.tab.h : js.y
+y.tab.h : js.y js.l
 	bison --yacc -dv js.y
 y.tab.c : js.y
 	bison --yacc -dv js.y
@@ -28,16 +28,16 @@ y.tab.c : js.y
 y.tab.o:y.tab.c
 	$(CC) -c -g $*.c $(INCLUDES)
 
+expression.o:expression.c js.h
+	$(CC) -c $^
 
-util.o:util.c
+util.o:util.c util.h
 	$(CC) -c $^
-create.o:create.c 
+create.o:create.c  create.h js.h 
+	$(CC) -c $^ 
+string.o:string.c string.h
 	$(CC) -c $^
-string.o:string.c
-	$(CC) -c $^
-error.o:error.c
-	$(CC) -c $^
-js.o:js.c
+error.o:error.c error.h message.h
 	$(CC) -c $^
 
 lex.yy.c : js.l js.y y.tab.h

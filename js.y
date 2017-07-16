@@ -21,7 +21,7 @@
 %token <expression>     DOUBLE_LITERAL
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
-%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T CRLF
+%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T 
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
@@ -39,7 +39,7 @@
 %type   <statement_list> statement_list
 %type   <block> block
 %type   <elsif> elsif elsif_list
-%type   <function> function_definition
+%type   <function> function_definition function_noname_definition
 %%
 translation_unit
         : definition_or_statement
@@ -53,6 +53,7 @@ definition_or_statement
                 = CREATE_chain_statement_list(current_interpreter->statement_list, $1);
         }
         ;
+
 function_definition
         : FUNCTION IDENTIFIER LP parameter_list RP block
         {
@@ -62,15 +63,18 @@ function_definition
         {
             CREATE_global_function($2, NULL, $5);
         }
-        |FUNCTION LP RP block
-        {
-            $$ = CREATE_function("", NULL, $4);
-        }
-        |FUNCTION LP parameter_list RP block
-        {
-           $$ = CREATE_function("", $3, $5);
-        }
         ;
+
+function_noname_definition
+    :FUNCTION LP RP block
+    {
+        $$ = CREATE_function("", NULL, $4);
+    }
+    |FUNCTION LP parameter_list RP block
+    {
+        $$ = CREATE_function("", $3, $5);
+    }
+    ;
 
 parameter_list
     : parameter_list COMMA IDENTIFIER
@@ -95,9 +99,15 @@ statement_list
     ;
 
 statement
-    :expression 
+    :expression SEMICOLON
     {
         $$ = CREATE_expression_statement($1);
+    }
+    |postfix_expression DOT IDENTIFIER ASSIGN function_noname_definition{
+        printf("create method\n");
+    }
+    |postfix_expression LB expression RB ASSIGN function_noname_definition{
+        printf("create method\n");
     }
     | if_statement
     | while_statement
@@ -143,7 +153,6 @@ elsif
          $$ = CREATE_elsif_list($3, $5);
     }
     ;
-
 
 while_statement
     :WHILE LP expression RP block
@@ -202,32 +211,19 @@ expression_list
             $$ = CREATE_chain_expression_list($1, $3);
         }
         ;
-
 expression
     :logical_or_expression
-    |postfix_expression ASSIGN expression SEMICOLON
+    |postfix_expression ASSIGN expression
     {
         $$ = CREATE_assign_expression($1, $3);
     }
-    |postfix_expression ASSIGN expression CRLF
-    {
-        $$ = CREATE_assign_expression($1, $3);
-    }
-    |VAR postfix_expression ASSIGN expression SEMICOLON
+    |VAR postfix_expression ASSIGN expression
     {
         $$ = CREATE_assign_expression($2, $4);
     }
-    |VAR postfix_expression ASSIGN expression CRLF
+    |VAR postfix_expression ASSIGN expression
     {
         $$ = CREATE_assign_expression($2, $4);
-    }
-    |VAR postfix_expression SEMICOLON  /*postfix_expression must be identifier*/
-    {
-        $$ = CREATE_assign_expression($2, NULL);
-    }
-    |postfix_expression ASSIGN function_definition
-    {
-        printf("method for a object");/*not*/
     }
     ;
 logical_or_expression

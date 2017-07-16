@@ -10,14 +10,7 @@ typedef enum {
     CANNOT_ALLOC_MEMORY,
 }COMPILE_ERROR;
 
-
-MessageFormat CompileErrorMessages[]= {
-    {"dummy"},
-    {"invalid charater"},
-    {"can`t alloc memory"},
-    {"dummy"}
-};
-
+    
 
 void ERROR_compile_error(COMPILE_ERROR typ,char* buf);
 

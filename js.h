@@ -96,6 +96,12 @@ typedef struct ExpressionBinary_tag{
     Expression* right;
 }ExpressionBinary;
 
+typedef struct ExpressionIndex_tag{
+    Expression* e;
+    Expression* index;
+}ExpressionIndex;
+
+
 typedef struct ExpressionList_tag {
     Expression*  expression;
     struct ExpressionList_tag* next;
@@ -157,6 +163,7 @@ struct Expression_tag {
         JSBool bool_value;
         double double_value;
         ExpressionBinary* binary;
+        ExpressionIndex* index;
         char* identifier;
         Expression* unary;
         ExpressionFunctionCall* function_call;

@@ -2,6 +2,8 @@
 #include "memory.h"
 #include "util.h"
 #include <string.h>
+#include <stdio.h>
+
 
 JsInterpreter*
 JS_create_interpreter(){
@@ -23,6 +25,7 @@ JS_create_interpreter(){
     interpreter->current_line_number = 0 ;
     interpreter->statement_list = NULL;
     interpreter->vars = NULL;
+    interpreter->interpreter_memory = inter_memory;
     return interpreter;
 }
 
@@ -37,25 +40,13 @@ char* CREATE_identifier(char * i){
     return identifier;
 }
 
-/*
-    string类型经过了2次分配内存，所以需要2次释放
-*/
+
 Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
     Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
     if(NULL == e){
         return NULL;
     }
     e->typ = typ;
-    e->u.binary = NULL;
-    e->u.function_call = NULL;
-    e->u.unary = NULL;
-    if(EXPRESSION_TYPE_STRING == typ || EXPRESSION_TYPE_ARRAY == typ){
-        e->u.object = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsObecjt),get_line_number());
-        if(NULL == e->u.object){
-            MEM_free(current_interpreter->interpreter_memory,e);
-            return NULL;
-        }
-    }
     return e;
 }
 
@@ -87,21 +78,21 @@ StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
 }
 
 
-JsFunction* CREATE_function(char* name,ParameterList* list,Block* block){
+JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block){
     JsFunction* f = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFunction),get_line_number());
     if(NULL == f){
         return NULL;
     }
     f->block = block;
-    f->parameter_list = list;
+    f->parameter_list = parameterlist;
     f->name = name;
     return f;
 }
 
 
 
-int CREATE_global_function(char* name,ParameterList* list,Block* block){
-    JsFunction* f = CREATE_function(name,list,block);
+int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
+    JsFunction* f = CREATE_function(name,parameterlist,block);
     if(NULL == f){
         return -1;
     }
@@ -314,6 +305,7 @@ CREATE_chain_expression_list(ExpressionList* list,Expression* e){
     if(NULL == new){
         return list;
     }
+    new->next = NULL;
     ExpressionList* next = list ;
     while(NULL != next->next){
         next = next->next;
@@ -363,16 +355,18 @@ CREATE_minus_expression(Expression* e){
 
 Expression* 
 CREATE_index_expression(Expression* e,Expression* index){
-    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)  + sizeof(ExpressionBinary), get_line_number()); 
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)  + sizeof(ExpressionIndex), get_line_number()); 
     if(NULL == new){
         return NULL;
     }
     new->typ = EXPRESSION_TYPE_INDEX;
-    new->u.binary = (ExpressionBinary*) (new + 1);
-    new->u.binary->left = e;
-    new->u.binary->right = index;
+    new->u.index = (ExpressionIndex*) (new + 1);
+    new->u.index->e = e;
+    new->u.index->index = index;
     return new;
 }
+
+
 
 Expression* 
 CREATE_method_call_expression(Expression* e,char* method,ArgumentList* args){
@@ -471,6 +465,7 @@ CREATE_null_expression(){
     new->typ = EXPRESSION_TYPE_NULL;
     return new;
 }
+
 Expression*
 CREATE_array_expression(ExpressionList* list){
     Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)+sizeof(JsObecjt) + sizeof(JsOBjectArray),get_line_number());
@@ -488,7 +483,7 @@ CREATE_array_expression(ExpressionList* list){
     }
     int i= 0;
     ExpressionList* next = list;
-    for(;i<length;i++){   /*copy pointer from list*/
+    for(;i<length;i++){   /*copy*/
         eles[i] = *(next->expression);
         next = next->next;
     }

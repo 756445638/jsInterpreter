@@ -19,7 +19,7 @@ yywrap(void)
 <INITIAL>"function"     return FUNCTION;
 <INITIAL>"if"           return IF;
 <INITIAL>"else"         return ELSE;
-<INITIAL>"elsif"        return ELSIF;
+<INITIAL>"elseif"        return ELSIF;
 <INITIAL>"while"        return WHILE;
 <INITIAL>"for"          return FOR;
 <INITIAL>"return"       return RETURN_T;
@@ -77,7 +77,6 @@ yywrap(void)
 <INITIAL>[ \t] ;
 <INITIAL>\n {
     increment_line_number();
-    return CRLF;    
 }
 <INITIAL>\/\/     BEGIN COMMENT;
 <INITIAL>.      {

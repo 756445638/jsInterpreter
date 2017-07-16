@@ -4,7 +4,7 @@
 
 Memory* MEM_open_storage(){
     Memory* m= (Memory*)malloc(sizeof(Memory));
-    if(m == NULL){
+    if(NULL == m){
         return NULL;
     }
     m->pointer = NULL;
@@ -31,19 +31,19 @@ void MEM_close_storage(Memory* m){
 
 void* MEM_alloc(Memory *m,int size,int line){
     Memory* new = (Memory*)malloc(sizeof(Memory) + size);
-    if(new == NULL){
+    if(NULL == new){
         return NULL;
     }
+    Memory* last = m->prev;
     new->pointer =(void*)(new + 1) ;
     new->line = line;
     m->prev = new;
     new->next = m ;
-    Memory* last = m->prev;
-    if (last == NULL){
+    if (NULL == last){
        last = m ;
     }
     last->next = new;
-    new->prev = new;
+    new->prev = last;
     return new->pointer;
 }
 
@@ -68,6 +68,6 @@ void MEM_free(Memory *head,void* p){
 void MEM_dump(Memory *head){
     Memory* next = head->next;
     while(next != head && next != NULL){
-        printf("memory:%x line:%d\n",next->pointer,next->line);
+        printf("memory:%p line:%d\n",next->pointer,next->line);
     }
 }

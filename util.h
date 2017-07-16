@@ -2,7 +2,7 @@
 #include "memory.h"
 #ifndef UTIL_H
 #define UTIL_H
-static  int line_number = 0;
+static  int line_number = 1;
 JsInterpreter*  current_interpreter; /*current interpreter*/
 STRING* literal_string_holder;
 

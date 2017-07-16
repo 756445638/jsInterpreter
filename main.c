@@ -13,23 +13,26 @@ int yyerror(char* str){
 int main(int argc,char **argv){
     FILE *fp;
     if(argc != 2){
-        fprintf(stderr,"Usage:%s filename",argv[0]);
+        fprintf(stderr,"Usage:%s filename\n",argv[0]);
         _exit(1);
     }
-    fp = fopen(argv[1],"r");
-    if(fp == NULL){
-        fprintf(stderr,"no such file:%s",argv[1]);
-        _exit(1);
+    
+
+    fp = fopen(argv[1], "r");
+    if (fp == NULL) {
+        fprintf(stderr, "%s not found.\n", argv[1]);
+        exit(1);
     }
-
-
 
     /*create interpreter*/
     JsInterpreter* interpreter =  JS_create_interpreter();
     if(NULL == interpreter){
-        fprintf(stderr,"create interpreter failed...");
+        fprintf(stderr,"create interpreter failed...\n");
         _exit(1);
     }
+    printf("crete interpreter...");
+
+
     current_interpreter = interpreter;
     extern int yyparse(void);
     extern FILE *yyin;
