@@ -47,9 +47,9 @@ typedef enum {
 
 typedef struct JS_OBEJCT_ARRAY_tag {
     Expression* elements;
-    int size;
+    int length;
     int alloc;
-}JS_OBEJCT_ARRAY;
+}JsOBjectArray;
 
 /*typedef struct JS_OBEJCT_STRING_tag {
     char* s;  
@@ -60,7 +60,7 @@ typedef struct JS_OBEJCT_ARRAY_tag {
 typedef struct JS_OBEJCT_tag{
     JS_OBJECT_TYPE typ;
     union{
-        JS_OBEJCT_ARRAY* array;
+        JsOBjectArray* array;
         STRING* string;
         /*JsFunction* func;js function is also a value*/
     } u;
@@ -104,6 +104,7 @@ typedef struct ExpressionList_tag {
 typedef ExpressionList ArgumentList;
 
 typedef struct ExpressionMethodCall_tag {
+    Expression* expression;
     char* method;
     ArgumentList* args;
 }ExpressionMethodCall;
@@ -123,8 +124,8 @@ typedef enum {
     EXPRESSION_TYPE_FLOAT,
     EXPRESSION_TYPE_STRING,
     EXPRESSION_TYPE_ARRAY,
-    EXPRESSION_TYPE_OR,
-    EXPRESSION_TYPE_AND,
+    EXPRESSION_TYPE_LOGICAL_OR,
+    EXPRESSION_TYPE_LOGICAL_AND,
     EXPRESSION_TYPE_ASSIGN,
     EXPRESSION_TYPE_EQ,
     EXPRESSION_TYPE_NE,
@@ -143,6 +144,8 @@ typedef enum {
     EXPRESSION_TYPE_INCREMENT,
     EXPRESSION_TYPE_DECREMENT,
     EXPRESSION_TYPE_NEGATIVE,
+    EXPRESSION_TYPE_IDENTIFIER,
+    EXPRESSION_TYPE_NULL
     
 }EXPRESSION_TYPE;
 
@@ -151,11 +154,11 @@ struct Expression_tag {
     EXPRESSION_TYPE typ;
     union{
         int int_value;
-        JSBool* bool_value;
+        JSBool bool_value;
         double double_value;
         ExpressionBinary* binary;
+        char* identifier;
         Expression* unary;
-        Expression* index;
         ExpressionFunctionCall* function_call;
         ExpressionMethodCall* method_call;
         JsObecjt* object;
@@ -203,13 +206,10 @@ struct StatementElsif_tag {
 
 struct StatementElsifList_tag {
     StatementElsif elsif;
-    StatementElsif* next;
+    struct StatementElsifList_tag* next;
 };
 
 
-
-
-typedef  StatementElsifList Elsif;
 
 typedef struct StatementFor_tag {
     Block* block;
@@ -224,8 +224,7 @@ typedef struct StatementWhile_tag {
     Block* block;
 }StatementWhile;
 
-typedef struct StatementContinue_tag {
-}StatementContinue;
+typedef struct StatementContinue_tag StatementContinue;
 
 /*
 typedef struct StatementReturn_tag {
@@ -233,7 +232,7 @@ typedef struct StatementReturn_tag {
 }StatementReturn;
 */
 
-typedef struct Statement_tag{
+struct Statement_tag{
     STATEMENT_TYPE typ;
     union{
         Expression* expression_statement;
@@ -243,13 +242,13 @@ typedef struct Statement_tag{
         StatementContinue* continue_stament;
         Expression* return_expression;
     }u;
-}Statement;
+};
 
 
 typedef struct StatementList_tag {
     Statement* statement;
-    Statement* next;
-    Statement* prev;
+    struct StatementList_tag* next;
+    struct StatementList_tag* prev;
 }StatementList;
 
 
@@ -284,6 +283,9 @@ typedef struct  JsInterpreter_tag {
 
 
 
+
+
+int get_expression_list_length(ExpressionList* list);
 
 
 

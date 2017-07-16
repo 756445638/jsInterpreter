@@ -1,15 +1,11 @@
 #include "js.h"
 
-JsFunction*
-JS_search_func_from_list(JsFucntionList* list,char* name){
-    while(list != NULL){
-        if(0 == strcmp(list->func->name,name)){
-            return list;
-        }
+
+int get_expression_list_length(ExpressionList* list){
+    int length = 0;
+    while(NULL != list){
         list = list->next;
+        length++;
     }
-    return NULL;
+    return length;
 }
-
-
-

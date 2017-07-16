@@ -4,13 +4,12 @@
 #define UTIL_H
 static  int line_number = 0;
 JsInterpreter*  current_interpreter; /*current interpreter*/
-Memory* temproryMem = NULL;
 STRING* literal_string_holder;
 
 
-STRING* alloc_temprory_string();
+int alloc_temprory_string();
 
-void appendchar_temprory_string(char c);
+int appendchar_temprory_string(char c);
 
 
 

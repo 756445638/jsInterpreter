@@ -234,7 +234,7 @@ logical_or_expression
     :logical_and_expression
     | logical_or_expression LOGICAL_OR logical_and_expression
     {
-        $$ = CREATE_binary_expression(LOGICAL_OR_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_LOGICAL_OR, $1, $3);
     }
     ;
 
@@ -242,37 +242,37 @@ logical_and_expression
     :equality_expression
     |logical_and_expression LOGICAL_AND equality_expression
     {
-        $$ = CREATE_binary_expression(LOGICAL_AND_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_LOGICAL_AND, $1, $3);
     }
     ;
 equality_expression
     :relational_expression
     |equality_expression EQ relational_expression
     {
-        $$ = CREATE_binary_expression(EQ_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_EQ, $1, $3);
     }
     |equality_expression NE relational_expression
     {
-        $$ = CREATE_binary_expression(NE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_NE, $1, $3);
     }
     ;
 relational_expression
     :additive_expression
     |relational_expression GT additive_expression
     {
-        $$ = CREATE_binary_expression(GT_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_GT, $1, $3);
     }
     | relational_expression GE additive_expression
     {
-        $$ = CREATE_binary_expression(GE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_GE, $1, $3);
     }
     | relational_expression LT additive_expression
     {
-        $$ = CREATE_binary_expression(LT_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_LT, $1, $3);
     }
     | relational_expression LE additive_expression
     {
-        $$ = CREATE_binary_expression(LE_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_LE, $1, $3);
     }
     ;
 
@@ -280,25 +280,25 @@ additive_expression
     : multiplicative_expression
     |additive_expression ADD multiplicative_expression
     {
-        $$ = CREATE_binary_expression(ADD_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_ADD, $1, $3);
     }
     | additive_expression SUB multiplicative_expression{
-        $$ = CREATE_binary_expression(SUB_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_SUB, $1, $3);
     }
     ;
 multiplicative_expression
     :unary_expression
     |multiplicative_expression MUL unary_expression
     {
-        $$ = CREATE_binary_expression(MUL_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_MUL, $1, $3);
     }
     |multiplicative_expression DIV unary_expression
     {
-        $$ = CREATE_binary_expression(DIV_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_DIV, $1, $3);
     }
     | multiplicative_expression MOD unary_expression
     {
-        $$ = CREATE_binary_expression(MOD_EXPRESSION, $1, $3);
+        $$ = CREATE_binary_expression(EXPRESSION_TYPE_MOD, $1, $3);
     }
     ;
 
@@ -325,11 +325,11 @@ postfix_expression
     }
     |postfix_expression INCREMENT
     {
-        $$ = CREATE_incdec_expression($1, INCREMENT_EXPRESSION);
+        $$ = CREATE_incdec_expression($1, EXPRESSION_TYPE_INCREMENT);
     }
     | postfix_expression DECREMENT
     {
-        $$ = CREATE_incdec_expression($1, DECREMENT_EXPRESSION);
+        $$ = CREATE_incdec_expression($1, EXPRESSION_TYPE_DECREMENT);
     }
     |postfix_expression DOT IDENTIFIER ASSIGN function_definition
     {
@@ -354,7 +354,7 @@ primary_expression
         }
         | IDENTIFIER LP RP
         {
-            $$ = crb_create_function_call_expression($1, NULL);
+            $$ = CREATE_function_call_expression($1, NULL);
         }
         | LP expression RP
         {
@@ -362,33 +362,29 @@ primary_expression
         }
         | IDENTIFIER
         {
-            $$ = crb_create_identifier_expression($1);
+            $$ = CREATE_identifier_expression($1);
         }
         | INT_LITERAL
         | DOUBLE_LITERAL
         | STRING_LITERAL
         | TRUE_T
         {
-            $$ = crb_create_boolean_expression(CRB_TRUE);
+            $$ = CREATE_boolean_expression(JS_BOOL_TRUE);
         }
         | FALSE_T
         {
-            $$ = crb_create_boolean_expression(CRB_FALSE);
+            $$ = CREATE_boolean_expression(JS_BOOL_FLASE);
         }
         | NULL_T
         {
-            $$ = crb_create_null_expression();
+            $$ = CREATE_null_expression();
         }
         | array_literal
         ;
 array_literal
         :LB  expression_list RB
         {
-            $$ = crb_create_array_expression($2);
-        }
-        | LC expression_list COMMA RC
-        {
-            $$ = crb_create_array_expression($2);
+            $$ = CREATE_array_expression($2);
         }
         ;
 %%

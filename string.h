@@ -1,5 +1,6 @@
 #ifndef STRING_H
 #define STRING_H
+#include "memory.h"
 
 #define STRING_INIT_ALLOC_SIZE (256)
 

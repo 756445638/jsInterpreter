@@ -11,7 +11,7 @@ typedef enum {
 }COMPILE_ERROR;
 
 
-MessageFormat CompileErrorMessage[]= {
+MessageFormat CompileErrorMessages[]= {
     {"dummy"},
     {"invalid charater"},
     {"can`t alloc memory"},

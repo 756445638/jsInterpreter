@@ -37,6 +37,9 @@ char* CREATE_identifier(char * i){
     return identifier;
 }
 
+/*
+    string类型经过了2次分配内存，所以需要2次释放
+*/
 Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
     Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
     if(NULL == e){
@@ -69,7 +72,7 @@ StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
     }
     StatementList* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(StatementList),get_line_number());
     if(NULL == new){
-        return NULL;
+        return list;/*this time faild,but return old list*/
     }
     StatementList* oldlast = list->prev;
     new->statement = s;
@@ -135,11 +138,15 @@ ParameterList* CREATE_parameter_list(char* identifier){
         return NULL;
     }
     list->identifier = identifier;
+    list->next = NULL;
     return list;
 }
 
 
 ParameterList* CREATE_chain_parameter_list(ParameterList* list,char* identifier){
+    if(NULL == list){
+        return NULL;
+    }
     ParameterList* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(ParameterList),get_line_number());
     if(NULL == new){
         return list;
@@ -217,13 +224,15 @@ CREATE_elsif_list(Expression* condition,Block* block){
 StatementElsifList*
 CREATE_chain_elsif_list(StatementElsifList* list,StatementElsifList* els){
     if(NULL == list){
-        return ;
+        return NULL;
     }
     StatementElsifList* next = list;
     while(NULL != next->next){
         next = next->next;
     }
     next->next = els;
+    els->next = NULL; 
+    return list;
 }
 
 Statement* 
@@ -236,6 +245,7 @@ CREATE_while_statement(Expression* condition, Block* block){
     s->u.while_statement = (StatementWhile*) (s + 1);
     s->u.while_statement->condition  = condition;
     s->u.while_statement->block = block;
+    return s;
 }
 
 
@@ -292,7 +302,7 @@ CREATE_expression_list(Expression* e){
     }
     list->next = NULL;
     list->expression = e ;
-    return e;
+    return list;
 }
 
 ExpressionList*
@@ -353,12 +363,14 @@ CREATE_minus_expression(Expression* e){
 
 Expression* 
 CREATE_index_expression(Expression* e,Expression* index){
-    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) , get_line_number()); 
+    Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)  + sizeof(ExpressionBinary), get_line_number()); 
     if(NULL == new){
         return NULL;
     }
-    new->u.unary = e;
-    new->u.index = index;
+    new->typ = EXPRESSION_TYPE_INDEX;
+    new->u.binary = (ExpressionBinary*) (new + 1);
+    new->u.binary->left = e;
+    new->u.binary->right = index;
     return new;
 }
 
@@ -368,9 +380,10 @@ CREATE_method_call_expression(Expression* e,char* method,ArgumentList* args){
     if(NULL == new){
         return NULL;
     }
-    new->u.method_call = (ExpressionMethodCall*)(e + 1);
+    new->u.method_call = (ExpressionMethodCall*)(new + 1);
     new->u.method_call->args = args;
-    new->u.method_call->method = args;
+    new->u.method_call->method = method;
+    new->u.method_call->expression  = e ;
     return new;
 }
 
@@ -408,24 +421,91 @@ CREATE_chain_argument_list(ExpressionList* list, Expression* e){
     new->expression = e;
     ExpressionList* next = list;
     while(NULL != next->next){
-        next = next-next;
+        next = next->next;
     } 
     next->next = new;
     return list;
 }
 
 Expression*
-CREATE_function_call_expression(char* func,ArgumentList* args){
+CREATE_function_call_expression(char* funcname,ArgumentList* args){
     Expression* e = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionFunctionCall),get_line_number());
     if(NULL == e){
         return NULL;
     }
     e->typ = EXPRESSION_TYPE_FUNCTION_CALL;
     e->u.function_call = (ExpressionFunctionCall*)(e +1);
-    e->u.function_call->func = func;
+    e->u.function_call->func = funcname;
     e->u.function_call->args = args;
     return e;
 }
+
+Expression*
+CREATE_identifier_expression(char* identifier){ 
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_IDENTIFIER;
+    new->u.identifier = identifier;
+    return new;
+}
+
+Expression*
+CREATE_boolean_expression(JSBool value){
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_BOOL;
+    new->u.bool_value = value;
+    return new;
+}
+
+Expression*
+CREATE_null_expression(){
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_NULL;
+    return new;
+}
+Expression*
+CREATE_array_expression(ExpressionList* list){
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)+sizeof(JsObecjt) + sizeof(JsOBjectArray),get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_ARRAY;
+    new->u.object = (JsObecjt*)(new + 1);
+    new->u.object->u.array = (JsOBjectArray*) (new->u.object+1);
+    int length = get_expression_list_length(list);
+    Expression* eles = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) * length * 2,get_line_number());
+    if(NULL == eles){
+        MEM_free(current_interpreter->interpreter_memory,new);
+        return NULL;
+    }
+    int i= 0;
+    ExpressionList* next = list;
+    for(;i<length;i++){   /*copy pointer from list*/
+        eles[i] = *(next->expression);
+        next = next->next;
+    }
+    /*free expression list*/
+    next  = list;
+    while(NULL != next){
+        list = next;
+        next = next->next;
+        MEM_free(current_interpreter->interpreter_memory,list->expression);
+        MEM_free(current_interpreter->interpreter_memory,list);
+    }
+    new->u.object->u.array->elements = eles;
+    new->u.object->u.array->length = length;
+    new->u.object->u.array->alloc = length * 2;
+    return new;
+}
+
 
 
 
