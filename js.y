@@ -103,11 +103,12 @@ statement
     {
         $$ = CREATE_expression_statement($1);
     }
-    |postfix_expression DOT IDENTIFIER ASSIGN function_noname_definition{
+    |postfix_expression  ASSIGN function_noname_definition{
         printf("create method\n");
     }
-    |postfix_expression LB expression RB ASSIGN function_noname_definition{
-        printf("create method\n");
+    |VAR IDENTIFIER ASSIGN function_noname_definition
+    {
+        printf("create local function");
     }
     | if_statement
     | while_statement
@@ -148,6 +149,7 @@ elsif_list
     {
          $$ = CREATE_chain_elsif_list($1, $2);
     }
+    ;
 elsif 
     :ELSIF LP expression RP block{
          $$ = CREATE_elsif_list($3, $5);
@@ -217,11 +219,7 @@ expression
     {
         $$ = CREATE_assign_expression($1, $3);
     }
-    |VAR postfix_expression ASSIGN expression
-    {
-        $$ = CREATE_assign_expression($2, $4);
-    }
-    |VAR postfix_expression ASSIGN expression
+    |VAR IDENTIFIER ASSIGN expression
     {
         $$ = CREATE_assign_expression($2, $4);
     }
@@ -304,12 +302,15 @@ unary_expression
     {
         $$ = CREATE_minus_expression($2);
     }
-
 postfix_expression
     :primary_expression
     |postfix_expression LB expression RB
     {
          $$ = CREATE_index_expression($1, $3);
+    }
+    |postfix_expression DOT IDENTIFIER 
+    {
+        printf("access object`s field\n");
     }
     |postfix_expression DOT IDENTIFIER LP argument_list RP
     {
