@@ -328,10 +328,6 @@ postfix_expression
     {
         $$ = CREATE_incdec_expression($1, EXPRESSION_TYPE_DECREMENT);
     }
-    |postfix_expression DOT IDENTIFIER ASSIGN function_definition
-    {
-        printf("create method for a object");
-    }
     ;
 argument_list
         : expression
