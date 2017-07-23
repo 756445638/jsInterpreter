@@ -221,7 +221,7 @@ expression
     }
     |VAR IDENTIFIER ASSIGN expression
     {
-        $$ = CREATE_assign_expression($2, $4);
+        $$ = CREATE_localvariable_declare_expression($2, $4);
     }
     ;
 logical_or_expression

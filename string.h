@@ -16,6 +16,8 @@ STRING* STRING_concat(Memory*m ,STRING* s ,char* ss);
 STRING* STRING_new(Memory*m);
 STRING* STRING_appendchar(Memory*m,STRING* s,char c);
 
+int STRING_length(STRING* s);
+
 
 
 

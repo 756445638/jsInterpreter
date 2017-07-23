@@ -1,7 +1,9 @@
-#include "js.h"
-#include "memory.h"
+
 #ifndef UTIL_H
 #define UTIL_H
+#include "js.h"
+#include "memory.h"
+
 static  int line_number = 1;
 JsInterpreter*  current_interpreter; /*current interpreter*/
 STRING* literal_string_holder;

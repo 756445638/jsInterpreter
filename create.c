@@ -47,8 +47,23 @@ Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
         return NULL;
     }
     e->typ = typ;
+	e->line = get_line_number();
     return e;
 }
+
+Expression* CREATE_alloc_string_expression(){
+    Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(JsObecjt),get_line_number());
+    if(NULL == e){
+        return NULL;
+    }
+    e->typ = EXPRESSION_TYPE_STRING;
+	e->u.object = (JsObecjt*)(e + 1);
+	e->line = get_line_number();
+    return e;
+}
+
+
+
 
 StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
     if(NULL == list){
@@ -161,6 +176,7 @@ StatementList* CREATE_statement_list(Statement* s){
     list->statement = s ;
     list->next = NULL;
     list->prev = NULL;
+	s->line = get_line_number();
     return list;
 }
 
@@ -172,6 +188,7 @@ CREATE_expression_statement(Expression* e){
     }
     s->typ = STATEMENT_TYPE_EXPRESSION;
     s->u.expression_statement = e;
+	s->line = get_line_number();
     return s;
 }
 
@@ -182,6 +199,7 @@ CREATE_break_statement(){
         return NULL;
     }
     s->typ = STATEMENT_TYPE_BREAK;
+	s->line = get_line_number();
     return s;
 }
 
@@ -196,6 +214,7 @@ CREATE_if_statement(Expression* condition,Block* then,StatementElsifList* elseif
     s->u.if_statement->then = then;
     s->u.if_statement->elseIfList = elseiflist;
     s->u.if_statement->els = els;
+	s->line = get_line_number();
     return s;
 }
 
@@ -209,6 +228,7 @@ CREATE_elsif_list(Expression* condition,Block* block){
     list->next = NULL;
     list->elsif.condition = condition;
     list->elsif.block = block;
+	list->line = get_line_number();
     return list;
 }
 
@@ -223,6 +243,7 @@ CREATE_chain_elsif_list(StatementElsifList* list,StatementElsifList* els){
     }
     next->next = els;
     els->next = NULL; 
+	els->line = get_line_number();
     return list;
 }
 
@@ -236,6 +257,7 @@ CREATE_while_statement(Expression* condition, Block* block){
     s->u.while_statement = (StatementWhile*) (s + 1);
     s->u.while_statement->condition  = condition;
     s->u.while_statement->block = block;
+	s->line = get_line_number();
     return s;
 }
 
@@ -252,6 +274,7 @@ CREATE_for_statement(Expression* init,Expression* condition,Expression* afterblo
     s->u.for_statement->condition = condition;
     s->u.for_statement->afterblock = afterblock;
     s->u.for_statement->block = block;
+	s->line = get_line_number();
     return s;
 }
 Statement*
@@ -262,6 +285,7 @@ CREATE_return_statement(Expression* e){
     }
     s->typ = STATEMENT_TYPE_RETURN;
     s->u.return_expression =  e;
+	s->line = get_line_number();
     return s;
 }
 
@@ -272,6 +296,7 @@ CREATE_continue_statement(){
         return NULL;
     }
     s->typ = STATEMENT_TYPE_CONTINUE;
+	s->line = get_line_number();
     return s;
 }
 
@@ -325,6 +350,7 @@ CREATE_assign_expression(Expression* e1,Expression* e2){
     e->u.binary = (ExpressionBinary*)(e + 1);
     e->u.binary->left = e1;
     e->u.binary->right = e2;
+	e->line = get_line_number();
     return e;
 }
 
@@ -339,6 +365,7 @@ CREATE_binary_expression(EXPRESSION_TYPE typ,Expression* left,Expression* right)
     e->u.binary = (ExpressionBinary*)(e + 1);
     e->u.binary->left = left;
     e->u.binary->right = right;
+	e->line = get_line_number();
     return e;
 }
 
@@ -350,6 +377,7 @@ CREATE_minus_expression(Expression* e){
     }
     new->typ = EXPRESSION_TYPE_NEGATIVE;
     new->u.unary = e;
+	new->line = get_line_number();
     return new;
 }
 
@@ -363,6 +391,7 @@ CREATE_index_expression(Expression* e,Expression* index){
     new->u.index = (ExpressionIndex*) (new + 1);
     new->u.index->e = e;
     new->u.index->index = index;
+	new->line = get_line_number();
     return new;
 }
 
@@ -378,6 +407,7 @@ CREATE_method_call_expression(Expression* e,char* method,ArgumentList* args){
     new->u.method_call->args = args;
     new->u.method_call->method = method;
     new->u.method_call->expression  = e ;
+	new->line = get_line_number();
     return new;
 }
 
@@ -389,6 +419,7 @@ CREATE_incdec_expression(Expression* e,EXPRESSION_TYPE typ){
     }
     new->typ = typ;
     new->u.unary = e;
+	new->line = get_line_number();
     return new;
 }
 
@@ -431,6 +462,7 @@ CREATE_function_call_expression(char* funcname,ArgumentList* args){
     e->u.function_call = (ExpressionFunctionCall*)(e +1);
     e->u.function_call->func = funcname;
     e->u.function_call->args = args;
+	e->line = get_line_number();
     return e;
 }
 
@@ -442,8 +474,28 @@ CREATE_identifier_expression(char* identifier){
     }
     new->typ = EXPRESSION_TYPE_IDENTIFIER;
     new->u.identifier = identifier;
+	new->line = get_line_number();
     return new;
 }
+
+
+Expression*
+CREATE_localvariable_declare_expression(char* identifier,Expression* assignment){ 
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionCreateLocalVarialbe),get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE;
+    new->u.create_var = (ExpressionCreateLocalVarialbe*)(new+1);
+	new->u.create_var->identifier = identifier;
+	new->u.create_var->expression = assignment;
+	new->line = get_line_number();
+    return new;
+}
+
+
+
+
 
 Expression*
 CREATE_boolean_expression(JSBool value){
@@ -453,6 +505,7 @@ CREATE_boolean_expression(JSBool value){
     }
     new->typ = EXPRESSION_TYPE_BOOL;
     new->u.bool_value = value;
+	new->line = get_line_number();
     return new;
 }
 
@@ -463,6 +516,7 @@ CREATE_null_expression(){
         return NULL;
     }
     new->typ = EXPRESSION_TYPE_NULL;
+	new->line = get_line_number();
     return new;
 }
 
@@ -498,6 +552,7 @@ CREATE_array_expression(ExpressionList* list){
     new->u.object->u.array->elements = eles;
     new->u.object->u.array->length = length;
     new->u.object->u.array->alloc = length * 2;
+	new->line = get_line_number();
     return new;
 }
 

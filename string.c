@@ -42,9 +42,29 @@ STRING* STRING_new(Memory*m){
     }
     newstring->length = 0;
     newstring->alloc = STRING_INIT_ALLOC_SIZE;
-    newstring->s = (char*) newstring + sizeof(STRING);
+    newstring->s = (char*) (newstring + 1);
     return newstring;
 }
+
+
+STRING* STRING_new_form_chars(Memory*m,char* s){
+	int length = strlen(s);
+	STRING* newstring = MEM_alloc(m,sizoeof(STRING) + length * 2,get_line_number());
+    if(NULL == newstring){
+        return NULL;
+    }
+	newstring->length = length;
+	newstring->alloc = length * 2;
+	newstring->s = (char*)(newstring + 1);
+	int i = 0;
+	for(i ==0 ;i<length;i++){
+		newstring->s[i] = s[i];
+	}
+	newstring->s[length] = 0;
+	return newstring;
+}
+
+
 
 STRING* STRING_appendchar(Memory*m,STRING* s,char c){
     char a[2] = {c,0};

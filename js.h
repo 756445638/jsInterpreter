@@ -1,9 +1,11 @@
 #ifndef JS_H
 #define JS_H
-#define LINE_BUF_SIZE (1024)
 
 #include "memory.h"
 #include "string.h"
+#define LINE_BUF_SIZE (1024)
+#define SMALL_FLOAT (0.000001)
+#define ISZORE(x) ((x<0.000001) && (x>-0.000001))
 
 
 
@@ -13,29 +15,33 @@ typedef enum {
 } JSBool;
 
 
-/*typedef enum {
+typedef enum {
     JS_VALUE_TYPE_BOOL = 1,
     JS_VALUE_TYPE_INT,
     JS_VALUE_TYPE_FLOAT,
     JS_VALUE_TYPE_OBJECT
 } JS_VALUE_TYPE;
 
-typedef struct JS_OBEJCT_tag JS_OBJECT;
+typedef struct JsObejct_tag JsObejct;
 typedef struct JsFunction_tag JsFunction;
+typedef struct JsValue_tag JsValue;
 
 
-typedef struct JS_VALUE_tag {
+
+
+struct JsValue_tag {
     JS_VALUE_TYPE typ;
     union{
-        JSBOOL boolvalue;
+        JSBool boolvalue;
         int intvalue;
         double floatvalue;
-        JS_OBJECT* object;
+        JsObejct* object;
     }u;
-} JS_VALUE;
-*/
+} ;
 
-typedef struct Expression_tag  Expression;
+
+
+
 
 
 typedef enum {
@@ -45,49 +51,41 @@ typedef enum {
     JS_OBJECT_TYPE_FUNCTION
 } JS_OBJECT_TYPE;
 
-typedef struct JS_OBEJCT_ARRAY_tag {
-    Expression* elements;
+typedef struct JsOBjectArray_tag {
+    JsValue elements;
     int length;
     int alloc;
 }JsOBjectArray;
 
-/*typedef struct JS_OBEJCT_STRING_tag {
-    char* s;  
-    len(s) == length+1
-    int length;
-}JS_OBEJCT_STRING;
-*/
-typedef struct JS_OBEJCT_tag{
+struct JsObejct_tag{
     JS_OBJECT_TYPE typ;
     union{
         JsOBjectArray* array;
         STRING* string;
-        /*JsFunction* func;js function is also a value*/
+        JsFunction* func; /*js function is also a value*/
     } u;
-}JsObecjt;
+};
 
-
-
-/* js values */
 
 
 typedef struct Variable_tag {
     char* name;
-    Expression* value;
+    JsValue value;
 }Variable;
 
 typedef struct VariableList_tag {
-    Variable* var;
+    Variable var;
     struct VariableList_tag* next;
 }VariableList;
 
 
 typedef struct IdentifierList_tag{
-    char* identifier;
+    char* identifier
     struct IdentifierList_tag* next;
 }IdentifierList;
 
 typedef IdentifierList ParameterList ;
+typedef struct Expression_tag  Expression;
 
 
 
@@ -95,6 +93,14 @@ typedef struct ExpressionBinary_tag{
     Expression* left;
     Expression* right;
 }ExpressionBinary;
+
+typedef struct ExpressionCreateLocalVarialbe_tag{
+    char* identifier;
+    Expression* expression;
+}ExpressionCreateLocalVarialbe;
+
+
+
 
 typedef struct ExpressionIndex_tag{
     Expression* e;
@@ -150,7 +156,8 @@ typedef enum {
     EXPRESSION_TYPE_INCREMENT,
     EXPRESSION_TYPE_DECREMENT,
     EXPRESSION_TYPE_NEGATIVE,
-    EXPRESSION_TYPE_IDENTIFIER,
+    EXPRESSION_TYPE_IDENTIFIER,/*identifier right value*/
+    EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE,
     EXPRESSION_TYPE_NULL
     
 }EXPRESSION_TYPE;
@@ -158,6 +165,7 @@ typedef enum {
 
 struct Expression_tag {
     EXPRESSION_TYPE typ;
+	int line;
     union{
         int int_value;
         JSBool bool_value;
@@ -168,7 +176,8 @@ struct Expression_tag {
         Expression* unary;
         ExpressionFunctionCall* function_call;
         ExpressionMethodCall* method_call;
-        JsObecjt* object;
+		ExpressionCreateLocalVarialbe* create_var;
+        JsObejct* object;
     }u;
 };
 
@@ -212,6 +221,7 @@ struct StatementElsif_tag {
 };
 
 struct StatementElsifList_tag {
+	int line;
     StatementElsif elsif;
     struct StatementElsifList_tag* next;
 };
@@ -241,6 +251,7 @@ typedef struct StatementReturn_tag {
 
 struct Statement_tag{
     STATEMENT_TYPE typ;
+	int line;
     union{
         Expression* expression_statement;
         StatementIf* if_statement;
@@ -277,6 +288,21 @@ typedef  struct JsFucntionList_tag{
 }JsFucntionList;
 
 
+
+
+
+
+
+
+
+
+
+typedef  struct ExecuteEnvironment_tag {
+	VariableList* vars;
+	struct ExecuteEnvironment_tag* outter;
+}ExecuteEnvironment;
+
+
 /*runtime struct*/
 
 typedef struct  JsInterpreter_tag {
@@ -285,8 +311,18 @@ typedef struct  JsInterpreter_tag {
     JsFucntionList* funcs;
     StatementList* statement_list;
     int current_line_number;
-    VariableList* vars;
+    VariableList vars;
+	Stack stack;
+	ExecuteEnvironment* env;
 }JsInterpreter;
+
+
+
+
+
+
+
+
 
 
 

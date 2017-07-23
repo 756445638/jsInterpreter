@@ -1,8 +1,9 @@
+#ifndef MEMORY_H
+#define MEMORY_H
+
 #include <stdio.h>
 #include <malloc.h>
 
-#ifndef MEMORY_H
-#define MEMORY_H
 
 /*it is a linked list,first node is not for use*/
 typedef struct Memory_s {

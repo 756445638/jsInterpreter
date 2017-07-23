@@ -97,7 +97,7 @@ yywrap(void)
 }
 <COMMENT>.      ;
 <STRING_LITERAL_STATE>\"        {
-    Expression *expression = CREATE_alloc_expression(EXPRESSION_TYPE_STRING);
+    Expression *expression = CREATE_alloc_string_expression();
     expression->u.object->u.string = literal_string_holder;
     expression->u.object->typ = JS_OBJECT_TYPE_STRING;
     yylval.expression = expression;
