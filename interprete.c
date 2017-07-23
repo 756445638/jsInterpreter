@@ -24,35 +24,46 @@ int INTERPRETE_execute_statement(Statement* s){
     if(s->typ == STATEMENT_TYPE_WHILE){
         return INTERPRETE_execute_statement_while(s->u.while_statement);
     }
-	
-
-
     return -1 ;/*no such type*/
 }
 
 int INTERPRETE_execute_statement_while(StatementWhile* w){
-	
-	
-	
+		
 }
 
-
-/*create a global variable*/
 
 Variable*  
-INTERPRETE_creaet_global_variable(JsInterpreter* inter,char* name,JsValue* v,int line){
- 	int length = strlen(name);
-	VariableList* list;
- 	if(NULL == inter->vars.var.name && 0 == strlen(inter->vars.var.name)){
-		list = &inter->vars;
-	}else{
-		list = MEM_alloc(inter->excute_memory,sizeof(VariableList),line);
+INTERPRETE_creaet_variable(JsInterpreter* inter,VariableList* list,char* name,JsValue* v,int line){
+	if(NULL == list){
+		return NULL;
 	}
-	list.var.name = MEM_alloc(inter->excute_memory,length + 1,line);
-	strncpy(list.var.name,name,length);
-	list.var.value = *v;
-	return &list.var;
+	int length = strlen(name);
+	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList) + length + 1,line);
+	if(NULL == newlist){
+		return NULL;
+	}
+	newlist->var.name= (char*)(newlist + 1);
+	strncpy(newlist->var.name,name,length);/*copy name*/
+	newlist->var.name[length] = 0 ;
+	newlist->var.value = *v;
+	return &newlist->var;
 }
+
+JsValue*
+INTERPRETE_creaet_heap(JsInterpreter* inter,int line){
+	Heap * h = MEM_alloc(inter->excute_memory,sizeof(Heap),line);
+	if(NULL == h){
+		return NULL;
+	}
+	push_heap(&inter->heap,h);
+	return &h->obj;
+}
+
+
+
+
+
+
 
 
 

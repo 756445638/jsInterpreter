@@ -45,5 +45,5 @@ lex.yy.c : js.l js.y y.tab.h
 
 
 clean:
-	rm *.o  y.tab.c y.tab.h
+	rm *.o  y.tab.c y.tab.h *.gch
 

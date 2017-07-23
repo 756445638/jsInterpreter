@@ -366,7 +366,7 @@ primary_expression
         }
         | FALSE_T
         {
-            $$ = CREATE_boolean_expression(JS_BOOL_FLASE);
+            $$ = CREATE_boolean_expression(JS_BOOL_FALSE);
         }
         | NULL_T
         {

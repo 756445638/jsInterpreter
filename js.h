@@ -11,7 +11,7 @@
 
 typedef enum {
     JS_BOOL_TRUE =1 ,
-    JS_BOOL_FLASE = 0
+    JS_BOOL_FALSE = 0
 } JSBool;
 
 
@@ -19,10 +19,11 @@ typedef enum {
     JS_VALUE_TYPE_BOOL = 1,
     JS_VALUE_TYPE_INT,
     JS_VALUE_TYPE_FLOAT,
-    JS_VALUE_TYPE_OBJECT
+    JS_VALUE_TYPE_STRING,
+    JS_VALUE_TYPE_ARRAY,
+    JS_VALUE_TYPE_FUNCTION
 } JS_VALUE_TYPE;
 
-typedef struct JsObejct_tag JsObejct;
 typedef struct JsFunction_tag JsFunction;
 typedef struct JsValue_tag JsValue;
 
@@ -35,7 +36,9 @@ struct JsValue_tag {
         JSBool boolvalue;
         int intvalue;
         double floatvalue;
-        JsObejct* object;
+		JsFunction* func;
+		JsValue* arrary;
+		char* string;
     }u;
 } ;
 
@@ -59,10 +62,10 @@ typedef struct JsOBjectArray_tag {
 
 struct JsObejct_tag{
     JS_OBJECT_TYPE typ;
+	char mark;/*this obejct can be use or not*/
     union{
         JsOBjectArray* array;
         STRING* string;
-        JsFunction* func; /*js function is also a value*/
     } u;
 };
 
@@ -80,7 +83,7 @@ typedef struct VariableList_tag {
 
 
 typedef struct IdentifierList_tag{
-    char* identifier
+    char* identifier;
     struct IdentifierList_tag* next;
 }IdentifierList;
 
@@ -177,7 +180,8 @@ struct Expression_tag {
         ExpressionFunctionCall* function_call;
         ExpressionMethodCall* method_call;
 		ExpressionCreateLocalVarialbe* create_var;
-        JsObejct* object;
+		char* string;
+        ExpressionList* expression_list;
     }u;
 };
 
@@ -275,11 +279,11 @@ struct Block_tag{
 };
 
 
-typedef struct JsFunction_tag {
+struct JsFunction_tag {
     char* name;/*function name*/
     Block* block;
     ParameterList* parameter_list;
-}JsFunction;
+};
 
 
 typedef  struct JsFucntionList_tag{
@@ -289,9 +293,21 @@ typedef  struct JsFucntionList_tag{
 
 
 
+/*runtime stack*/
+typedef struct Stack_tag{
+	JsValue* vs;
+	int sp;/*sp pointer*/
+	int alloc; /*total length*/
+} Stack;
 
 
 
+typedef struct Heap_tag {
+	struct Heap_tag * prev;
+	struct Heap_tag * next;
+	JsValue obj;  /*heap just for saving objects*/
+    int line;/*alloc by which line*/
+}Heap;
 
 
 
@@ -304,16 +320,16 @@ typedef  struct ExecuteEnvironment_tag {
 
 
 /*runtime struct*/
-
 typedef struct  JsInterpreter_tag {
     Memory* interpreter_memory;
     Memory* excute_memory;
     JsFucntionList* funcs;
     StatementList* statement_list;
-    int current_line_number;
+    /*int current_line_number;*/
     VariableList vars;
 	Stack stack;
 	ExecuteEnvironment* env;
+	Heap heap;
 }JsInterpreter;
 
 

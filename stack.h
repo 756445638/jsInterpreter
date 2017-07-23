@@ -3,12 +3,7 @@
 
 #include "js.h"
 
-/*runtime stack*/
-typedef struct Stack_tag{
-	JsValue vs;
-	int sp;/*sp pointer*/
-	int alloc; /*total length*/
-} Stack;
+
 
 
 

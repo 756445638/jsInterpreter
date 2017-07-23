@@ -13,7 +13,7 @@ MessageFormat CompileErrorMessages[]= {
 MessageFormat RuntimeErrorMessages[] = {
 	{"dummy"},
 	{"can`t find variable"},
-	{"variable alreay declared"}
+	{"variable alreay declared"},
 	{"dummy"},
 };
 

@@ -22,9 +22,9 @@ JS_create_interpreter(){
         return NULL;
     }
     interpreter->funcs = NULL;
-    interpreter->current_line_number = 0 ;
+    /*interpreter->current_line_number = 0 ;*/
     interpreter->statement_list = NULL;
-    interpreter->vars = NULL;
+    /*interpreter->vars = NULL;*/
     interpreter->interpreter_memory = inter_memory;
     return interpreter;
 }
@@ -51,16 +51,16 @@ Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
     return e;
 }
 
-Expression* CREATE_alloc_string_expression(){
-    Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(JsObecjt),get_line_number());
-    if(NULL == e){
-        return NULL;
-    }
-    e->typ = EXPRESSION_TYPE_STRING;
-	e->u.object = (JsObecjt*)(e + 1);
-	e->line = get_line_number();
-    return e;
-}
+// Expression* CREATE_alloc_string_expression(){
+//     Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(JsObecjt),get_line_number());
+//     if(NULL == e){
+//         return NULL;
+//     }
+//     e->typ = EXPRESSION_TYPE_STRING;
+// 	e->u.object = (JsObecjt*)(e + 1);
+// 	e->line = get_line_number();
+//     return e;
+// }
 
 
 
@@ -522,37 +522,13 @@ CREATE_null_expression(){
 
 Expression*
 CREATE_array_expression(ExpressionList* list){
-    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)+sizeof(JsObecjt) + sizeof(JsOBjectArray),get_line_number());
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
     if(NULL == new){
         return NULL;
     }
     new->typ = EXPRESSION_TYPE_ARRAY;
-    new->u.object = (JsObecjt*)(new + 1);
-    new->u.object->u.array = (JsOBjectArray*) (new->u.object+1);
-    int length = get_expression_list_length(list);
-    Expression* eles = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) * length * 2,get_line_number());
-    if(NULL == eles){
-        MEM_free(current_interpreter->interpreter_memory,new);
-        return NULL;
-    }
-    int i= 0;
-    ExpressionList* next = list;
-    for(;i<length;i++){   /*copy*/
-        eles[i] = *(next->expression);
-        next = next->next;
-    }
-    /*free expression list*/
-    next  = list;
-    while(NULL != next){
-        list = next;
-        next = next->next;
-        MEM_free(current_interpreter->interpreter_memory,list->expression);
-        MEM_free(current_interpreter->interpreter_memory,list);
-    }
-    new->u.object->u.array->elements = eles;
-    new->u.object->u.array->length = length;
-    new->u.object->u.array->alloc = length * 2;
-	new->line = get_line_number();
+    new->line = get_line_number();
+    new->u.expression_list = list;
     return new;
 }
 

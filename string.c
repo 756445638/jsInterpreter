@@ -49,7 +49,7 @@ STRING* STRING_new(Memory*m){
 
 STRING* STRING_new_form_chars(Memory*m,char* s){
 	int length = strlen(s);
-	STRING* newstring = MEM_alloc(m,sizoeof(STRING) + length * 2,get_line_number());
+	STRING* newstring = MEM_alloc(m,sizeof(STRING) + length * 2,get_line_number());
     if(NULL == newstring){
         return NULL;
     }
