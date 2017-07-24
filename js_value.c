@@ -1,5 +1,5 @@
 #include "js.h"
-
+#include <string.h>
 
 
 
@@ -21,16 +21,16 @@ JSBool is_js_value_true(JsValue* v){
 			return JS_BOOL_TRUE;
 		}
 	}
-	if(JS_VALUE_TYPE_OBJECT == v->typ &&  JS_OBJECT_TYPE_STRING  == v->u.object->typ){
-		int length = STRING_length(v->u.object->u.string);
+	if(JS_VALUE_TYPE_STRING == v->typ){
+		int length = strlen(v->u.string);
 		if(0 == length){
 			return JS_BOOL_FALSE;
 		}else{
 			return JS_BOOL_TRUE;
 		}
 	}
-	if(JS_VALUE_TYPE_OBJECT == v->typ &&  JS_OBJECT_TYPE_ARRAY== v->u.object->typ){
-		if(0 == v->u.object->u.array->length){
+	if(JS_VALUE_TYPE_ARRAY == v->typ){
+		if(0 == v->u.array->length){
 			return JS_BOOL_FALSE;
 		}else{
 			return JS_BOOL_TRUE;
@@ -247,19 +247,11 @@ JSBool js_value_equal(JsValue* v1,JsValue* v2){
 			return JS_BOOL_FALSE;
 		}
 	}
-	if(JS_VALUE_TYPE_OBJECT == v1->typ){  /*must be a obejct*/
-		if(JS_OBJECT_TYPE_STRING == v1->u.object->typ){
-			if(0 == strcmp(v1->u.object->u.string->s,v2->u.object->u.string->s)){
-				return JS_BOOL_TRUE;
-			}else{
-				return JS_BOOL_FALSE;
-			}
-		}else{ /*compare pointer*/
-			if(v1->u.object == v2->u.object){
-				return JS_BOOL_TRUE;
-			}else{
-				return JS_BOOL_FALSE;
-			}
+	if(JS_VALUE_TYPE_STRING == v1->typ){  /*must be a obejct*/
+		if(0 == strcmp(v1->u.string,v2->u.string)){
+			return JS_BOOL_TRUE;
+		}else{
+			return JS_BOOL_FALSE;
 		}
 	}
 	return JS_BOOL_FALSE;
@@ -298,13 +290,11 @@ JSBool js_value_greater(JsValue* v1,JsValue* v2){
 			}
 	}
 
-	if(JS_VALUE_TYPE_OBJECT == v1->typ && JS_VALUE_TYPE_OBJECT ==  v2->typ){
-		if(JS_OBJECT_TYPE_STRING == v1->u.object->typ && JS_OBJECT_TYPE_STRING == v2->u.object->typ){
-			if(strcmp(v1->u.object->u.string->s,v2->u.object->u.string->s) > 0){
-				return JS_BOOL_TRUE;
-			}else{
-				return JS_BOOL_FALSE;
-			}
+	if(JS_VALUE_TYPE_STRING == v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
+		if(strcmp(v1->u.string,v2->u.string) > 0){
+			return JS_BOOL_TRUE;
+		}else{
+			return JS_BOOL_FALSE;
 		}
 	}
 	return JS_BOOL_FALSE;
@@ -344,13 +334,11 @@ JSBool js_value_greater_or_equal(JsValue* v1,JsValue* v2){
 			}
 	}
 
-	if(JS_VALUE_TYPE_OBJECT == v1->typ && JS_VALUE_TYPE_OBJECT ==  v2->typ){
-		if(JS_OBJECT_TYPE_STRING == v1->u.object->typ && JS_OBJECT_TYPE_STRING == v2->u.object->typ){
-			if(strcmp(v1->u.object->u.string->s,v2->u.object->u.string->s) >= 0){
-				return JS_BOOL_TRUE;
-			}else{
-				return JS_BOOL_FALSE;
-			}
+	if(JS_VALUE_TYPE_STRING== v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
+		if(strcmp(v1->u.string,v2->u.string) >= 0){
+			return JS_BOOL_TRUE;
+		}else{
+			return JS_BOOL_FALSE;
 		}
 	}
 	return JS_BOOL_FALSE;

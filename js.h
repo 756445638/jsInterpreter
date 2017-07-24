@@ -27,6 +27,8 @@ typedef enum {
 typedef struct JsFunction_tag JsFunction;
 typedef struct JsValue_tag JsValue;
 
+typedef struct JsOBjectArray_tag JsArray;
+
 
 
 
@@ -37,36 +39,18 @@ struct JsValue_tag {
         int intvalue;
         double floatvalue;
 		JsFunction* func;
-		JsValue* arrary;
+		JsArray* array;
 		char* string;
+		JsValue* value_pointer;
     }u;
 } ;
 
 
 
-
-
-
-typedef enum {
-    JS_OBJECT_TYPE_ARRAY = 1,
-    JS_OBJECT_TYPE_STRING,
-    JS_OBJECT_TYPE_OBJECT,
-    JS_OBJECT_TYPE_FUNCTION
-} JS_OBJECT_TYPE;
-
-typedef struct JsOBjectArray_tag {
-    JsValue elements;
+struct JsOBjectArray_tag {
+    JsValue* elements;
     int length;
     int alloc;
-}JsOBjectArray;
-
-struct JsObejct_tag{
-    JS_OBJECT_TYPE typ;
-	char mark;/*this obejct can be use or not*/
-    union{
-        JsOBjectArray* array;
-        STRING* string;
-    } u;
 };
 
 

@@ -191,7 +191,8 @@ void eval_relation_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expr
 
 
 JsValue eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
-	JsValue * value = eval_expression(env,e->u.binary->right);/*get assign value*/
+	eval_expression(env,e->u.binary->right);/*get assign value*/
+	JsValue* value = pop_stack(&inter->stack);
 	JsValue *dest = get_left_value(env,e->u.binary->left);
 	Variable* var;
 	if(NULL == dest){
@@ -300,33 +301,32 @@ JsValue eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Exp
 
 
 JsValue* get_left_value(ExecuteEnvironment* env,Expression* e){
-	JsValue* ret = NULL;
+	Variable* var;
 	while(NULL != env){
 		if(EXPRESSION_TYPE_IDENTIFIER == e->typ){
-			ret = search_variable_from_variablelist(env->vars,e->u.identifier);
-			if(NULL == ret){
-				env = env->outter;
-			}else{
-				return ret;
+			var = search_variable_from_variablelist(env->vars,e->u.identifier);
+			if(NULL != var){
+				return &var->value;
 			}
 		}
+		env = env->outter;
 	}
 	return NULL;
 }
 
-// Variable*
-// search_variable_from_variablelist(VariableList* list,char* identifier){
-// 	if(NULL == list){
-// 		return NULL;
-// 	}
-// 	while(NULL != list){
-// 		if(0 == strcmp(identifier,list.var->name)){
-// 			return &list.var;
-// 		}
-// 		list = list->next;
-// 	}
-// 	return NULL;
-// }
+Variable*
+search_variable_from_variablelist(VariableList* list,char* identifier){
+	if(NULL == list){
+		return NULL;
+	}
+	while(NULL != list){
+		if(0 == strcmp(identifier,list->var.name)){
+			return &list->var;
+		}
+		list = list->next;
+	}
+	return NULL;
+}
 
 
 
