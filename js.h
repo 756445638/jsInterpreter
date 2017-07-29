@@ -21,16 +21,16 @@ typedef enum {
     JS_VALUE_TYPE_FLOAT,
     JS_VALUE_TYPE_STRING,
     JS_VALUE_TYPE_ARRAY,
-    JS_VALUE_TYPE_FUNCTION
+    JS_VALUE_TYPE_FUNCTION,
+    JS_VALUE_TYPE_NULL
 } JS_VALUE_TYPE;
 
 typedef struct JsFunction_tag JsFunction;
 typedef struct JsValue_tag JsValue;
 
-typedef struct JsOBjectArray_tag JsArray;
+typedef struct JsArray_tag JsArray;
 
-
-
+typedef struct JsString_tag JsString;
 
 struct JsValue_tag {
     JS_VALUE_TYPE typ;
@@ -40,18 +40,27 @@ struct JsValue_tag {
         double floatvalue;
 		JsFunction* func;
 		JsArray* array;
-		char* string;
-		JsValue* value_pointer;
+		JsString* string;
+		void* alloc;/*place holder when alloc memory from heap*/
     }u;
 } ;
 
 
+struct JsString_tag {
+	char* s ;
+	int length;
+	int alloc;
+	char mark;
+};
 
-struct JsOBjectArray_tag {
+
+struct JsArray_tag {
     JsValue* elements;
     int length;
     int alloc;
+	char mark;
 };
+
 
 
 
@@ -289,7 +298,7 @@ typedef struct Stack_tag{
 typedef struct Heap_tag {
 	struct Heap_tag * prev;
 	struct Heap_tag * next;
-	JsValue obj;  /*heap just for saving objects*/
+	JsValue value;  /*heap just for saving objects*/
     int line;/*alloc by which line*/
 }Heap;
 
@@ -317,6 +326,15 @@ typedef struct  JsInterpreter_tag {
 }JsInterpreter;
 
 
+typedef enum {
+	STATEMENT_RESULT_TYPE_NORMAL = 1,
+	STATEMENT_RESULT_TYPE_CONTINUE,
+	STATEMENT_RESULT_TYPE_RETURN,
+}STATEMENT_RESULT_TYPE;
+
+typedef  struct StamentResult_tag{
+	STATEMENT_RESULT_TYPE typ;
+}StamentResult; 
 
 
 

@@ -22,7 +22,7 @@ JSBool is_js_value_true(JsValue* v){
 		}
 	}
 	if(JS_VALUE_TYPE_STRING == v->typ){
-		int length = strlen(v->u.string);
+		int length = v->u.string->length;
 		if(0 == length){
 			return JS_BOOL_FALSE;
 		}else{
@@ -248,7 +248,7 @@ JSBool js_value_equal(JsValue* v1,JsValue* v2){
 		}
 	}
 	if(JS_VALUE_TYPE_STRING == v1->typ){  /*must be a obejct*/
-		if(0 == strcmp(v1->u.string,v2->u.string)){
+		if(0 == strcmp(v1->u.string->s,v2->u.string->s)){
 			return JS_BOOL_TRUE;
 		}else{
 			return JS_BOOL_FALSE;
@@ -291,7 +291,7 @@ JSBool js_value_greater(JsValue* v1,JsValue* v2){
 	}
 
 	if(JS_VALUE_TYPE_STRING == v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
-		if(strcmp(v1->u.string,v2->u.string) > 0){
+		if(strcmp(v1->u.string->s,v2->u.string->s) > 0){
 			return JS_BOOL_TRUE;
 		}else{
 			return JS_BOOL_FALSE;
@@ -335,7 +335,7 @@ JSBool js_value_greater_or_equal(JsValue* v1,JsValue* v2){
 	}
 
 	if(JS_VALUE_TYPE_STRING== v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
-		if(strcmp(v1->u.string,v2->u.string) >= 0){
+		if(strcmp(v1->u.string->s,v2->u.string->s) >= 0){
 			return JS_BOOL_TRUE;
 		}else{
 			return JS_BOOL_FALSE;

@@ -14,6 +14,11 @@ MessageFormat RuntimeErrorMessages[] = {
 	{"dummy"},
 	{"can`t find variable"},
 	{"variable alreay declared"},
+    {"can`t alloc memory"},
+    {"can`t index this type"},
+    {"can`t use this for index"},
+    {"index out of range"},
+	{"function not found"},
 	{"dummy"},
 };
 

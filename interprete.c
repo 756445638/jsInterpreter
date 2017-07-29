@@ -2,6 +2,9 @@
 #include <string.h>
 #include "js_value.h"
 #include "js.h"
+#include "interprete.h"
+#include "stack.h"
+#include "heap.h"
 
 int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
@@ -12,15 +15,13 @@ int INTERPRETE_interprete(JsInterpreter* inter){
     int result;
     while(next != inter->statement_list){
         result = INTERPRETE_execute_statement(s);
-        if(-1 == result){
-
-        }
+       	
 
         next = next->next;
     }
 }
 
-int INTERPRETE_execute_statement(Statement* s){
+StamentResult INTERPRETE_execute_statement(Statement* s){
     if(s->typ == STATEMENT_TYPE_WHILE){
         return INTERPRETE_execute_statement_while(s->u.while_statement);
     }
@@ -30,6 +31,10 @@ int INTERPRETE_execute_statement(Statement* s){
 int INTERPRETE_execute_statement_while(StatementWhile* w){
 		
 }
+
+
+#in
+
 
 
 Variable*  
@@ -49,13 +54,15 @@ INTERPRETE_creaet_variable(JsInterpreter* inter,VariableList* list,char* name,Js
 	return &newlist->var;
 }
 
+
 JsValue*
-INTERPRETE_creaet_heap(JsInterpreter* inter,int line){
-	Heap * h = MEM_alloc(inter->excute_memory,sizeof(Heap),line);
+INTERPRETE_creaet_heap(JsInterpreter* inter,int size,int line){
+	Heap * h = MEM_alloc(inter->excute_memory,sizeof(Heap) + size,line);
 	if(NULL == h){
 		return NULL;
 	}
 	push_heap(&inter->heap,h);
+	h->value.u.alloc = (char*)(h+1);
 	return &h->obj;
 }
 
