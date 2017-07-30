@@ -209,6 +209,7 @@ CREATE_if_statement(Expression* condition,Block* then,StatementElsifList* elseif
     if(NULL == s){
         return NULL;
     }
+    s->typ = STATEMENT_TYPE_IF;
     s->u.if_statement = (StatementIf*)(s + 1);
     s->u.if_statement->condition = condition;
     s->u.if_statement->then = then;

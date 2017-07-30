@@ -8,18 +8,23 @@
 #include "js_value.h"
 
 int INTERPRETE_interprete(JsInterpreter* inter){
-    // if(NULL == inter->statement_list){
-    //     return -1;/*no statement list*/
-    // }
-    // Statement* s = inter->statement_list->statement;
-    // StatementList *next = inter->statement_list;
-    // int result;
-    // while(next != inter->statement_list){
-    //     result = INTERPRETE_execute_statement(s);
-       	
-
-    //     next = next->next;
-    // }
+    if(NULL == inter->statement_list){
+        return -1;/*no statement list*/
+    }
+    StatementList *next = inter->statement_list;
+    StamentResult result;
+    while(NULL != next){
+        result = INTERPRETE_execute_statement(next->statement);
+		switch(result.typ){
+			case STATEMENT_RESULT_TYPE_NORMAL:
+				break;
+			case STATEMENT_RESULT_TYPE_CONTINUE:
+			case STATEMENT_RESULT_TYPE_RETURN:
+			case STATEMENT_RESULT_TYPE_BREAK:
+				ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE,next->statement->line);
+		} 
+        next = next->next;
+    }
 }
 
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s){
@@ -31,14 +36,68 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 	if(STATEMENT_TYPE_IF == s->typ){
 		ret =  INTERPRETE_execute_statement_if(inter,env,s->u.if_statement);
 	}
+	if(STATEMENT_TYPE_FOR == s->typ){
+		ret = INTERPRETE_execute_statement_for(inter,env,s->u.for_statement);
+	}
+	if(STATEMENT_TYPE_WHILE == s->typ){
+		ret = INTERPRETE_execute_statement_while(inter,env, s->u.while_statement);
+	}
+	if(STATEMENT_TYPE_CONTINUE == s->typ){
+		ret.typ = STATEMENT_RESULT_TYPE_CONTINUE;
+	}
+	if(STATEMENT_TYPE_RETURN == s->typ){/*push stack from outside*/
+		eval_expression( inter, env,s->u.return_expression);
+		ret.typ = STATEMENT_RESULT_TYPE_RETURN;
+	}
 	if(STATEMENT_TYPE_BREAK == s->typ){
 		ret.typ = STATEMENT_RESULT_TYPE_BREAK;
 	}
 	
-	
-
 	return ret;
    
+}
+
+
+StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvironment* env,StatementFor* f){
+	StamentResult ret;
+	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	eval_expression(inter,env,f->init);
+	pop_stack(&inter->stack);
+	StamentResult result;
+	JsValue* v;
+	JSBool istrue;
+	StatementList* list;
+	for(;;){
+		eval_expression(inter,env,f->condition);
+		pop_stack(&inter->stack);
+		eval_expression(inter,env,f->condition);
+		v = pop_stack(&inter->stack);
+		istrue = is_js_value_true(v);
+		if(JS_BOOL_FALSE == istrue){
+			goto end;
+		}
+		list = f->block->list;
+		while(NULL != list){
+			result = INTERPRETE_execute_statement(inter,env,list->statement);
+			switch(result.typ){
+				case STATEMENT_RESULT_TYPE_NORMAL:
+					break;
+				case STATEMENT_RESULT_TYPE_CONTINUE:
+					break;
+				case STATEMENT_RESULT_TYPE_RETURN:
+					goto end;
+				case STATEMENT_RESULT_TYPE_BREAK:
+					goto end;
+			}
+			eval_expression(inter,env,f->afterblock);
+			pop_stack(&inter->stack);
+			list = list->next;
+		}
+		
+	}
+
+	end:
+		return ret;
 }
 
 
@@ -60,10 +119,12 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 	JSBool istrue = is_js_value_true(v);
 	StatementList* list;
 	StamentResult result;
+	char else_if_matched = 0;
+	StatementElsifList* elsifnext;
 	if(JS_BOOL_TRUE == istrue){
 		list = i->then;
 		while(NULL != list){
-			result = INTERPRETE_execute_statement(list->statement);
+			result = INTERPRETE_execute_statement(inter,env,list->statement);
 			switch(result.typ){
 				case STATEMENT_RESULT_TYPE_NORMAL:
 					break;
@@ -73,20 +134,70 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 				case STATEMENT_RESULT_TYPE_RETURN:
 					ret.typ = STATEMENT_RESULT_TYPE_RETURN;
 					goto end;
-				case STATEMENT_RESULT_TYPE_RETURN:
-					ret.typ = STATEMENT_RESULT_TYPE_RETURN;
+				case STATEMENT_RESULT_TYPE_BREAK:
+					ret.typ = STATEMENT_RESULT_TYPE_BREAK;
 					goto end;
 			}
 		}
 
 
-	}else{
-		
+	}else{  /*handle else if*/
+		if(NULL != i->elseIfList){
+			elsifnext = i->elseIfList;
+			while(NULL != elsifnext){
+				eval_expression(inter,env,elsifnext->elsif->condition);
+				v = pop_stack(&inter->stack);
+				istrue = is_js_value_true(v);
+				if(JS_BOOL_TRUE == istrue){
+					else_if_matched = 1;
+					list = elsifnext->elsif->block->list;
+					result = INTERPRETE_execute_statement(inter,env,list->statement);
+					switch(result.typ){
+						case STATEMENT_RESULT_TYPE_NORMAL:
+							break;
+						case STATEMENT_RESULT_TYPE_CONTINUE:/*I can`t handle continue*/
+							ret.typ = STATEMENT_RESULT_TYPE_CONTINUE;
+							goto end;
+						case STATEMENT_RESULT_TYPE_RETURN:
+							ret.typ = STATEMENT_RESULT_TYPE_RETURN;
+							goto end;
+						case STATEMENT_RESULT_TYPE_BREAK:
+							ret.typ = STATEMENT_RESULT_TYPE_BREAK;
+							goto end;
+					}
+				}
+				elsifnext = elsifnext->next;
+			}
+		}
 
+		if(NULL != i->els && 0 == else_if_matched){
+			list = i->els->block->list;
+			while(NULL != list){
+				result = INTERPRETE_execute_statement(inter,env,list->statement);
+				switch(result.typ){
+						case STATEMENT_RESULT_TYPE_NORMAL:
+							break;
+						case STATEMENT_RESULT_TYPE_CONTINUE:/*I can`t handle continue*/
+							ret.typ = STATEMENT_RESULT_TYPE_CONTINUE;
+							goto end;
+						case STATEMENT_RESULT_TYPE_RETURN:
+							ret.typ = STATEMENT_RESULT_TYPE_RETURN;
+							goto end;
+						case STATEMENT_RESULT_TYPE_BREAK:
+							ret.typ = STATEMENT_RESULT_TYPE_BREAK;
+							goto end;
+				}
+				list= list->next;
+			}
+			
+		}
+	
+
+		
 		
 	}
 
-	/*handle else if*/
+	
 
 	
 

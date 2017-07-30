@@ -300,6 +300,8 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 		paras = paras->next;
 	}
 
+	INTERPRETE_execute_statement(Statement * s)
+
 
 
 		

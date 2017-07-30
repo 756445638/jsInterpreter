@@ -183,8 +183,6 @@ struct Expression_tag {
 typedef enum {
     STATEMENT_TYPE_EXPRESSION = 1,
     STATEMENT_TYPE_IF,
-    STATEMENT_TYPE_ELSE,
-    STATEMENT_TYPE_ELSIF,
     STATEMENT_TYPE_FOR,
     STATEMENT_TYPE_WHILE,
     STATEMENT_TYPE_CONTINUE,
@@ -264,7 +262,6 @@ struct Statement_tag{
 typedef struct StatementList_tag {
     Statement* statement;
     struct StatementList_tag* next;
-    struct StatementList_tag* prev;
 }StatementList;
 
 
