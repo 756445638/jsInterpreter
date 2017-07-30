@@ -267,10 +267,56 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
-	
+	/*only support search global function now!!*/		
+	JsFunction* func = INTERPRETE_search_func_from_function_list(&inter->funcs,e->u.function_call->func);
+	if(NULL == func){
+		ERROR_runtime_error(RUNTIME_ERROR_FUNCTION_NOT_FOUND,e->line);
+		return RUNTIME_ERROR_FUNCTION_NOT_FOUND;
+	}	
+	ExecuteEnvironment* callenv = (ExecuteEnvironment*)MEM_alloc(inter->excute_memory,sizeof(ExecuteEnvironment),e->line);
+	if(NULL == callenv){
+		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,e->line);
+		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
+	}
+	callenv->outter = e;
+	//bind paramenters
+	ArgumentList* args = e->u.function_call->args;
+	ParameterList* paras = func->parameter_list;
+	JsValue* v ;
+	while(NULL != args){
+		/*make value*/
+		eval_expression(inter, env, e);
+		v = pop_stack(&inter->stack);
+		if(NULL != paras){
+			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
+			paras = paras->next;
+		}
+		args = args->next;
+		paras = paras->next;
+	}
+	v->typ = JS_VALUE_TYPE_NULL;
+	while(NULL != paras){/*args are more than paras,no big deal*/
+		INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
+		paras = paras->next;
+	}
+
 
 
 		
+	
+	
+	
+
+	
+	
+
+
+	
+
+	
+
+	return 0;
+
 }
 
 

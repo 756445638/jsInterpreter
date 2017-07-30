@@ -22,7 +22,8 @@ typedef enum {
     JS_VALUE_TYPE_STRING,
     JS_VALUE_TYPE_ARRAY,
     JS_VALUE_TYPE_FUNCTION,
-    JS_VALUE_TYPE_NULL
+    JS_VALUE_TYPE_NULL,
+    JS_VALUE_TYPE_UNDEFINED
 } JS_VALUE_TYPE;
 
 typedef struct JsFunction_tag JsFunction;
@@ -240,11 +241,11 @@ typedef struct StatementWhile_tag {
 
 typedef struct StatementContinue_tag StatementContinue;
 
-/*
+
 typedef struct StatementReturn_tag {
     Expression* expression;
 }StatementReturn;
-*/
+
 
 struct Statement_tag{
     STATEMENT_TYPE typ;
@@ -280,7 +281,7 @@ struct JsFunction_tag {
 
 
 typedef  struct JsFucntionList_tag{
-    JsFunction* func;
+    JsFunction func;
     struct JsFucntionList_tag* next;
 }JsFucntionList;
 
@@ -312,16 +313,24 @@ typedef  struct ExecuteEnvironment_tag {
 }ExecuteEnvironment;
 
 
+
+/*typedef struct JsFunctionCallRuntime_tag{
+	
+}JsFunctionCallRuntime;
+*/
+
+
+
 /*runtime struct*/
 typedef struct  JsInterpreter_tag {
     Memory* interpreter_memory;
     Memory* excute_memory;
-    JsFucntionList* funcs;
+    JsFucntionList funcs;
     StatementList* statement_list;
     /*int current_line_number;*/
     VariableList vars;
 	Stack stack;
-	ExecuteEnvironment* env;
+	ExecuteEnvironment env;
 	Heap heap;
 }JsInterpreter;
 
@@ -330,6 +339,7 @@ typedef enum {
 	STATEMENT_RESULT_TYPE_NORMAL = 1,
 	STATEMENT_RESULT_TYPE_CONTINUE,
 	STATEMENT_RESULT_TYPE_RETURN,
+	STATEMENT_RESULT_TYPE_BREAK
 }STATEMENT_RESULT_TYPE;
 
 typedef  struct StamentResult_tag{
