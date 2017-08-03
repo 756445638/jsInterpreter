@@ -51,6 +51,7 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e);
 
 
+int get_expression_list_length(ExpressionList* list);
 
 
 

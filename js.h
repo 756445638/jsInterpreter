@@ -322,13 +322,13 @@ typedef  struct ExecuteEnvironment_tag {
 typedef struct  JsInterpreter_tag {
     Memory* interpreter_memory;
     Memory* excute_memory;
-    JsFucntionList funcs;
+    JsFucntionList* funcs;
     StatementList* statement_list;
     /*int current_line_number;*/
-    VariableList vars;
+    VariableList* vars;
 	Stack stack;
 	ExecuteEnvironment env;
-	Heap heap;
+	Heap* heap;
 }JsInterpreter;
 
 
@@ -353,7 +353,7 @@ typedef  struct StamentResult_tag{
 
 
 
-int get_expression_list_length(ExpressionList* list);
+
 
 
 

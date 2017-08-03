@@ -203,7 +203,7 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	Variable* var;
 	if(NULL == dest){
 		if(EXPRESSION_TYPE_IDENTIFIER ==  e->typ){
-			var = INTERPRETE_creaet_variable(inter,env->vars,e->u.identifier,NULL,e->line);/*create a global variable*/
+			var = INTERPRETE_creaet_variable(inter,env,e->u.identifier,NULL,e->line);/*create a global variable*/
 			dest = &var->value;
 		}
 	}
@@ -268,7 +268,7 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	/*only support search global function now!!*/		
-	JsFunction* func = INTERPRETE_search_func_from_function_list(&inter->funcs,e->u.function_call->func);
+	JsFunction* func = INTERPRETE_search_func_from_function_list(inter->funcs,e->u.function_call->func);
 	if(NULL == func){
 		ERROR_runtime_error(RUNTIME_ERROR_FUNCTION_NOT_FOUND,e->line);
 		return RUNTIME_ERROR_FUNCTION_NOT_FOUND;
@@ -278,7 +278,7 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,e->line);
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
-	callenv->outter = e;
+	callenv->outter = env;
 	//bind paramenters
 	ArgumentList* args = e->u.function_call->args;
 	ParameterList* paras = func->parameter_list;
@@ -292,7 +292,6 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 			paras = paras->next;
 		}
 		args = args->next;
-		paras = paras->next;
 	}
 	v->typ = JS_VALUE_TYPE_NULL;
 	while(NULL != paras){/*args are more than paras,no big deal*/
@@ -300,22 +299,27 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 		paras = paras->next;
 	}
 
-	INTERPRETE_execute_statement(Statement * s)
-
-
-
-		
+	StatementList* list = func->block->list;
+	StamentResult ret ;
+	while(NULL != list){
+			ret = INTERPRETE_execute_statement(inter, callenv, list->statement);
+			switch (ret.typ)
+				{
+					case STATEMENT_RESULT_TYPE_NORMAL:
+						break;/*nothing to do*/
+					case STATEMENT_RESULT_TYPE_CONTINUE:
+						ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE, list->statement->line);
+						return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
+					case STATEMENT_RESULT_TYPE_BREAK:
+						ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE, list->statement->line);
+						return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
+					case STATEMENT_RESULT_TYPE_RETURN:
+						goto funcend;
+				}
+	}
 	
-	
-	
 
-	
-	
-
-
-	
-
-	
+funcend:
 
 	return 0;
 

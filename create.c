@@ -24,8 +24,18 @@ JS_create_interpreter(){
     interpreter->funcs = NULL;
     /*interpreter->current_line_number = 0 ;*/
     interpreter->statement_list = NULL;
-    /*interpreter->vars = NULL;*/
     interpreter->interpreter_memory = inter_memory;
+	interpreter->heap = NULL;
+	interpreter->env->outter = NULL;
+	interpreter->env->vars = NULL;
+	interpreter->stack.sp = 0 ;
+	interpreter->stack->alloc = 1024 * 1024;
+	interpreter->stack->vs = MEM_alloc(interpreter->excute_memory, sizeof(JsValue) * interpreter->stack->alloc, 0);
+	if(NULL == interpreter->stack->vs){
+		MEM_close_storage(inter_memory);
+		MEM_close_storage(interpreter->excute_memory);
+		return NULL;
+	}
     return interpreter;
 }
 
