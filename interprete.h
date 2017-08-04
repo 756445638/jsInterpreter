@@ -32,10 +32,17 @@ INTERPRETE_creaet_variable(
 		int line
 );
 
-JsValue*
-INTERPRETE_creaet_heap(JsInterpreter* inter,int size,int line);
+
+
+JsValue* INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line);
+
+
+
 JsFunction *
 INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function);
+
+
+JsValue* INTERPRETE_concat_string(JsInterpreter* inter,JsValue* v1,JsValue* v2,int line);
 
 
 

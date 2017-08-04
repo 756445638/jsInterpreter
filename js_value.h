@@ -6,44 +6,50 @@
 #include "js.h"
 
 
+#include "js.h"
+#include "js_value.h"
+#include <string.h>
+#include <stdarg.h>
 
-JSBool is_js_value_true(JsValue* v);
 
+JSBool is_js_value_true(const JsValue* v);
 
 
 JSBool js_reverse_bool(JSBool b);
 
-JsValue js_increment_or_decrment(JsValue* v,char increment);
+JsValue js_increment_or_decrment(JsValue* const v,char increment);
 
-JsValue js_nagetive(JsValue* v);
-
-
-
-JsValue js_value_add(JsValue* v1,JsValue* v2);
+JsValue js_nagetive(const JsValue* const v);
 
 
-JsValue js_value_mod(JsValue* v1,JsValue* v2);
+JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue* const v2,int line);
+JsValue js_value_mod(const JsValue* v1,const JsValue* v2);
+JsValue js_value_mul(const JsValue* v1,const JsValue* v2);
+JsValue js_value_div(const JsValue* v1,const JsValue* v2);
 
-JsValue js_value_mul(JsValue* v1,JsValue* v2);
-
-JsValue js_value_div(JsValue* v1,JsValue* v2);
+JsValue js_value_sub(const JsValue* v1,const JsValue* v2);
 
 
 
 
-JsValue js_value_sub(JsValue* v1,JsValue* v2);
+
+
+JSBool js_value_equal(const JsValue* v1,const JsValue* v2);
+
+JSBool js_value_greater(const JsValue* v1,const JsValue* v2);
+
+
+JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2);
 
 
 
-JSBool js_value_equal(JsValue* v1,JsValue* v2);
-
-JSBool js_value_greater(JsValue* v1,JsValue* v2);
-
+void js_print(const JsValue *value);
+void js_println(const JsValue *value);
 
 
-JSBool js_value_greater_or_equal(JsValue* v1,JsValue* v2);
+void js_print_array(JsArray* array);
 
-
+JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line);
 
 
 

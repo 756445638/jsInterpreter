@@ -20,6 +20,7 @@ MessageFormat RuntimeErrorMessages[] = {
     {"index out of range"},
 	{"function not found"},
     {"continue or return or break can`t in this scope"},
+	{"type is not right"},
 	{"dummy"},
 };
 

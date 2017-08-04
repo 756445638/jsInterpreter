@@ -291,15 +291,89 @@ INTERPRETE_creaet_variable(
 
 
 JsValue*
-INTERPRETE_creaet_heap(JsInterpreter* inter,int size,int line){
-	Heap * h = MEM_alloc(inter->excute_memory,sizeof(Heap) + size,line);
+INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line){
+	int allocsize = sizeof(Heap);
+	switch (typ)
+		{
+			case JS_VALUE_TYPE_STRING:
+				allocsize += sizeof(JsString) + sizeof(char);
+				break;
+			case JS_VALUE_TYPE_ARRAY:
+				allocsize += sizeof(JsArray) + sizeof(JsValue) * size;
+				break;
+		}
+	Heap * h = MEM_alloc(inter->excute_memory,  allocsize,line);
 	if(NULL == h){
 		return NULL;
 	}
-	push_heap(inter->heap,h);
-	h->value.u.alloc = (char*)(h+1);
+	if(NULL == inter->heap){
+		inter->heap = h;
+	}else{
+		push_heap(inter->heap,h);
+	}
+	switch (typ)
+		{
+			case JS_VALUE_TYPE_STRING:
+				h->value.typ = JS_VALUE_TYPE_STRING;
+				h->value.u.string = (JsString*)(h+1);
+				h->value.u.string->alloc = size;
+				h->value.u.string->length = 0;
+				h->value.u.string->s = (char*)(h->value.u.string+1);
+				h->value.u.string->s[0] = 0;
+				h->value.u.string->mark = 0;
+				break;
+			case JS_VALUE_TYPE_ARRAY:
+				h->value.typ = JS_VALUE_TYPE_ARRAY;
+				h->value.u.array = (JsArray*)(h+1);
+				h->value.u.array->mark = 0;
+				h->value.u.array->length = 0;
+				h->value.u.array->alloc = size;
+				h->value.u.array->elements = (JsValue*)(h->value.u.array + 1);
+				break;
+		}
 	return &h->value;
 }
+
+
+JsValue* INTERPRETE_concat_string(JsInterpreter* inter,JsValue* v1,JsValue* v2,int line){
+	if(JS_VALUE_TYPE_STRING != v1->typ || JS_VALUE_TYPE_STRING != v2->typ){
+		return v1;
+	}
+	JsValue* v;
+	int length = v1->u.string->length + v2->u.string->length;
+	int i = 0;
+	if(length < v1->u.string->alloc -1){
+		v = v1;
+		v->u.string->length = length;
+		for(;i<v2->u.string->length;i++){
+			v->u.string->s[v2->u.string->length +i] =v2->u.string->s[i]; 
+		}
+		v->u.string->s[v->u.string->length] = 0;
+	}else if(length < v2->u.string->alloc -1){
+		v = v2;
+		v->u.string->length = length;
+		for(;i<v1->u.string->length;i++){
+			v->u.string->s[v1->u.string->length +i] =v1->u.string->s[i]; 
+		}
+		v->u.string->s[v->u.string->length] = 0;
+	}else{
+		v = INTERPRETE_creaet_heap( inter, JS_VALUE_TYPE_STRING, length+1,  line);
+		v->u.string->length = length;
+		for(;i<v1->u.string->length;i++){
+			v->u.string->s[i] = v1->u.string->s[i];
+		}
+		for(i = 0;i<v2->u.string->length;i++){
+			v->u.string->s[i+v2->u.string->length] = v2->u.string->s[i];
+		}
+		v->u.string->s[length] = 0;
+	}
+
+	return v;
+	
+}
+
+
+
 
 JsFunction *
 INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function){
