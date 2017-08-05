@@ -14,7 +14,7 @@ OBJS = lex.yy.o\
   interprete.o\
   heap.o 
 
-CFLAGS = -c -g -Wall -Wswitch-enum -ansi -pedantic -DDEBUG
+CFLAGS = -c -g -Wall -Wswitch-enum  -pedantic -DDEBUG
 INCLUDES = \
 
 $(TARGET):$(OBJS)
@@ -30,36 +30,36 @@ y.tab.c : js.y
 
 
 y.tab.o:y.tab.c
-	$(CC) -c -g $*.c $(INCLUDES)
+	$(CC) $(CFLAGS) -c -g $*.c $(INCLUDES)
 
 expression.o:expression.c js.h
-	$(CC) -c $^
+	$(CC)  $(CFLAGS) -c $^
 
 util.o:util.c util.h
-	$(CC) -c $^
+	$(CC)  $(CFLAGS) -c $^
 create.o:create.c  create.h js.h 
-	$(CC) -c $^ 
+	$(CC) $(CFLAGS) -c $^ 
 string.o:string.c string.h
-	$(CC) -c $^
+	$(CC) $(CFLAGS) -c $^
 error.o:error.c error.h message.h
-	$(CC) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 lex.yy.c : js.l js.y y.tab.h
 	flex js.l
 
 stack.o:stack.c stack.h js.h
-	$(CC) -c $^
+	$(CC)  $(CFLAGS) -c $^
 
 js_value.o:js_value.c js_value.h js.h
-	$(CC) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 interprete.o:interprete.c interprete.h js.h stack.h
-	$(CC) -c $^
+	$(CC) $(CFLAGS)  -c $^
 
 heap.o:heap.c heap.h js.h 
-	$(CC) -c $^
+	$(CC) $(CFLAGS) -c $^
 
 
 clean:
-	rm *.o  y.tab.c y.tab.h *.gch
+	rm *.o  y.tab.c y.tab.h *.gch jsinterpreter
 

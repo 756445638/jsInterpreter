@@ -22,6 +22,7 @@ StamentResult INTERPRETE_execute_statement_while(	JsInterpreter* inter,	ExecuteE
 
 StamentResult INTERPRETE_execute_statement_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e);
 
+JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* env,const char* func,ParameterList* ars,Block* block,int line);
 
 Variable*  
 INTERPRETE_creaet_variable(

@@ -16,14 +16,12 @@ int main(int argc,char **argv){
         fprintf(stderr,"Usage:%s filename\n",argv[0]);
         _exit(1);
     }
-    
-
     fp = fopen(argv[1], "r");
     if (fp == NULL) {
         fprintf(stderr, "%s not found.\n", argv[1]);
         exit(1);
     }
-
+	
     /*create interpreter*/
     JsInterpreter* interpreter =  JS_create_interpreter();
     if(NULL == interpreter){
@@ -41,9 +39,9 @@ int main(int argc,char **argv){
     yyin = fp;
     if (yyparse()) {
         fprintf(stderr, "Error ! Error ! Error !\n");
-        _exit(1);
+        _exit(4);
     }
-
+	
 
     
 

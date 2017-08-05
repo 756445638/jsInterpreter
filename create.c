@@ -3,6 +3,7 @@
 #include "util.h"
 #include <string.h>
 #include <stdio.h>
+#include "interprete.h"
 
 
 JsInterpreter*
@@ -21,17 +22,16 @@ JS_create_interpreter(){
         MEM_close_storage(inter_memory);
         return NULL;
     }
-    interpreter->funcs = NULL;
-    /*interpreter->current_line_number = 0 ;*/
     interpreter->statement_list = NULL;
     interpreter->interpreter_memory = inter_memory;
 	interpreter->heap = NULL;
-	interpreter->env->outter = NULL;
-	interpreter->env->vars = NULL;
+	interpreter->env.outter = NULL;
+	interpreter->env.vars = NULL;
+	interpreter->env.funcs = NULL;
 	interpreter->stack.sp = 0 ;
-	interpreter->stack->alloc = 1024 * 1024;
-	interpreter->stack->vs = MEM_alloc(interpreter->excute_memory, sizeof(JsValue) * interpreter->stack->alloc, 0);
-	if(NULL == interpreter->stack->vs){
+	interpreter->stack.alloc = 1024 * 1024;
+	interpreter->stack.vs = MEM_alloc(interpreter->excute_memory, sizeof(JsValue) * interpreter->stack.alloc, 0);
+	if(NULL == interpreter->stack.vs){
 		MEM_close_storage(inter_memory);
 		MEM_close_storage(interpreter->excute_memory);
 		return NULL;
@@ -81,7 +81,6 @@ StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
        if(NULL == list){
            return NULL;
        }
-       list->prev = NULL;
        list->next = NULL;
        list->statement = s;
        return list;
@@ -90,16 +89,14 @@ StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
     if(NULL == new){
         return list;/*this time faild,but return old list*/
     }
-    StatementList* oldlast = list->prev;
     new->statement = s;
-    new->next = list;
-    list->prev = new;
-    if(NULL == oldlast){
-        oldlast = list;
-    }
-    oldlast->next = new;
-    new->prev = oldlast;
-    return list;
+    new->next = NULL;
+	StatementList* listp = list;
+	while(NULL != listp->next){
+		listp = listp->next;
+	}
+	listp->next = new;
+	return list;
 }
 
 
@@ -115,7 +112,7 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
 }
 
 
-
+/*
 int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
     JsFunction* f = CREATE_function(name,parameterlist,block);
     if(NULL == f){
@@ -146,6 +143,13 @@ int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block)
     next->next = new;
     return 0;
 }
+*/
+
+
+JsFunction* CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
+	return INTERPRETE_create_function(current_interpreter, &current_interpreter->env,name, parameterlist,block,get_line_number());
+}
+
 
 
 ParameterList* CREATE_parameter_list(char* identifier){
@@ -185,7 +189,6 @@ StatementList* CREATE_statement_list(Statement* s){
     }
     list->statement = s ;
     list->next = NULL;
-    list->prev = NULL;
 	s->line = get_line_number();
     return list;
 }
@@ -239,7 +242,6 @@ CREATE_elsif_list(Expression* condition,Block* block){
     list->next = NULL;
     list->elsif.condition = condition;
     list->elsif.block = block;
-	list->line = get_line_number();
     return list;
 }
 
@@ -254,7 +256,6 @@ CREATE_chain_elsif_list(StatementElsifList* list,StatementElsifList* els){
     }
     next->next = els;
     els->next = NULL; 
-	els->line = get_line_number();
     return list;
 }
 

@@ -14,7 +14,7 @@ int get_expression_list_length(ExpressionList* list);
 
 
 
-int eval_create_local_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e);
+int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e);
 
 
 int eval_negative_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e);

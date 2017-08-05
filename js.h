@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "string.h"
+
 #define LINE_BUF_SIZE (1024)
 #define SMALL_FLOAT (0.000001)
 #define ISZORE(x) ((x<0.000001) && (x>-0.000001))
@@ -45,6 +46,9 @@ struct JsValue_tag {
 		void* alloc;/*place holder when alloc memory from heap*/
     }u;
 } ;
+
+
+
 
 
 struct JsString_tag {
@@ -206,18 +210,14 @@ typedef struct StatementIf_tag {
     Block* els;
 }StatementIf;
 
-typedef struct StatementElse_tag {
-    Block* block;
-}StatementElse;
-
 
 struct StatementElsif_tag {
     Block* block;
     Expression* condition;
+	int line;
 };
 
 struct StatementElsifList_tag {
-	int line;
     StatementElsif elsif;
     struct StatementElsifList_tag* next;
 };
@@ -237,8 +237,6 @@ typedef struct StatementWhile_tag {
     Block* block;
 }StatementWhile;
 
-typedef struct StatementContinue_tag StatementContinue;
-
 
 typedef struct StatementReturn_tag {
     Expression* expression;
@@ -253,7 +251,6 @@ struct Statement_tag{
         StatementIf* if_statement;
         StatementFor* for_statement;
         StatementWhile* while_statement;
-        StatementContinue* continue_stament;
         Expression* return_expression;
     }u;
 };
@@ -305,6 +302,7 @@ typedef struct Heap_tag {
 
 
 typedef  struct ExecuteEnvironment_tag {
+	JsFucntionList* funcs;
 	VariableList* vars;
 	struct ExecuteEnvironment_tag* outter;
 }ExecuteEnvironment;
@@ -322,7 +320,7 @@ typedef  struct ExecuteEnvironment_tag {
 typedef struct  JsInterpreter_tag {
     Memory* interpreter_memory;
     Memory* excute_memory;
-    JsFucntionList* funcs;
+    
     StatementList* statement_list;
     /*int current_line_number;*/
     VariableList* vars;

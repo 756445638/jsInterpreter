@@ -156,7 +156,6 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 
 JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 	JsValue* v;
-	int length = 0;
 	switch (value->typ)
 		{
 			case JS_VALUE_TYPE_BOOL:
@@ -173,30 +172,24 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 				break;
 			case JS_VALUE_TYPE_INT:/*how to calculate size */
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				length = fsprintf(v->u.string->s,"%d",value->u.intvalue);
-				if(length < 100 && length >=0 ){
-					v->u.string->length = length;
-				}
-				v->u.string->s[v->u.string->length] = 0;
+				v->u.string->length = snprintf(v->u.string->s,100,"%d",value->u.intvalue);
 				break;
 			case JS_VALUE_TYPE_FLOAT:
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				length = fsprintf(v->u.string->s,"%f",value->u.floatvalue);
-				if(length < 100 && length >=0 ){
-					v->u.string->length = length;
-				}
-				v->u.string->s[v->u.string->length] = 0;
+				v->u.string->length = snprintf(v->u.string->s,100,"%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
 				*v = *value;
+				break;
 			case JS_VALUE_TYPE_ARRAY:
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,6, line);
 				v->u.string->length = 5;
 				strncpy(v->u.string->s,"array",5);
+				v->u.string->s[v->u.string->length] = 0;
+				break;
 			case JS_VALUE_TYPE_FUNCTION:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,9, line);
-				v->u.string->length = 8;
-				strncpy(v->u.string->s,"function",8);
+				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
+				v->u.string->length = snprintf(v->u.string->s,100,"function:%s",value->u.func->name);
 				v->u.string->s[v->u.string->length] = 0;
 				break;
 			case JS_VALUE_TYPE_NULL:

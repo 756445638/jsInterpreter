@@ -100,15 +100,12 @@ int eval_logical_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expres
 int eval_string_expression(JsInterpreter * inter,Expression* e){
 	int length = strlen(e->u.string);
 	/* length * 2 + 1 in case length is zero*/
-	JsValue * v =(JsValue *) INTERPRETE_creaet_heap(inter,sizeof(JsString) + length * 2 + 1,e->line);
+	JsValue * v =(JsValue *) INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length * 2 + 1,e->line);
 	if(NULL == v){
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
-	v->typ = JS_VALUE_TYPE_STRING;
-	v->u.string = (JsString*) (v->u.alloc);
-	v->u.string->s = (char*)(v->u.string+1);
 	v->u.string->length = length;
-	v->u.string->length = length * 2 + 1;
+	v->u.string->alloc = length * 2 + 1;
 	strncpy(v->u.string->s,e->u.string,length);
 	v->u.string->s[length] = 0;
 	push_stack(&inter->stack,v);
@@ -139,7 +136,7 @@ int eval_arithmetic_expression(JsInterpreter * inter,ExecuteEnvironment* env,Exp
 		v = js_value_sub(left,right);
 	}
 	if(EXPRESSION_TYPE_ADD == e->typ){
-		v = js_value_add(left,right);
+		v = js_value_add(inter,left,right,e->line);
 	}
 	push_stack(&inter->stack,&v);
 	return 0;
@@ -243,16 +240,12 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	int length = get_expression_list_length(e->u.expression_list);
-	JsValue* v = INTERPRETE_creaet_heap(inter,sizeof(JsArray) + sizeof(JsValue) * length * 2 + 1,e->line);
+	JsValue* v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,length * 2 + 1,e->line);
 	if(NULL == v){
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,e->line);
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
-	v->typ = JS_VALUE_TYPE_ARRAY;
-	v->u.array = (JsArray*)(v+1);
-	v->u.array->alloc = length * 2 + 1;
 	v->u.array->length = length;
-	v->u.array->elements = (JsValue*)(v->u.array+1);
 	int i = 0;
 	ExpressionList* list = e->u.expression_list;
 	JsValue * vv ;
@@ -268,7 +261,7 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	/*only support search global function now!!*/		
-	JsFunction* func = INTERPRETE_search_func_from_function_list(inter->funcs,e->u.function_call->func);
+	JsFunction* func = INTERPRETE_search_func_from_function_list(inter->env.funcs,e->u.function_call->func);
 	if(NULL == func){
 		ERROR_runtime_error(RUNTIME_ERROR_FUNCTION_NOT_FOUND,e->line);
 		return RUNTIME_ERROR_FUNCTION_NOT_FOUND;
@@ -396,7 +389,7 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 		return eval_negative_expression(inter,env,e);
 	}
 	if(EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE == e->typ){
-		return eval_create_local_variable_expression(inter,env,e);
+		return eval_create_variable_expression(inter, env,  e);
 	}
 	
 	if(EXPRESSION_TYPE_INDEX == e->typ){
@@ -409,10 +402,21 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	if(EXPRESSION_TYPE_FUNCTION_CALL == e->typ){
 		return eval_function_call_expression(inter,env,e);
 	}
-	
 	return -1;
 
 	
+}
+
+
+
+
+
+int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	eval_expression(inter, env, e->u.create_var->expression);
+	JsValue* v = peek_stack(&inter->stack,0);
+	INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  v, e->line);
+	return 0;
+
 }
 
 

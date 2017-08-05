@@ -285,7 +285,9 @@ INTERPRETE_creaet_variable(
 	newlist->var.name= (char*)(newlist + 1);
 	strncpy(newlist->var.name,name,length);/*copy name*/
 	newlist->var.name[length] = 0 ;
-	newlist->var.value = *v;
+	if(NULL != v){
+		newlist->var.value = *v;
+	}
 	return &newlist->var;
 }
 
@@ -385,6 +387,39 @@ INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function){
 	}
 	return NULL;
 }
+
+
+
+
+
+JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* env,const char* func,ParameterList* args,Block* block,int line){
+	JsFucntionList* funclist = MEM_alloc(inter->excute_memory, sizeof(JsFucntionList), line);
+	if(NULL == funclist){
+		return NULL;
+	}
+	funclist->next = NULL;
+	funclist->func.name = func;
+	funclist->func.parameter_list = args;
+	funclist->func.block = block;
+	if(NULL == env->funcs){
+		env->funcs = funclist;
+		return &funclist->func;
+	}
+
+	JsFucntionList* list = env->funcs;
+	list = list->next;
+	while(NULL != list->next){
+		list = list->next;
+	}
+	list->next = funclist;
+	return &funclist->func;
+}
+
+
+
+
+
+
 
 
 

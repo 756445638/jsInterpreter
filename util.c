@@ -1,6 +1,15 @@
 #include "util.h"
 #include "string.h"
 #include "error.h"
+#include "js.h"
+
+
+JsValue  JsValueNUll = {JS_VALUE_TYPE_NULL};
+JsValue  JsValueUndefined = {JS_VALUE_TYPE_UNDEFINED};
+
+int line_number = 1;
+
+
 void increment_line_number(){
     line_number++;
 }
