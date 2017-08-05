@@ -280,7 +280,7 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 	JsValue* v ;
 	while(NULL != args){
 		/*make value*/
-		eval_expression(inter, env, args);
+		eval_expression(inter, env, args->expression);
 		v = pop_stack(&inter->stack);
 		if(NULL != paras){
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
