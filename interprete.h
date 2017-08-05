@@ -46,6 +46,12 @@ INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function);
 JsValue* INTERPRETE_concat_string(JsInterpreter* inter,JsValue* v1,JsValue* v2,int line);
 
 
+void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env);
+
+JsValue *
+INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* function);
+
+
 
 #endif
 

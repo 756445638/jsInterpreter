@@ -266,8 +266,15 @@ struct Block_tag{
     StatementList* list;
 };
 
+typedef enum{
+	JS_FUNCTION_TYPE_USER =1,
+	JS_FUNCTION_TYPE_BUILDIN
+}JS_FUNCTION_TYPE;
+
+
 
 struct JsFunction_tag {
+	JS_FUNCTION_TYPE typ;
     char* name;/*function name*/
     Block* block;
     ParameterList* parameter_list;

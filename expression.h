@@ -55,6 +55,11 @@ int get_expression_list_length(ExpressionList* list);
 
 
 
+
+
+int eval_identifier_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e);
+
+
 #endif
 
 

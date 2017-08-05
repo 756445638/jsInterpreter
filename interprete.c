@@ -9,6 +9,9 @@
 #include "error.h"
 
 
+
+
+
 int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
         return -1;/*no statement list*/
@@ -28,6 +31,16 @@ int INTERPRETE_interprete(JsInterpreter* inter){
         next = next->next;
     }
 }
+
+
+void INTERPRETE_add_build_in_function(JsInterpreter* inter){
+		
+}
+
+
+
+
+
 
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s){
 	StamentResult ret;
@@ -277,7 +290,7 @@ INTERPRETE_creaet_variable(
 		env->vars = newlist;
 	}else{
 		VariableList* t = env->vars;
-		while(NULL != t){
+		while(NULL != t->next){
 			t = t->next;
 		}
 		t->next = newlist;
@@ -290,6 +303,24 @@ INTERPRETE_creaet_variable(
 	}
 	return &newlist->var;
 }
+
+
+void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env){
+	if (NULL == env){
+		return ;
+	}
+	if(NULL != env->vars){
+		VariableList* list = env->vars;
+		VariableList* next = env->vars;
+		while(NULL != list){
+			next = list->next;
+			MEM_free(inter->excute_memory, list);
+			list = next;
+		}
+	}
+}
+
+
 
 
 JsValue*
@@ -389,6 +420,46 @@ INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function){
 }
 
 
+JsFunction *
+INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function){
+	int length = strlen(function);
+	JsFucntionList* list ;
+	while(NULL != env){
+		list = env->funcs;
+		while(NULL != list){
+			if(0 == strncmp(list->func.name,function,length)){
+				return &list->func;
+			}
+			list = list->next;
+		}
+		env = env->outter;
+	}
+	return NULL;
+}
+
+
+
+
+JsValue *
+INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* variable){
+	int length = strlen(variable);
+	VariableList* list;
+	while(NULL != env){
+		list = env->vars;
+		while(NULL != list){
+			if(0 == strncmp(list->var.name,variable,length)){
+				return &list->var.value;
+			}
+			list = list->next;
+		}
+		env = env->outter;
+	}
+	return NULL;
+}
+
+
+
+
 
 
 
@@ -401,19 +472,21 @@ JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* 
 	funclist->func.name = func;
 	funclist->func.parameter_list = args;
 	funclist->func.block = block;
+	funclist->func.typ = JS_FUNCTION_TYPE_USER;
 	if(NULL == env->funcs){
 		env->funcs = funclist;
 		return &funclist->func;
 	}
 
 	JsFucntionList* list = env->funcs;
-	list = list->next;
 	while(NULL != list->next){
 		list = list->next;
 	}
 	list->next = funclist;
 	return &funclist->func;
 }
+
+
 
 
 

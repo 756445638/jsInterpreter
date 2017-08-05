@@ -3,6 +3,7 @@
 #include "create.h"
 #include "util.h"
 #include <unistd.h>
+#include "interprete.h"
 
 int yyerror(char* str){
     fprintf(stderr,"compile failed,line:%d,err:%s\n",get_line_number(),str);
@@ -28,8 +29,6 @@ int main(int argc,char **argv){
         fprintf(stderr,"create interpreter failed...\n");
         _exit(1);
     }
-    printf("crete interpreter...");
-
 
     current_interpreter = interpreter;
     extern int yyparse(void);
@@ -41,6 +40,9 @@ int main(int argc,char **argv){
         fprintf(stderr, "Error ! Error ! Error !\n");
         _exit(4);
     }
+
+	INTERPRETE_interprete(interpreter);
+	
 	
 
     

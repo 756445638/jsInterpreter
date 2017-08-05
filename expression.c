@@ -105,7 +105,6 @@ int eval_string_expression(JsInterpreter * inter,Expression* e){
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
 	v->u.string->length = length;
-	v->u.string->alloc = length * 2 + 1;
 	strncpy(v->u.string->s,e->u.string,length);
 	v->u.string->s[length] = 0;
 	push_stack(&inter->stack,v);
@@ -265,20 +264,23 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 	if(NULL == func){
 		ERROR_runtime_error(RUNTIME_ERROR_FUNCTION_NOT_FOUND,e->line);
 		return RUNTIME_ERROR_FUNCTION_NOT_FOUND;
-	}	
+	}
+	
 	ExecuteEnvironment* callenv = (ExecuteEnvironment*)MEM_alloc(inter->excute_memory,sizeof(ExecuteEnvironment),e->line);
 	if(NULL == callenv){
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,e->line);
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
 	callenv->outter = env;
+	callenv->vars = NULL;
+	callenv->funcs = NULL;
 	//bind paramenters
 	ArgumentList* args = e->u.function_call->args;
 	ParameterList* paras = func->parameter_list;
 	JsValue* v ;
 	while(NULL != args){
 		/*make value*/
-		eval_expression(inter, env, e);
+		eval_expression(inter, env, args);
 		v = pop_stack(&inter->stack);
 		if(NULL != paras){
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
@@ -294,6 +296,7 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 
 	StatementList* list = func->block->list;
 	StamentResult ret ;
+	char returned = 0;
 	while(NULL != list){
 			ret = INTERPRETE_execute_statement(inter, callenv, list->statement);
 			switch (ret.typ)
@@ -307,12 +310,24 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 						ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE, list->statement->line);
 						return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
 					case STATEMENT_RESULT_TYPE_RETURN:
+						returned = 1;
 						goto funcend;
 				}
 	}
 	
 
 funcend:
+	/*push stack*/
+	if(0 == returned){
+		v->typ = JS_VALUE_TYPE_NULL;
+		push_stack(&inter->stack, v);
+	}
+
+	INTERPRETE_free_env(inter, callenv);
+
+
+	
+
 
 	return 0;
 
@@ -323,98 +338,88 @@ funcend:
 int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	JsValue v ;
 	/*bool expression*/
-	if(e->typ == EXPRESSION_TYPE_BOOL){
-		v.typ = JS_VALUE_TYPE_BOOL;
-		v.u.boolvalue = e->u.bool_value;
-		push_stack(&inter->stack,&v);
-		return 0;
-	}
-	/*int value*/
-	if(e->typ == EXPRESSION_TYPE_INT){
-		v.typ = JS_VALUE_TYPE_INT;
-		v.u.intvalue = e->u.int_value;
-		push_stack(&inter->stack,&v);
-		return 0;
-	}
-	/*double value*/
-	if(EXPRESSION_TYPE_FLOAT== e->typ){
-		v.typ = JS_VALUE_TYPE_FLOAT;
-		v.u.floatvalue = e->u.double_value;
-		push_stack(&inter->stack,&v);
-		return 0;
-	}
-	if(EXPRESSION_TYPE_NULL == e->typ){
-		v.typ = JS_VALUE_TYPE_NULL;
-		push_stack(&inter->stack,&v);
-		return 0;
-	}
-	/*assign*/
-	if(EXPRESSION_TYPE_ASSIGN == e->typ){
-		return eval_assign_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_NE == e->typ
-		|| EXPRESSION_TYPE_EQ ==  e->typ
-		|| EXPRESSION_TYPE_GE == e->typ
-		|| EXPRESSION_TYPE_GT == e->typ
-		|| EXPRESSION_TYPE_LE ==  e->typ
-		|| EXPRESSION_TYPE_LT == e->typ
-			
-	){
-		return eval_relation_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_ADD == e->typ
-		|| EXPRESSION_TYPE_SUB == e->typ
-		|| EXPRESSION_TYPE_MUL == e->typ
-		|| EXPRESSION_TYPE_DIV == e->typ
-		|| EXPRESSION_TYPE_MOD == e->typ
-		
-	){
-		return eval_arithmetic_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_STRING == e->typ){
-		return eval_string_expression(inter,e);
-	}
-	if(EXPRESSION_TYPE_LOGICAL_OR == e->typ 
-		|| EXPRESSION_TYPE_LOGICAL_AND == e->typ
-	){
-		return eval_logical_expression(inter,env,e);
-	}
-
-	if(EXPRESSION_TYPE_INCREMENT == e->typ 
-		|| EXPRESSION_TYPE_DECREMENT == e->typ
-	){
-		return eval_increment_decrement_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_NEGATIVE == e->typ){
-		return eval_negative_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE == e->typ){
-		return eval_create_variable_expression(inter, env,  e);
-	}
+	switch (e->typ)
+		{
+			case EXPRESSION_TYPE_BOOL:
+				v.typ = JS_VALUE_TYPE_BOOL;
+				v.u.boolvalue = e->u.bool_value;
+				push_stack(&inter->stack,&v);
+				break;
+			case EXPRESSION_TYPE_INT:
+				v.typ = JS_VALUE_TYPE_INT;
+				v.u.intvalue = e->u.int_value;
+				push_stack(&inter->stack,&v);
+				break;
+			case EXPRESSION_TYPE_FLOAT:
+				v.typ = JS_VALUE_TYPE_FLOAT;
+				v.u.floatvalue = e->u.double_value;
+				push_stack(&inter->stack,&v);
+				break;
+			case EXPRESSION_TYPE_NULL:
+				v.typ = JS_VALUE_TYPE_NULL;
+				push_stack(&inter->stack,&v);
+				break;
+			case EXPRESSION_TYPE_ASSIGN:
+				return eval_assign_expression(inter,env,e);
+			case EXPRESSION_TYPE_NE:
+			case EXPRESSION_TYPE_EQ:
+			case EXPRESSION_TYPE_GE:
+			case EXPRESSION_TYPE_GT:
+			case EXPRESSION_TYPE_LE:
+			case EXPRESSION_TYPE_LT:
+				return eval_relation_expression(inter,env,e);
+			case EXPRESSION_TYPE_ADD:
+			case EXPRESSION_TYPE_SUB:
+			case EXPRESSION_TYPE_MUL:
+			case EXPRESSION_TYPE_DIV:
+			case EXPRESSION_TYPE_MOD:
+				return eval_arithmetic_expression(inter,env,e);
+			case EXPRESSION_TYPE_STRING:
+				return eval_string_expression(inter,e);
+			case EXPRESSION_TYPE_LOGICAL_OR:
+			case EXPRESSION_TYPE_LOGICAL_AND:
+				return eval_logical_expression(inter,env,e);
+			case EXPRESSION_TYPE_INCREMENT:
+			case EXPRESSION_TYPE_DECREMENT:
+				return eval_increment_decrement_expression(inter,env,e);
+			case EXPRESSION_TYPE_NEGATIVE:
+				return eval_negative_expression(inter,env,e);
+			case EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE:
+				return eval_create_variable_expression(inter, env,  e);
+			case EXPRESSION_TYPE_INDEX:
+				return eval_index_expression(inter,env,e);
+			case EXPRESSION_TYPE_ARRAY:
+				return eval_array_expression(inter,env,e);
+			case EXPRESSION_TYPE_FUNCTION_CALL:
+				return eval_function_call_expression(inter,env,e);
+			case EXPRESSION_TYPE_IDENTIFIER:
+				return eval_identifier_expression(inter,env,e);
+		}
 	
-	if(EXPRESSION_TYPE_INDEX == e->typ){
-		return eval_index_expression(inter,env,e);
-	}
-
-	if(EXPRESSION_TYPE_ARRAY == e->typ){
-		return eval_array_expression(inter,env,e);
-	}
-	if(EXPRESSION_TYPE_FUNCTION_CALL == e->typ){
-		return eval_function_call_expression(inter,env,e);
-	}
-	return -1;
+	return 0;
 
 	
 }
 
+
+int eval_identifier_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	JsValue* v = INTERPRETE_search_variable_from_env(env, e->u.identifier);
+	if(NULL == v){
+		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, e->line);
+		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
+	}
+	push_stack(&inter->stack, v);
+	return 0;
+}
 
 
 
 
 int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
 	eval_expression(inter, env, e->u.create_var->expression);
-	JsValue* v = peek_stack(&inter->stack,0);
+	JsValue* v = pop_stack(&inter->stack);
 	INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  v, e->line);
+	push_stack(&inter->stack, v);
 	return 0;
 
 }
