@@ -8,7 +8,11 @@
 #include "js_value.h"
 #include "error.h"
 
-
+JsFunctionBuildin console_log_function_buildin;
+JsFunction console_log_function;
+JsKvList console_log;
+JsObject console_object;
+JsValue console;
 
 
 
@@ -16,6 +20,7 @@ int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
         return -1;/*no statement list*/
     }
+	INTERPRETE_add_build_in_function(inter);
     StatementList *next = inter->statement_list;
     StamentResult result;
     while(NULL != next){
@@ -34,8 +39,40 @@ int INTERPRETE_interprete(JsInterpreter* inter){
 
 
 void INTERPRETE_add_build_in_function(JsInterpreter* inter){
-		
+	/*add console object*/
+	console_log_function_buildin.args_count = 1;
+	console_log_function_buildin.u.func1 = js_print;
+	console_log_function.typ = JS_FUNCTION_TYPE_BUILDIN;
+	console_log_function.buildin = &console_log_function_buildin;
+	console_log.kv.value.typ= JS_VALUE_TYPE_FUNCTION;
+	console_log.kv.value.u.func = &console_log_function;
+	console_log.kv.key = "log";
+	console_object.eles = &console_log;	
+	console_object.typ = JS_OBJECT_TYPE_BUILDIN;
+	console.typ = JS_VALUE_TYPE_OBJECT;
+	console.u.object = &console_object;
+	INTERPRETE_creaet_variable(inter,&inter->env,"console",&console,0);
+
+	
 }
+
+JsValue* INTERPRETE_search_field_from_object(JsObject* obj,char* key){
+	if(NULL == obj || NULL == obj->eles){
+		return NULL;
+	}
+	int length = strlen(key);
+	JsKvList* list = obj->eles;
+	while(NULL != list){
+		if(0 == strncmp(key,list->kv.key,length)){
+			return &list->kv.value;
+		}
+	}
+	return NULL;
+}
+
+
+
+
 
 
 
@@ -470,6 +507,7 @@ JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* 
 	}
 	funclist->next = NULL;
 	funclist->func.name = func;
+	funclist->func.typ = JS_FUNCTION_TYPE_USER,
 	funclist->func.parameter_list = args;
 	funclist->func.block = block;
 	funclist->func.typ = JS_FUNCTION_TYPE_USER;
@@ -485,6 +523,8 @@ JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* 
 	list->next = funclist;
 	return &funclist->func;
 }
+
+
 
 
 

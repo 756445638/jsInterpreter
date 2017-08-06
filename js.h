@@ -7,6 +7,7 @@
 #define LINE_BUF_SIZE (1024)
 #define SMALL_FLOAT (0.000001)
 #define ISZORE(x) ((x<0.000001) && (x>-0.000001))
+#define BUILDIN_FUNCTION_MAX_ARGS 10
 
 
 
@@ -24,15 +25,23 @@ typedef enum {
     JS_VALUE_TYPE_ARRAY,
     JS_VALUE_TYPE_FUNCTION,
     JS_VALUE_TYPE_NULL,
-    JS_VALUE_TYPE_UNDEFINED
+    JS_VALUE_TYPE_UNDEFINED,
+    JS_VALUE_TYPE_OBJECT
 } JS_VALUE_TYPE;
 
 typedef struct JsFunction_tag JsFunction;
+typedef struct JsFunctionBuildin_tag JsFunctionBuildin;
+
 typedef struct JsValue_tag JsValue;
 
 typedef struct JsArray_tag JsArray;
 
 typedef struct JsString_tag JsString;
+
+typedef struct JsObject_tag JsObject;
+
+typedef struct JsKv_tag JsKv;
+typedef struct JsKvList_tag JsKvList;
 
 struct JsValue_tag {
     JS_VALUE_TYPE typ;
@@ -43,9 +52,41 @@ struct JsValue_tag {
 		JsFunction* func;
 		JsArray* array;
 		JsString* string;
-		void* alloc;/*place holder when alloc memory from heap*/
+		JsObject* object;
     }u;
 } ;
+
+
+struct JsFunctionBuildin_tag {
+	int args_count;
+	union{
+		JsValue (*func1)(const JsValue *); /*��������Ϊ1*/
+	}u;
+	
+};
+
+
+
+
+struct JsKv_tag{
+	char* key;
+	JsValue value;
+};
+
+struct JsKvList_tag{
+	JsKv kv;
+	struct JsKvList_tag* next;
+};
+
+typedef  enum {
+	JS_OBJECT_TYPE_USER,
+	JS_OBJECT_TYPE_BUILDIN
+}JS_OBJECT_TYPE;
+
+struct JsObject_tag{
+	JS_OBJECT_TYPE typ;
+	JsKvList* eles; 
+};
 
 
 
@@ -117,7 +158,7 @@ typedef struct ExpressionList_tag {
 typedef ExpressionList ArgumentList;
 
 typedef struct ExpressionMethodCall_tag {
-    Expression* expression;
+    char* identifier;
     char* method;
     ArgumentList* args;
 }ExpressionMethodCall;
@@ -273,11 +314,14 @@ typedef enum{
 
 
 
+
+
 struct JsFunction_tag {
 	JS_FUNCTION_TYPE typ;
     char* name;/*function name*/
     Block* block;
     ParameterList* parameter_list;
+	JsFunctionBuildin* buildin;
 };
 
 
@@ -300,7 +344,7 @@ typedef struct Stack_tag{
 typedef struct Heap_tag {
 	struct Heap_tag * prev;
 	struct Heap_tag * next;
-	JsValue value;  /*heap just for saving objects*/
+	JsValue value;
     int line;/*alloc by which line*/
 }Heap;
 

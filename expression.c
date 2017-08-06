@@ -394,12 +394,86 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_function_call_expression(inter,env,e);
 			case EXPRESSION_TYPE_IDENTIFIER:
 				return eval_identifier_expression(inter,env,e);
+			case EXPRESSION_TYPE_METHOD_CALL:
+				return eval_method_call_expression(inter,env,e);
 		}
 	
 	return 0;
+}
+
+
+int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	ExpressionMethodCall* call = e->u.method_call;
+	JsValue* object = INTERPRETE_search_variable_from_env(env, call->identifier);
+	if(NULL == object){
+		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,e->line);
+		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
+	}
+	if(JS_VALUE_TYPE_OBJECT != object->typ){
+		ERROR_runtime_error(RUNTIME_ERROR_IS_NOT_AN_OBJECT,e->line);
+		return RUNTIME_ERROR_IS_NOT_AN_OBJECT;
+	}
+
+	JsValue* value = INTERPRETE_search_field_from_object(object->u.object,call->method);
+	if(NULL == value){
+		ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED,e->line);
+		return RUNTIME_ERROR_FIELD_NOT_DEFINED;
+	}
+	if(JS_VALUE_TYPE_FUNCTION != value->typ){
+		ERROR_runtime_error(RUNTIME_ERROR_NOT_A_FUNCTION,e->line);
+		return RUNTIME_ERROR_NOT_A_FUNCTION;
+	}
+
+	JsFunction* func = value->u.func;
+	if(JS_FUNCTION_TYPE_BUILDIN == func->typ){
+		/*execute buildin function*/
+		return eval_buildin_function(inter,env,func->buildin,call->args);
+		
+	}
+	
+	
+
+	
+	
+
+	
+	
+	return 0;
+}
+
+
+int eval_buildin_function(JsInterpreter * inter,ExecuteEnvironment *env,JsFunctionBuildin* func,ArgumentList* args){
+	JsValue vs[BUILDIN_FUNCTION_MAX_ARGS];
+	int i = 0;
+	ArgumentList* list = args;
+	JsValue* value ;
+	while(NULL != list){
+		eval_expression(inter,env,list->expression);
+		value = pop_stack(&inter->stack);
+		if(i < BUILDIN_FUNCTION_MAX_ARGS){
+			vs[i] = *value;
+			i++;
+		}
+		list = list->next;
+	}
+	JsValue v;
+	v.typ = JS_VALUE_TYPE_NULL;
+	switch(func->args_count){
+		case 1:
+			v = func->u.func1(&vs[0]);
+			break;
+	}
+
+
+
+	push_stack(&inter->stack,&v);
+	return 0;
+	
 
 	
 }
+
+
 
 
 int eval_identifier_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){

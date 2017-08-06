@@ -438,7 +438,9 @@ JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2){
 
 
 
-void js_print(const JsValue *value){
+JsValue js_print(const JsValue *value){
+	JsValue v ;
+	v.typ = JS_VALUE_TYPE_NULL;
 	switch (value->typ)
 		{
 			case JS_VALUE_TYPE_BOOL:
@@ -469,7 +471,11 @@ void js_print(const JsValue *value){
 			case JS_VALUE_TYPE_FUNCTION:
 				printf("function");
 				break;
+			case JS_VALUE_TYPE_OBJECT:
+				printf("object");
+				break;
 		}
+		return v;
 
 }
 

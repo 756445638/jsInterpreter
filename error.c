@@ -21,6 +21,9 @@ MessageFormat RuntimeErrorMessages[] = {
 	{"function not found"},
     {"continue or return or break can`t in this scope"},
 	{"type is not right"},
+	{"is not a object"},
+	{"field not defined"},
+	{"not a function or method"},
 	{"dummy"},
 };
 

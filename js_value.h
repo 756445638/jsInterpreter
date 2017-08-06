@@ -43,7 +43,7 @@ JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2);
 
 
 
-void js_print(const JsValue *value);
+JsValue js_print(const JsValue *value);
 void js_println(const JsValue *value);
 
 

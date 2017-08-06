@@ -410,15 +410,16 @@ CREATE_index_expression(Expression* e,Expression* index){
 
 
 Expression* 
-CREATE_method_call_expression(Expression* e,char* method,ArgumentList* args){
+CREATE_method_call_expression(char* identifier,char* method,ArgumentList* args){
     Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionMethodCall) , get_line_number()); 
     if(NULL == new){
         return NULL;
     }
+    new->typ = EXPRESSION_TYPE_METHOD_CALL;
     new->u.method_call = (ExpressionMethodCall*)(new + 1);
-    new->u.method_call->args = args;
+    new->u.method_call->identifier = identifier;
     new->u.method_call->method = method;
-    new->u.method_call->expression  = e ;
+    new->u.method_call->args= args ;
 	new->line = get_line_number();
     return new;
 }
