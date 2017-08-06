@@ -53,7 +53,7 @@ JSBool js_reverse_bool(JSBool b){
 }
 
 
-JsValue js_increment_or_decrment(JsValue* const v,char increment){
+JsValue js_increment_or_decrment(const JsValue* v,char increment){
 	JsValue ret = *v;
 	if(JS_VALUE_TYPE_INT == v->typ){
 		if(1 == increment){
@@ -143,8 +143,6 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 	}
 
 	
-
-
 	return v;
 }
 
@@ -179,7 +177,7 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 				v->u.string->length = snprintf(v->u.string->s,100,"%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
-				*v = *value;
+				v = value;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,6, line);

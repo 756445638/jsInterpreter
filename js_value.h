@@ -17,7 +17,8 @@ JSBool is_js_value_true(const JsValue* v);
 
 JSBool js_reverse_bool(JSBool b);
 
-JsValue js_increment_or_decrment(JsValue* const v,char increment);
+JsValue js_increment_or_decrment(const JsValue* v,char increment);
+
 
 JsValue js_nagetive(const JsValue* const v);
 
