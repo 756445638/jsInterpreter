@@ -140,6 +140,7 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 			vv2 = js_to_string(inter, v2 , line);
 			v = *(INTERPRETE_concat_string( inter,  v1,  &vv2, line));
 		}
+		return v;
 	}
 
 
@@ -151,6 +152,7 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 			vv1 = js_to_string(inter, v1, line);
 			v =*(INTERPRETE_concat_string(inter,&vv1,v2,line));
 		}
+		return v;
 	}
 
 	
