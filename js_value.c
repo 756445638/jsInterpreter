@@ -133,13 +133,24 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 
 	/*handle string part*/
 	if(JS_VALUE_TYPE_STRING == v1->typ){
-		JsValue vv2 = js_to_string(inter, v2 , line);
-		v = *(INTERPRETE_concat_string( inter,  v1,  &vv2, line));
+		JsValue vv2;
+		if(JS_VALUE_TYPE_STRING == v2->typ){
+			v = *(INTERPRETE_concat_string( inter,  v1, v2, line));
+		}else{
+			vv2 = js_to_string(inter, v2 , line);
+			v = *(INTERPRETE_concat_string( inter,  v1,  &vv2, line));
+		}
 	}
-	
+
+
 	if(JS_VALUE_TYPE_STRING == v2->typ){
-		JsValue vv1 = js_to_string(inter, v1, line);
-		v =*(INTERPRETE_concat_string(inter,&vv1,v2,line));
+		JsValue vv1;
+		if(JS_VALUE_TYPE_STRING == v1->typ){
+			v =*(INTERPRETE_concat_string(inter,v1,v2,line));
+		}else{
+			vv1 = js_to_string(inter, v1, line);
+			v =*(INTERPRETE_concat_string(inter,&vv1,v2,line));
+		}
 	}
 
 	

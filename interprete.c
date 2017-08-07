@@ -378,7 +378,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 }
 
 
-JsValue* INTERPRETE_concat_string(JsInterpreter* inter,JsValue* v1,JsValue* v2,int line){
+JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line){
 	if(JS_VALUE_TYPE_STRING != v1->typ || JS_VALUE_TYPE_STRING != v2->typ){
 		return v1;
 	}
@@ -393,21 +393,11 @@ JsValue* INTERPRETE_concat_string(JsInterpreter* inter,JsValue* v1,JsValue* v2,i
 	}
 	JsValue* v;
 	int length = v1->u.string->length + v2->u.string->length;
-	int i = 0;
-	if(length < v1->u.string->alloc -1){
-		v = v1;
-		snprintf(v->u.string->s + v->u.string->length,v2->u.string->length + 1,"%s",v2->u.string->s);
-		v->u.string->length = length;
-	}else if(length < v2->u.string->alloc -1){
-		v = v2;
-		snprintf(v->u.string->s + v->u.string->length,v1->u.string->length + 1,"%s",v1->u.string->s);
-		v->u.string->length = length;
-	}else{
-		v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length*2 + 1,  line);
-		v->u.string->length = length;
-		snprintf(v->u.string->s,v1->u.string->length + 1,"%s",v1->u.string->s);
-		snprintf(v->u.string->s + v1->u.string->length,v2->u.string->length + 1,"%s",v2->u.string->s);
-	}
+	v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length*2 + 1,  line);
+	strncpy(v->u.string->s,v1->u.string->s,v1->u.string->length+1);
+	strncpy(v->u.string->s + v1->u.string->length,v2->u.string->s,v2->u.string->length+1);
+	v->u.string->length = length;
+	//v->u.string->s[length] = 0;
 	return v;
 	
 }

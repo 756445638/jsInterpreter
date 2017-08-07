@@ -1,11 +1,22 @@
 
-var  i = 0;
 
-for(;;){
-	if(i == 5){
-			break;
 
-	}
-	console.log(i);
-	i++;
+
+function print(bb){
+	console.log("hello sss" + "11111\n");
 }
+
+var a = 0;
+
+while(a < 10){
+	print();
+	a++;
+}
+
+
+
+
+
+
+
+

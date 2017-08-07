@@ -120,10 +120,10 @@ int eval_string_expression(JsInterpreter * inter,Expression* e){
 
 int eval_arithmetic_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	JsValue v;
-	eval_expression(inter,env,e->u.binary->left);
 	eval_expression(inter,env,e->u.binary->right);
-	JsValue* right = pop_stack(&inter->stack);
+	eval_expression(inter,env,e->u.binary->left);
 	JsValue* left = pop_stack(&inter->stack);
+	JsValue* right = pop_stack(&inter->stack);
 	if(EXPRESSION_TYPE_MUL == e->typ){
 		v = js_value_mul(left,right);
 	}
@@ -268,20 +268,21 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 	//bind paramenters
 	ArgumentList* args = e->u.function_call->args;
 	ParameterList* paras = func->parameter_list;
-	JsValue* v ;
+	JsValue v ;
+	v.typ = JS_VALUE_TYPE_NULL;
 	while(NULL != args){
 		/*make value*/
 		eval_expression(inter, env, args->expression);
-		v = pop_stack(&inter->stack);
+		v = *((JsValue*)pop_stack(&inter->stack));
 		if(NULL != paras){
-			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
+			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,e->line);
 			paras = paras->next;
 		}
 		args = args->next;
 	}
-	v->typ = JS_VALUE_TYPE_NULL;
+	v.typ = JS_VALUE_TYPE_NULL;
 	while(NULL != paras){/*args are more than paras,no big deal*/
-		INTERPRETE_creaet_variable(inter,callenv,paras->identifier,v,e->line);
+		INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,e->line);
 		paras = paras->next;
 	}
 
@@ -304,22 +305,15 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 						returned = 1;
 						goto funcend;
 				}
+			list = list->next;
 	}
 	
-
 funcend:
-	/*push stack*/
-	if(0 == returned){
-		v->typ = JS_VALUE_TYPE_NULL;
-		push_stack(&inter->stack, v);
-	}
-
 	INTERPRETE_free_env(inter, callenv);
-
-
-	
-
-
+	if(0 == returned){
+		v.typ = JS_VALUE_TYPE_NULL;
+		push_stack(&inter->stack, &v);
+	}	
 	return 0;
 
 }
