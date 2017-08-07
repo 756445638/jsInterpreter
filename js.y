@@ -196,6 +196,9 @@ block
 
 expression_opt
     : /* NULL */
+    {
+		$$ = NULL;
+    }
     | expression
     ;
 

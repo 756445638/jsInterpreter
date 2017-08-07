@@ -113,19 +113,24 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvironment* env,StatementFor* f){
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
-	eval_expression(inter,env,f->init);
-	pop_stack(&inter->stack);
+	if(NULL != f->init){
+		eval_expression(inter,env,f->init);
+		pop_stack(&inter->stack);
+	}
 	JsValue* v;
 	JSBool istrue;
 	StatementList* list;
 	for(;;){
-		eval_expression(inter,env,f->condition);
-		v = pop_stack(&inter->stack);
-		istrue = is_js_value_true(v);
-		if(JS_BOOL_TRUE != istrue){
-			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
-			goto end;
+		if(NULL != f->condition){
+			eval_expression(inter,env,f->condition);
+			v = pop_stack(&inter->stack);
+			istrue = is_js_value_true(v);
+			if(JS_BOOL_TRUE != istrue){
+				ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+				goto end;
+			}
 		}
+			
 		list = f->block->list;
 		while(NULL != list){
 			ret = INTERPRETE_execute_statement(inter,env,list->statement);
@@ -143,8 +148,10 @@ StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvir
 			list = list->next;
 		}
 after:
-		eval_expression(inter,env,f->afterblock);
-		pop_stack(&inter->stack);
+		if(NULL != f->afterblock){
+			eval_expression(inter,env,f->afterblock);
+			pop_stack(&inter->stack);
+		}
 	}
 
 end:

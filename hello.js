@@ -1,14 +1,11 @@
-var a = 1;
-while(a <= 9){
-	for(var b = a;b<=9;b++){
-		console.log(a + "X" + b + "=" + a*b + "  ");
+
+var  i = 0;
+
+for(;;){
+	if(i == 5){
+			break;
+
 	}
-	a++;
-	console.log("\n");
+	console.log(i);
+	i++;
 }
-
-
-var str = "hello";
-str = str + " world\n";
-console.log(str);
-
