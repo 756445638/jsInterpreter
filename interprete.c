@@ -213,7 +213,7 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 		return INTERPRETE_execute_normal_statement_list(inter,env,i->els->list);
 	}
 	if(NULL == i->elseIfList){
-		return ret;
+		return ret;	
 	}
 	StatementElsifList* elsifnext = i->elseIfList;
 	while(NULL != elsifnext){
@@ -221,7 +221,7 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 		v = pop_stack(&inter->stack);
 		istrue = is_js_value_true(v);
 		if(JS_BOOL_TRUE == istrue){
-			return INTERPRETE_execute_normal_statement_list(inter,env,i->els->list);
+			return INTERPRETE_execute_normal_statement_list(inter,env,elsifnext->elsif.block->list);
 		}
 		elsifnext = elsifnext->next;
 	}
