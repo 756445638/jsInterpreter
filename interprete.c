@@ -238,11 +238,13 @@ StamentResult INTERPRETE_execute_statement_while(
 	StamentResult result;
 	StatementList* list;
 	for(;;){
+again:
 		eval_expression(inter,env,w->condition);
 		JsValue* v = pop_stack(&inter->stack);
 		JSBool is_true = is_js_value_true(v);
 		if(JS_BOOL_TRUE != is_true){
-				break;
+			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+			goto end;
 		}
 		list = w->block->list;
 		while(NULL != list){
@@ -251,11 +253,12 @@ StamentResult INTERPRETE_execute_statement_while(
 				case STATEMENT_RESULT_TYPE_NORMAL:
 					break;
 				case STATEMENT_RESULT_TYPE_CONTINUE:
-					continue;
+					goto again;
 				case STATEMENT_RESULT_TYPE_RETURN:
 					ret.typ = STATEMENT_RESULT_TYPE_RETURN;
 					goto end;
 				case STATEMENT_RESULT_TYPE_BREAK:
+					ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 					goto end;
 			}
 			list = list->next;
