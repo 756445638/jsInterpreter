@@ -1,22 +1,9 @@
+var str = "hello";
+
+var a = 100;
+for(var i =0;i<10;i++){
+	str = str + "a";
+	console.log(str);
 
 
-
-
-function print(bb){
-	console.log("hello sss" + "11111\n");
 }
-
-var a = 0;
-
-while(a < 10){
-	print();
-	a++;
-}
-
-
-
-
-
-
-
-

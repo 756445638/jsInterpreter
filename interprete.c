@@ -394,10 +394,16 @@ JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const J
 	JsValue* v;
 	int length = v1->u.string->length + v2->u.string->length;
 	v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length*2 + 1,  line);
-	strncpy(v->u.string->s,v1->u.string->s,v1->u.string->length+1);
-	strncpy(v->u.string->s + v1->u.string->length,v2->u.string->s,v2->u.string->length+1);
+	int i =0;
+	for(;i<v1->u.string->length;i++){
+		v->u.string->s[i] = v1->u.string->s[i];
+	}
+	i = 0;
+	for(;i<v2->u.string->length;i++){
+		v->u.string->s[i+v1->u.string->length] = v2->u.string->s[i];
+	}
 	v->u.string->length = length;
-	//v->u.string->s[length] = 0;
+	v->u.string->s[length] = 0;
 	return v;
 	
 }
