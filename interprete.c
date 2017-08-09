@@ -339,7 +339,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	switch (typ)
 		{
 			case JS_VALUE_TYPE_STRING:
-				allocsize += sizeof(JsString) + sizeof(char);
+				allocsize += sizeof(JsString) + sizeof(char)*size;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
 				allocsize += sizeof(JsArray) + sizeof(JsValue) * size;
