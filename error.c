@@ -24,6 +24,7 @@ MessageFormat RuntimeErrorMessages[] = {
 	{"is not a object"},
 	{"field not defined"},
 	{"not a function or method"},
+	{"method not found"},
 	{"dummy"},
 };
 

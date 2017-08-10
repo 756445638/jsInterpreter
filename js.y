@@ -103,7 +103,7 @@ statement
     {
         $$ = CREATE_expression_statement($1);
     }
-    |postfix_expression  ASSIGN function_noname_definition{
+    |postfix_expression ASSIGN function_noname_definition{
         printf("create method\n");
     }
     |VAR IDENTIFIER ASSIGN function_noname_definition
@@ -311,9 +311,9 @@ postfix_expression
     {
          $$ = CREATE_index_expression($1, $3);
     }
-    |IDENTIFIER DOT IDENTIFIER 
+    |postfix_expression DOT IDENTIFIER 
     {
-        printf("access object`s field\n");
+        $$ = CREATE_field_expression($1, $3);
     }
     |IDENTIFIER DOT IDENTIFIER LP argument_list RP
     {

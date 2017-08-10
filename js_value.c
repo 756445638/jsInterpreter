@@ -511,6 +511,12 @@ void js_println(const JsValue *value){
 }
 
 
+int js_array_methods(){
+
+
+}
+
+
 
 
 

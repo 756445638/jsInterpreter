@@ -54,7 +54,7 @@ struct JsValue_tag {
 		JsString* string;
 		JsObject* object;
     }u;
-} ;
+};
 
 
 struct JsFunctionBuildin_tag {
@@ -150,6 +150,13 @@ typedef struct ExpressionIndex_tag{
 }ExpressionIndex;
 
 
+typedef struct ExpressionField_tag{
+    Expression* e;
+    char* field;
+}ExpressionField;
+
+
+
 typedef struct ExpressionList_tag {
     Expression*  expression;
     struct ExpressionList_tag* next;
@@ -200,7 +207,8 @@ typedef enum {
     EXPRESSION_TYPE_NEGATIVE,
     EXPRESSION_TYPE_IDENTIFIER,/*identifier right value*/
     EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE,
-    EXPRESSION_TYPE_NULL
+    EXPRESSION_TYPE_NULL,
+	EXPRESSION_TYPE_FIELD
     
 }EXPRESSION_TYPE;
 
@@ -221,6 +229,7 @@ struct Expression_tag {
 		ExpressionCreateLocalVarialbe* create_var;
 		char* string;
         ExpressionList* expression_list;
+        ExpressionField* access_field;
     }u;
 };
 

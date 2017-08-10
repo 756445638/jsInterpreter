@@ -318,6 +318,25 @@ funcend:
 
 }
 
+int eval_field_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	ExpressionField* ef = e->u.access_field;
+	eval_expression(inter,env,ef->e);
+	JsValue* obj = pop_stack(&inter->stack);
+	JsValue v;
+	if(JS_VALUE_TYPE_ARRAY == obj->typ){  /*handle array*/
+		if(0 == strcmp(ef->field,"length")){
+			v.typ = JS_VALUE_TYPE_INT;
+			v.u.intvalue = obj->u.array->length;
+			push_stack(&inter->stack,&v);
+		}
+	}
+
+
+	ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED,e->line);
+	return RUNTIME_ERROR_FIELD_NOT_DEFINED;
+}
+
+
 
 
 int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
@@ -381,10 +400,61 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_identifier_expression(inter,env,e);
 			case EXPRESSION_TYPE_METHOD_CALL:
 				return eval_method_call_expression(inter,env,e);
+			case EXPRESSION_TYPE_FIELD:
+				return eval_field_expression(inter,env,e);
 		}
 	
 	return 0;
 }
+
+
+JsValue* eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,JsValue* array,ExpressionMethodCall* call,int line){
+	int length = get_expression_list_length(call->args);
+	if((length + array->u.array->length) > array->u.array->alloc){
+		JsValue* new = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,2 * (length + array->u.array->length) + 1,line);
+		if(NULL == new){
+			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,line);
+			return NULL;
+		}
+		new->u.array->length = array->u.array->length;
+		for(int i=0;i<array->u.array->length;i++){  /*copy old values*/
+			new->u.array->elements[i] = array->u.array->elements[i];
+		}
+		array = new;
+	}
+	ArgumentList* list = call->args;
+	JsValue* v;
+	while(NULL != list){
+		eval_expression(inter,env,list->expression);
+		v = pop_stack(&inter->stack);
+		array->u.array->elements[array->u.array->length] = *v;
+		array->u.array->length++;
+		list = list->next;
+	}
+	return array;
+}
+
+int eval_array_method_pop(JsValue* array){
+	if(array->u.array->length <= 0){
+		return 0;
+	}
+	array->u.array->length--;
+	return 0;
+}
+
+
+JsValue* eval_array_method(JsInterpreter * inter,ExecuteEnvironment *env,JsValue* array,ExpressionMethodCall* call,int line){
+	if(0 == strcmp(call->method,"push")){
+		return eval_array_method_push(inter,env,array,call,line);
+	}
+	if(0 == strcmp(call->method,"pop")){
+		eval_array_method_pop(array);
+		return NULL;
+	}
+	ERROR_runtime_error(RUNTIME_ERROR_METHOD_NOT_FOUND,line);
+	return NULL;
+}
+
 
 
 int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
@@ -394,6 +464,19 @@ int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Ex
 		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,e->line);
 		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
 	}
+
+	if(JS_VALUE_TYPE_ARRAY ==  object->typ){
+		JsValue* ret =  eval_array_method(inter,env,object,call,e->line);
+		if(NULL != ret){
+			*object = *ret;
+		}
+		JsValue vv;
+		vv.typ = JS_VALUE_TYPE_NULL;
+		push_stack(&inter->stack,&vv);
+		return 0;
+	}
+
+
 	if(JS_VALUE_TYPE_OBJECT != object->typ){
 		ERROR_runtime_error(RUNTIME_ERROR_IS_NOT_AN_OBJECT,e->line);
 		return RUNTIME_ERROR_IS_NOT_AN_OBJECT;

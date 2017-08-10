@@ -535,7 +535,7 @@ CREATE_null_expression(){
 
 Expression*
 CREATE_array_expression(ExpressionList* list){
-    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression),get_line_number());
+    Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) ,get_line_number());
     if(NULL == new){
         return NULL;
     }
@@ -544,6 +544,21 @@ CREATE_array_expression(ExpressionList* list){
     new->u.expression_list = list;
     return new;
 }
+
+Expression*
+CREATE_field_expression(Expression* e,char* field){
+	Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionField) + sizeof(Expression),get_line_number());
+	if(NULL == new){
+		return NULL;
+	}
+	new->line = get_line_number();
+	new->typ = EXPRESSION_TYPE_FIELD;
+	new->u.access_field = (ExpressionField*)(new+1);
+	new->u.access_field->e = e;
+	new->u.access_field->field = field;
+	return new;
+}
+
 
 
 
