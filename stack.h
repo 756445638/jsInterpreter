@@ -10,7 +10,7 @@
 
 void push_stack(Stack* s,JsValue *v);
 
-JsValue* pop_stack(Stack* s);
+JsValue pop_stack(Stack* s);
 
 
 

@@ -117,14 +117,14 @@ StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvir
 		eval_expression(inter,env,f->init);
 		pop_stack(&inter->stack);
 	}
-	JsValue* v;
+	JsValue v;
 	JSBool istrue;
 	StatementList* list;
 	for(;;){
 		if(NULL != f->condition){
 			eval_expression(inter,env,f->condition);
 			v = pop_stack(&inter->stack);
-			istrue = is_js_value_true(v);
+			istrue = is_js_value_true(&v);
 			if(JS_BOOL_TRUE != istrue){
 				ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 				goto end;
@@ -202,8 +202,8 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	eval_expression(inter,env,i->condition);
-	JsValue* v = pop_stack(&inter->stack);
-	JSBool istrue = is_js_value_true(v);
+	JsValue v = pop_stack(&inter->stack);
+	JSBool istrue = is_js_value_true(&v);
 	StatementList* list;
 	if(JS_BOOL_TRUE == istrue){  /*handle true part*/
 		ret = INTERPRETE_execute_normal_statement_list(inter,env,i->then->list);
@@ -219,7 +219,7 @@ StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnviro
 	while(NULL != elsifnext){
 		eval_expression(inter,env,elsifnext->elsif.condition);
 		v = pop_stack(&inter->stack);
-		istrue = is_js_value_true(v);
+		istrue = is_js_value_true(&v);
 		if(JS_BOOL_TRUE == istrue){
 			return INTERPRETE_execute_normal_statement_list(inter,env,elsifnext->elsif.block->list);
 		}
@@ -247,8 +247,8 @@ StamentResult INTERPRETE_execute_statement_while(
 	for(;;){
 again:
 		eval_expression(inter,env,w->condition);
-		JsValue* v = pop_stack(&inter->stack);
-		JSBool is_true = is_js_value_true(v);
+		JsValue v = pop_stack(&inter->stack);
+		JSBool is_true = is_js_value_true(&v);
 		if(JS_BOOL_TRUE != is_true){
 			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 			goto end;
@@ -311,6 +311,7 @@ INTERPRETE_creaet_variable(
 	if(NULL != v){
 		newlist->var.value = *v;
 	}
+	newlist->var.value.left_value =  &newlist->var.value;
 	return &newlist->var;
 }
 

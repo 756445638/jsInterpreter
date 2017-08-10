@@ -45,6 +45,7 @@ typedef struct JsKvList_tag JsKvList;
 
 struct JsValue_tag {
     JS_VALUE_TYPE typ;
+	JsValue* left_value;
     union{
         JSBool boolvalue;
         int intvalue;
@@ -165,7 +166,7 @@ typedef struct ExpressionList_tag {
 typedef ExpressionList ArgumentList;
 
 typedef struct ExpressionMethodCall_tag {
-    char* identifier;
+    Expression* e;
     char* method;
     ArgumentList* args;
 }ExpressionMethodCall;
@@ -207,8 +208,7 @@ typedef enum {
     EXPRESSION_TYPE_NEGATIVE,
     EXPRESSION_TYPE_IDENTIFIER,/*identifier right value*/
     EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE,
-    EXPRESSION_TYPE_NULL,
-	EXPRESSION_TYPE_FIELD
+    EXPRESSION_TYPE_NULL
     
 }EXPRESSION_TYPE;
 

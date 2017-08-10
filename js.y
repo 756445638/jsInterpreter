@@ -311,15 +311,15 @@ postfix_expression
     {
          $$ = CREATE_index_expression($1, $3);
     }
-    |IDENTIFIER DOT IDENTIFIER 
+    |postfix_expression DOT IDENTIFIER 
     {
-        $$ = CREATE_field_expression($1, $3);
+        printf("access object");
     }
-    |IDENTIFIER DOT IDENTIFIER LP argument_list RP
+    |postfix_expression DOT IDENTIFIER LP argument_list RP
     {
         $$ = CREATE_method_call_expression($1, $3, $5);
     }
-    |IDENTIFIER DOT IDENTIFIER LP RP
+    |postfix_expression DOT IDENTIFIER LP RP
     {
         $$ = CREATE_method_call_expression($1, $3, NULL);
     }

@@ -15,9 +15,9 @@ void push_stack(Stack* s,JsValue* v){
 }
 
 
-JsValue* pop_stack(Stack* s){
+JsValue pop_stack(Stack* s){
 	s->sp--;
-	return  s->vs + s->sp;
+	return  s->vs[s->sp];
 }
 
 JsValue* peek_stack(Stack* s,int index){

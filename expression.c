@@ -23,27 +23,11 @@ int get_expression_list_length(ExpressionList* list){
 
 
 
-
-
-
-// int eval_create_local_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
-// 	Variable* var = search_variable_from_variablelist(env->vars,e->u.create_var->identifier);
-// 	if(NULL != var){
-// 		ERROR_runtime_error(RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED,e->line);
-// 		return ;
-// 	}
-// 	eval_expression(inter,env,e);
-// 	JsValue* v = pop_stack(&inter->stack);
-	
-// }
-
-
-
 int eval_negative_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
 	eval_expression(inter,env,e->u.unary);
-	JsValue* v = pop_stack(&inter->stack);
-	*v = js_nagetive(v) ;/*write value back*/
-	push_stack(&inter->stack,v);
+	JsValue v = pop_stack(&inter->stack);
+	v = js_nagetive(&v) ;/*write value back*/
+	push_stack(&inter->stack,&v);
 	return 0;
 }
 
@@ -69,8 +53,8 @@ int eval_logical_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expres
 	JsValue v;
 	v.typ = JS_VALUE_TYPE_BOOL;
 	eval_expression(inter,env,e->u.binary->left);
-	JsValue* left = pop_stack(&inter->stack);
-	v.u.boolvalue = is_js_value_true(left);
+	JsValue left = pop_stack(&inter->stack);
+	v.u.boolvalue = is_js_value_true(&left);
 	if(JS_BOOL_FALSE == v.u.boolvalue  && EXPRESSION_TYPE_LOGICAL_AND == e->typ){
 		 push_stack(&inter->stack,&v);
 		 return 0;
@@ -80,8 +64,8 @@ int eval_logical_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expres
 		 return 0;
 	}
 	eval_expression(inter,env,e->u.binary->right);
-	JsValue* right = pop_stack(&inter->stack);
-	JSBool second = is_js_value_true(right);
+	JsValue right = pop_stack(&inter->stack);
+	JSBool second = is_js_value_true(&right);
 	if(JS_BOOL_TRUE == v.u.boolvalue  && EXPRESSION_TYPE_LOGICAL_AND == e->typ){
 		 if(JS_BOOL_FALSE== second){
 			v.u.boolvalue = JS_BOOL_FALSE;
@@ -122,22 +106,22 @@ int eval_arithmetic_expression(JsInterpreter * inter,ExecuteEnvironment* env,Exp
 	JsValue v;
 	eval_expression(inter,env,e->u.binary->right);
 	eval_expression(inter,env,e->u.binary->left);
-	JsValue* left = pop_stack(&inter->stack);
-	JsValue* right = pop_stack(&inter->stack);
+	JsValue left = pop_stack(&inter->stack);
+	JsValue right = pop_stack(&inter->stack);
 	if(EXPRESSION_TYPE_MUL == e->typ){
-		v = js_value_mul(left,right);
+		v = js_value_mul(&left,&right);
 	}
 	if(EXPRESSION_TYPE_MOD == e->typ){
-		v = js_value_mod(left,right);
+		v = js_value_mod(&left,&right);
 	}
 	if(EXPRESSION_TYPE_DIV == e->typ){
-		v = js_value_div(left,right);
+		v = js_value_div(&left,&right);
 	}
 	if(EXPRESSION_TYPE_SUB == e->typ){
-		v = js_value_sub(left,right);
+		v = js_value_sub(&left,&right);
 	}
 	if(EXPRESSION_TYPE_ADD == e->typ){
-		v = js_value_add(inter,left,right,e->line);
+		v = js_value_add(inter,&left,&right,e->line);
 	}
 	push_stack(&inter->stack,&v);
 	return 0;
@@ -152,13 +136,13 @@ int eval_relation_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expre
 	v.u.boolvalue = JS_BOOL_FALSE;
 	eval_expression(inter,env,e->u.binary->left);
 	eval_expression(inter,env,e->u.binary->right);
-	JsValue* right = pop_stack(&inter->stack);
-	JsValue* left = pop_stack(&inter->stack);
+	JsValue right = pop_stack(&inter->stack);
+	JsValue left = pop_stack(&inter->stack);
 	if(EXPRESSION_TYPE_EQ  == e->typ){
-		v.u.boolvalue = js_value_equal(left,right);
+		v.u.boolvalue = js_value_equal(&left,&right);
 	}
 	if(EXPRESSION_TYPE_NE  == e->typ){
-		v.u.boolvalue = js_value_equal(left,right);
+		v.u.boolvalue = js_value_equal(&left,&right);
 		if(JS_BOOL_FALSE== v.u.boolvalue){
 			v.u.boolvalue = JS_BOOL_TRUE;
 		}else{
@@ -166,16 +150,16 @@ int eval_relation_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expre
 		}
 	}
 	if(EXPRESSION_TYPE_GE == e->typ){
-		v.u.boolvalue = js_value_greater_or_equal(left,right);
+		v.u.boolvalue = js_value_greater_or_equal(&left,&right);
 	}
 	if(EXPRESSION_TYPE_LE == e->typ){
-		v.u.boolvalue = js_value_greater_or_equal(right,left);
+		v.u.boolvalue = js_value_greater_or_equal(&right,&left);
 	}
 	if(EXPRESSION_TYPE_GT == e->typ){
-		v.u.boolvalue = js_value_greater(left,right);
+		v.u.boolvalue = js_value_greater(&left,&right);
 	}
 	if(EXPRESSION_TYPE_LT == e->typ){
-		v.u.boolvalue = js_value_greater(right,left);
+		v.u.boolvalue = js_value_greater(&right,&left);
 	}
 	push_stack(&inter->stack,&v);
 	return 0;
@@ -185,7 +169,7 @@ int eval_relation_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expre
 
 int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	eval_expression(inter,env,e->u.binary->right);/*get assign value*/
-	JsValue* value = pop_stack(&inter->stack);
+	JsValue value = pop_stack(&inter->stack);
 	JsValue *dest = get_left_value(env,e->u.binary->left);
 	Variable* var;
 	if(NULL == dest){
@@ -198,30 +182,30 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,e->line);
 		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
 	}
-	*dest = *value;
-	push_stack(&inter->stack,value);
+	*dest = value;
+	push_stack(&inter->stack,&value);
 	return 0;
 }
 
 
 int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	eval_expression(inter,env,e->u.index->e);
-	JsValue* v = pop_stack(&inter->stack);
-	if(JS_VALUE_TYPE_ARRAY != v->typ){
+	JsValue v = pop_stack(&inter->stack);
+	if(JS_VALUE_TYPE_ARRAY != v.typ){
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE,e->line);
 		return RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE;
 	}
 	eval_expression(inter,env,e->u.index->index);
-	JsValue* index = pop_stack(&inter->stack);
-	if(JS_VALUE_TYPE_INT != index->typ){
+	JsValue index = pop_stack(&inter->stack);
+	if(JS_VALUE_TYPE_INT != index.typ){
 		ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE,e->line);
 		return RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE;
 	}
-	if(index->u.intvalue < 0 || index->u.intvalue >= v->u.array->length){
+	if(index.u.intvalue < 0 || index.u.intvalue >= v.u.array->length){
 		ERROR_runtime_error(RUNTIME_ERROR_INDEX_OUT_RANGE,e->line);
 		return RUNTIME_ERROR_INDEX_OUT_RANGE;
 	}
-	push_stack(&inter->stack,v->u.array->elements + index->u.intvalue);
+	push_stack(&inter->stack,v.u.array->elements + index.u.intvalue);
 	return 0;
 	
 }
@@ -237,11 +221,11 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 	}
 	v->u.array->length = 0;
 	ExpressionList* list = e->u.expression_list;
-	JsValue * vv ;
+	JsValue vv ;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		vv = pop_stack(&inter->stack);
-		v->u.array->elements[v->u.array->length] = *vv;
+		v->u.array->elements[v->u.array->length] = vv;
 		v->u.array->length++;
 		list = list->next;
 	}
@@ -274,7 +258,7 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 	while(NULL != args){
 		/*make value*/
 		eval_expression(inter, env, args->expression);
-		v = *((JsValue*)pop_stack(&inter->stack));
+		v = pop_stack(&inter->stack);
 		if(NULL != paras){
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,e->line);
 			paras = paras->next;
@@ -319,23 +303,6 @@ funcend:
 
 }
 
-int eval_field_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
-	ExpressionField* ef = e->u.access_field;
-	eval_expression(inter,env,ef->e);
-	JsValue* obj = pop_stack(&inter->stack);
-	JsValue v;
-	if(JS_VALUE_TYPE_ARRAY == obj->typ){  /*handle array*/
-		if(0 == strcmp(ef->field,"length")){
-			v.typ = JS_VALUE_TYPE_INT;
-			v.u.intvalue = obj->u.array->length;
-			push_stack(&inter->stack,&v);
-		}
-	}
-
-
-	ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED,e->line);
-	return RUNTIME_ERROR_FIELD_NOT_DEFINED;
-}
 
 
 
@@ -401,8 +368,6 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_identifier_expression(inter,env,e);
 			case EXPRESSION_TYPE_METHOD_CALL:
 				return eval_method_call_expression(inter,env,e);
-			case EXPRESSION_TYPE_FIELD:
-				return eval_field_expression(inter,env,e);
 		}
 	
 	return 0;
@@ -425,11 +390,11 @@ JsValue* eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,Js
 		array = new;
 	}
 	ArgumentList* list = call->args;
-	JsValue* v;
+	JsValue v;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		v = pop_stack(&inter->stack);
-		array->u.array->elements[array->u.array->length] = *v;
+		array->u.array->elements[array->u.array->length] = v;
 		array->u.array->length++;
 		list = list->next;
 	}
@@ -459,32 +424,36 @@ JsValue* eval_array_method(JsInterpreter * inter,ExecuteEnvironment *env,JsValue
 
 
 
+
+
+
 int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
 	ExpressionMethodCall* call = e->u.method_call;
-	JsValue* object = INTERPRETE_search_variable_from_env(env, call->identifier);
-	if(NULL == object){
-		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,e->line);
-		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
-	}
 
-	if(JS_VALUE_TYPE_ARRAY ==  object->typ){
-		JsValue* ret =  eval_array_method(inter,env,object,call,e->line);
+	eval_expression(inter,env,call->e);
+	
+	JsValue object = pop_stack(&inter->stack);
+
+	/*handle array*/
+	if(JS_VALUE_TYPE_ARRAY ==  object.typ){
+		JsValue* ret =  eval_array_method(inter,env,&object,call,e->line);
 		if(NULL != ret){
-			*object = *ret;
+			ret->left_value = object.left_value;
+			*object.left_value = *ret;
 		}
 		JsValue vv;
 		vv.typ = JS_VALUE_TYPE_NULL;
 		push_stack(&inter->stack,&vv);
 		return 0;
 	}
+	
 
-
-	if(JS_VALUE_TYPE_OBJECT != object->typ){
+	if(JS_VALUE_TYPE_OBJECT != object.typ){
 		ERROR_runtime_error(RUNTIME_ERROR_IS_NOT_AN_OBJECT,e->line);
 		return RUNTIME_ERROR_IS_NOT_AN_OBJECT;
 	}
 
-	JsValue* value = INTERPRETE_search_field_from_object(object->u.object,call->method);
+	JsValue* value = INTERPRETE_search_field_from_object(object.u.object,call->method);
 	if(NULL == value){
 		ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED,e->line);
 		return RUNTIME_ERROR_FIELD_NOT_DEFINED;
@@ -510,12 +479,12 @@ int eval_buildin_function(JsInterpreter * inter,ExecuteEnvironment *env,JsFuncti
 	JsValue vs[BUILDIN_FUNCTION_MAX_ARGS];
 	int i = 0;
 	ArgumentList* list = args;
-	JsValue* value ;
+	JsValue value ;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		value = pop_stack(&inter->stack);
 		if(i < BUILDIN_FUNCTION_MAX_ARGS){
-			vs[i] = *value;
+			vs[i] = value;
 			i++;
 		}
 		list = list->next;
@@ -568,15 +537,14 @@ JsValue* get_left_value_from_current_env(ExecuteEnvironment* env,char* name){
 
 int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
 	eval_expression(inter, env, e->u.create_var->expression);
-	JsValue* v = pop_stack(&inter->stack);
+	JsValue v = pop_stack(&inter->stack);
 	JsValue* vv = get_left_value_from_current_env(env,e->u.create_var->identifier);
 	if(NULL == vv){
-		INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  v, e->line);
+		INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  &v, e->line);
 	}else{
-		*vv = *v;
+		*vv = v;
 	}
-
-	push_stack(&inter->stack, v);
+	push_stack(&inter->stack, &v);
 	return 0;
 
 }
