@@ -235,16 +235,17 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,e->line);
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
-	v->u.array->length = length;
-	int i = 0;
+	v->u.array->length = 0;
 	ExpressionList* list = e->u.expression_list;
 	JsValue * vv ;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		vv = pop_stack(&inter->stack);
-		*(v->u.array->elements+i) = *vv;
-		i++;
+		v->u.array->elements[v->u.array->length] = *vv;
+		v->u.array->length++;
+		list = list->next;
 	}
+	push_stack(&inter->stack,  v);
 	return 0;
 }
 
@@ -417,7 +418,8 @@ JsValue* eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,Js
 			return NULL;
 		}
 		new->u.array->length = array->u.array->length;
-		for(int i=0;i<array->u.array->length;i++){  /*copy old values*/
+		int i = 0 ;
+		for(;i<array->u.array->length;i++){  /*copy old values*/
 			new->u.array->elements[i] = array->u.array->elements[i];
 		}
 		array = new;

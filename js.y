@@ -311,7 +311,7 @@ postfix_expression
     {
          $$ = CREATE_index_expression($1, $3);
     }
-    |postfix_expression DOT IDENTIFIER 
+    |IDENTIFIER DOT IDENTIFIER 
     {
         $$ = CREATE_field_expression($1, $3);
     }
