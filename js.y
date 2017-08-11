@@ -309,11 +309,11 @@ postfix_expression
     :primary_expression
     |postfix_expression LB expression RB
     {
-         $$ = CREATE_index_expression($1, $3);
+         $$ = CREATE_index_expression($1,INDEX_TYPE_EXPRESSION, $3,NULL);
     }
     |postfix_expression DOT IDENTIFIER 
     {
-        printf("access object");
+        $$ = CREATE_index_expression($1,INDEX_TYPE_IDENTIFIER, NULL,$3);
     }
     |postfix_expression DOT IDENTIFIER LP argument_list RP
     {

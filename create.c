@@ -394,7 +394,7 @@ CREATE_minus_expression(Expression* e){
 }
 
 Expression* 
-CREATE_index_expression(Expression* e,Expression* index){
+CREATE_index_expression(Expression* e,INDEX_TYPE typ,Expression* index,char* identifier){
     Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression)  + sizeof(ExpressionIndex), get_line_number()); 
     if(NULL == new){
         return NULL;
@@ -403,6 +403,8 @@ CREATE_index_expression(Expression* e,Expression* index){
     new->u.index = (ExpressionIndex*) (new + 1);
     new->u.index->e = e;
     new->u.index->index = index;
+	new->u.index->typ = typ;
+	new->u.index->identifier = identifier;
 	new->line = get_line_number();
     return new;
 }

@@ -2,26 +2,18 @@
 var arr = [1,2];
 
 
-arr.push(4);
 
-arr.push(6);
-arr.push(7);
-
-
-console.log(arr);
-
-var barr = [];
-
-var i = 0;
-for(;;){
+for(var i =0;;){
 	if(i == 100){
 		break;
 	}
-	barr.push(i);
+	arr.push(i);
 	i++;
 }
 
 
-console.log(barr.length);
 
+console.log("hello world\n");
+
+console.log(arr.length);
 

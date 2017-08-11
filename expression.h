@@ -62,6 +62,9 @@ int eval_identifier_expression(JsInterpreter * inter,ExecuteEnvironment *env,Exp
 
 int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e);
 
+Expression*
+CREATE_index_expression(Expression* e,INDEX_TYPE typ,Expression* index,char* identifier);
+
 
 #endif
 

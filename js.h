@@ -145,9 +145,17 @@ typedef struct ExpressionCreateLocalVarialbe_tag{
 
 
 
+typedef enum{
+	INDEX_TYPE_EXPRESSION = 1,
+	INDEX_TYPE_IDENTIFIER
+
+}INDEX_TYPE;
+
 typedef struct ExpressionIndex_tag{
+	INDEX_TYPE typ;
     Expression* e;
     Expression* index;
+	char* identifier;
 }ExpressionIndex;
 
 

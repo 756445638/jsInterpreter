@@ -187,13 +187,52 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	return 0;
 }
 
+  
+int eval_array_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,JsValue* array,ExpressionIndex* index,int line){
+	JsValue key;
+	if(INDEX_TYPE_EXPRESSION == index->typ){
+		eval_expression(inter,  env, index->index);
+		key = pop_stack(&inter->stack);
+		if(JS_VALUE_TYPE_INT != key.typ){
+			ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE, line);
+			return RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE;
+		}		
+		if(key.u.intvalue < 0 || key.u.intvalue >= array->u.array->length){
+			ERROR_runtime_error(RUNTIME_ERROR_INDEX_OUT_RANGE, line);
+			return RUNTIME_ERROR_INDEX_OUT_RANGE;
+		}
+		push_stack(&inter->stack, array->u.array->elements + key.u.intvalue);
+		return 0;
+	
+	}
+
+	/* type == IDENTIFIER*/
+	JsValue v;
+
+	if(0 == strcmp("length",index->identifier)){
+		v.typ = JS_VALUE_TYPE_INT;
+		v.u.intvalue = array->u.array->length;
+		push_stack(&inter->stack, &v);
+		return 0;
+	}
+
+	
+
+	ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED, line);
+					
+	return RUNTIME_ERROR_FIELD_NOT_DEFINED;
+
+	
+	
+
+}
+
 
 int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	eval_expression(inter,env,e->u.index->e);
 	JsValue v = pop_stack(&inter->stack);
-	if(JS_VALUE_TYPE_ARRAY != v.typ){
-		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE,e->line);
-		return RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE;
+	if(JS_VALUE_TYPE_ARRAY == v.typ){
+		return eval_array_index_expression(inter,env,&v,e->u.index,e->line);
 	}
 	eval_expression(inter,env,e->u.index->index);
 	JsValue index = pop_stack(&inter->stack);
@@ -207,6 +246,13 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 	}
 	push_stack(&inter->stack,v.u.array->elements + index.u.intvalue);
 	return 0;
+
+	ERROR_runtime_error(RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE,e->line);
+	return RUNTIME_ERROR_CANNOT_INDEX_THIS_TYPE;
+
+	
+
+
 	
 }
 
