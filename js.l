@@ -54,6 +54,9 @@ yywrap(void)
 <INITIAL>"--"           return DECREMENT;
 <INITIAL>"."            return DOT;
 <INITIAL>"var"          return VAR;
+<INITIAL>"new"          return NEW;
+<INITIAL>":"            return COLON;
+<INITIAL>"in"            return IN;
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
     yylval.identifier = CREATE_identifier(yytext);
     return IDENTIFIER;

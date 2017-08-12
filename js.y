@@ -21,13 +21,13 @@
 %token <expression>     DOUBLE_LITERAL
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
-%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T 
+%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
 %type   <parameter_list> parameter_list
 %type   <argument_list> argument_list
-%type   <expression> expression expression_opt
+%type   <expression> expression expression_opt object_literal new_object
         logical_and_expression logical_or_expression
         equality_expression relational_expression
         additive_expression multiplicative_expression
@@ -168,8 +168,11 @@ for_statement
     {
         $$ = CREATE_for_statement($3, $5, $7, $9);
     }
+    | FOR LP VAR IDENTIFIER IN expression RP block
+    {
+        $$ = CREATE_for_in_statement($4,$6,$8);
+    }
     ;
-
 return_statement
     :RETURN_T expression_opt SEMICOLON
     {
@@ -376,11 +379,28 @@ primary_expression
             $$ = CREATE_null_expression();
         }
         | array_literal
+        | object_literal
+        | new_object
         ;
+
+new_object
+		: NEW IDENTIFIER LP expression_list RP
+		{
+			$$ = CREATE_new_expression($2,$4);	
+		}
+		;
 array_literal
         :LB  expression_list RB
         {
             $$ = CREATE_array_expression($2);
         }
         ;
+object_literal
+		:LC RC
+		{
+			$$ = CREATE_object_expression();
+		}
+	    ;
+
+
 %%

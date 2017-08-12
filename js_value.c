@@ -485,6 +485,8 @@ JsValue js_print(const JsValue *value){
 			case JS_VALUE_TYPE_OBJECT:
 				printf("object");
 				break;
+			case JS_VALUE_TYPE_STRING_LITERAL:
+				printf("%s",value->u.literal_string);
 		}
 		return v;
 
@@ -506,14 +508,50 @@ void js_print_array(JsArray* array){
 	printf("]");
 }
 
-void js_println(const JsValue *value){
-	
+ JsValue js_println(const JsValue *value){
+	JsValue v;
+	v = js_print(value);
+	printf("\n");
+	return v;
 }
 
 
-int js_array_methods(){
 
-
+JsValue js_typeof(const JsValue* value){
+	JsValue v ;
+	v.typ = JS_VALUE_TYPE_STRING_LITERAL;
+	switch(value->typ){
+		case JS_VALUE_TYPE_BOOL:
+				v.u.literal_string = "bool";
+				break;
+			case JS_VALUE_TYPE_INT:
+				v.u.literal_string = "int";
+				break;
+			case JS_VALUE_TYPE_FLOAT:
+				v.u.literal_string = "float";
+				break;
+			case JS_VALUE_TYPE_STRING:
+				v.u.literal_string = "string";
+				break;
+			case JS_VALUE_TYPE_NULL:
+				v.u.literal_string = "null";
+				break;
+			case JS_VALUE_TYPE_UNDEFINED:
+				v.u.literal_string = "undefined";
+				break;
+			case JS_VALUE_TYPE_ARRAY:
+				v.u.literal_string = "array";
+				break;
+			case JS_VALUE_TYPE_FUNCTION:
+				v.u.literal_string = "function";
+				break;
+			case JS_VALUE_TYPE_OBJECT:
+				v.u.literal_string = "object";
+				break;
+			case JS_VALUE_TYPE_STRING_LITERAL:
+				v.u.literal_string = "string_literal";
+	}
+	return  v;
 }
 
 

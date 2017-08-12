@@ -25,6 +25,8 @@ MessageFormat RuntimeErrorMessages[] = {
 	{"field not defined"},
 	{"not a function or method"},
 	{"method not found"},
+	{"can not use this as left value"},
+	{"unkown new type,only support Object and Array"},
 	{"dummy"},
 };
 

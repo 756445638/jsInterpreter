@@ -12,7 +12,15 @@ JsFunctionBuildin console_log_function_buildin;
 JsFunction console_log_function;
 JsKvList console_log;
 JsObject console_object;
-JsValue console;
+VariableList console_var_list;
+
+
+JsFunctionList   jstypeof;
+JsFunctionBuildin typeof_buildin;
+
+
+
+
 
 
 
@@ -20,7 +28,7 @@ int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
         return -1;/*no statement list*/
     }
-	INTERPRETE_add_build_in_function(inter);
+	INTERPRETE_add_buildin(inter);
     StatementList *next = inter->statement_list;
     StamentResult result;
     while(NULL != next){
@@ -38,36 +46,119 @@ int INTERPRETE_interprete(JsInterpreter* inter){
 }
 
 
-void INTERPRETE_add_build_in_function(JsInterpreter* inter){
+void INTERPRETE_add_buildin(JsInterpreter* inter){
 	/*add console object*/
 	console_log_function_buildin.args_count = 1;
-	console_log_function_buildin.u.func1 = js_print;
+	console_log_function_buildin.u.func1 = js_println;
 	console_log_function.typ = JS_FUNCTION_TYPE_BUILDIN;
 	console_log_function.buildin = &console_log_function_buildin;
 	console_log.kv.value.typ= JS_VALUE_TYPE_FUNCTION;
 	console_log.kv.value.u.func = &console_log_function;
 	console_log.kv.key = "log";
+	console_log.next = NULL;
 	console_object.eles = &console_log;	
 	console_object.typ = JS_OBJECT_TYPE_BUILDIN;
-	console.typ = JS_VALUE_TYPE_OBJECT;
-	console.u.object = &console_object;
-	INTERPRETE_creaet_variable(inter,&inter->env,"console",&console,0);
+	console_var_list.next = NULL;
+	console_var_list.var.name = "console";
+	console_var_list.var.value.typ = JS_VALUE_TYPE_OBJECT;
+	console_var_list.var.value.u.object = &console_object;
+
 
 	
+	inter->env.vars = &console_var_list;
+
+	/*buildin function typeof*/
+	jstypeof.func.typ= JS_FUNCTION_TYPE_BUILDIN;
+	jstypeof.func.buildin = &typeof_buildin;
+	jstypeof.func.name = "typeof";
+	jstypeof.next = NULL;
+	typeof_buildin.args_count = 1;
+	typeof_buildin.u.func1 = js_typeof;
+
+	
+		
+	inter->env.funcs = &jstypeof;
+
+		
 }
 
-JsValue* INTERPRETE_search_field_from_object(JsObject* obj,char* key){
-	if(NULL == obj || NULL == obj->eles){
-		return NULL;
+
+
+
+StamentResult INTERPRETE_execute_normal_statement_list(JsInterpreter* inter,ExecuteEnvironment* env,StatementList* list){
+	StamentResult ret;
+	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	if(NULL == list){
+		return ret;
 	}
+	StatementList* next = list;
+	while(NULL != next){
+		ret = INTERPRETE_execute_statement(inter,env,next->statement);
+		switch(ret.typ){
+			case STATEMENT_RESULT_TYPE_NORMAL:
+				break;
+			case STATEMENT_RESULT_TYPE_CONTINUE:
+				goto end;
+			case STATEMENT_RESULT_TYPE_RETURN:
+				goto end;
+			case STATEMENT_RESULT_TYPE_BREAK:
+				goto end;
+		}
+		next = next->next;
+	}
+	
+end:
+	return ret;
+}
+
+
+
+JsValue* INTERPRETE_search_field_from_object(JsObject* obj,const char* key){
 	int length = strlen(key);
 	JsKvList* list = obj->eles;
 	while(NULL != list){
 		if(0 == strncmp(key,list->kv.key,length)){
 			return &list->kv.value;
 		}
+		list = list->next;
 	}
 	return NULL;
+}
+
+JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const char* key,JsValue* value,int line){
+	JsValue* v = INTERPRETE_search_field_from_object(obj,key);
+	if(NULL != v){
+		if(NULL != value){
+			*v = *value;
+		}
+		return v;
+	}
+
+	int length = strlen(key);
+	JsKvList* list = MEM_alloc(inter->excute_memory,sizeof(JsKvList) + length + 1,line);
+	if(NULL == list){
+		return NULL;
+	}
+	list->kv.key = (char*)(list+1);
+	strncpy(list->kv.key,key,length);
+	list->kv.key[length] = 0;
+	list->next == NULL;
+	if(NULL == obj->eles){
+		obj->eles = list;
+	}else{
+		JsKvList* last = obj->eles;
+		while(NULL != last->next){
+			last = last->next;
+		}
+		last->next = list;
+	}
+
+	if(NULL != value){
+		list->kv.value = *value;
+	}
+
+	return &list->kv.value;
+	
 }
 
 
@@ -75,6 +166,85 @@ JsValue* INTERPRETE_search_field_from_object(JsObject* obj,char* key){
 
 
 
+
+
+StamentResult INTERPRETE_execute_statement_for_in(JsInterpreter* inter,ExecuteEnvironment* env,StatementForIn* in){
+	StamentResult ret;
+	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	eval_expression(inter,env,in->target);
+	JsValue target = pop_stack(&inter->stack);
+	if(JS_VALUE_TYPE_ARRAY != target.typ && JS_VALUE_TYPE_OBJECT != target.typ){
+		return ret; /*can for in this type,just return nothing to do*/
+	}
+	Variable* var;
+	/*handle array part*/
+	if(JS_VALUE_TYPE_ARRAY == target.typ){
+		int length = target.u.array->length;
+		int i = 0;
+		for(;i<length;i++){
+			if(0 == i){
+				var = INTERPRETE_creaet_variable(inter,env,in->identifer,NULL,-1);
+				var->value.typ = JS_VALUE_TYPE_INT;
+				var->value.u.intvalue = 0;
+			}else{
+				var->value.u.intvalue = i;
+			}
+			ret = INTERPRETE_execute_normal_statement_list(inter,env,in->block->list);
+			switch(ret.typ){
+				case STATEMENT_RESULT_TYPE_NORMAL:
+					break;
+				case STATEMENT_RESULT_TYPE_CONTINUE:
+					break;
+				case STATEMENT_RESULT_TYPE_RETURN:
+					goto end;
+				case STATEMENT_RESULT_TYPE_BREAK:
+					ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+					goto end;
+			}
+		}
+	}
+
+	if(JS_VALUE_TYPE_OBJECT == target.typ){
+		JsKvList* list = target.u.object->eles;
+		var = INTERPRETE_creaet_variable(inter,env,in->identifer,NULL,-1);
+		var->value.typ = JS_VALUE_TYPE_STRING_LITERAL;
+		while(NULL != list){
+			var->value.u.literal_string = list->kv.key;
+			ret = INTERPRETE_execute_normal_statement_list(inter,env,in->block->list);
+			switch(ret.typ){
+				case STATEMENT_RESULT_TYPE_NORMAL:
+					break;
+				case STATEMENT_RESULT_TYPE_CONTINUE:
+					break;
+				case STATEMENT_RESULT_TYPE_RETURN:
+					goto end;
+				case STATEMENT_RESULT_TYPE_BREAK:
+					ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+					goto end;
+			}
+			list = list->next;
+		}
+	}
+	
+	
+
+
+	
+
+
+	
+		
+		
+
+		
+ 
+end:
+	if(STATEMENT_RESULT_TYPE_RETURN == ret.typ){
+		ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	}
+	return ret;
+	
+}
 
 
 
@@ -91,6 +261,9 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 	if(STATEMENT_TYPE_FOR == s->typ){
 		ret = INTERPRETE_execute_statement_for(inter,env,s->u.for_statement);
 	}
+	if(STATEMENT_TYPE_FOR_IN == s->typ){
+		ret = INTERPRETE_execute_statement_for_in(inter,env,s->u.forin_statement);
+	}	
 	if(STATEMENT_TYPE_WHILE == s->typ){
 		ret = INTERPRETE_execute_statement_while(inter,env, s->u.while_statement);
 	}
@@ -167,33 +340,6 @@ StamentResult INTERPRETE_execute_statement_expression(JsInterpreter* inter,Execu
 	return ret;
 }
 
-
-StamentResult INTERPRETE_execute_normal_statement_list(JsInterpreter* inter,ExecuteEnvironment* env,StatementList* list){
-	StamentResult ret;
-	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
-	if(NULL == list){
-		return ret;
-	}
-	StatementList* next = list;
-	while(NULL != next){
-		ret = INTERPRETE_execute_statement(inter,env,next->statement);
-		switch(ret.typ){
-			case STATEMENT_RESULT_TYPE_NORMAL:
-				break;
-			case STATEMENT_RESULT_TYPE_CONTINUE:
-				goto end;
-			case STATEMENT_RESULT_TYPE_RETURN:
-				goto end;
-			case STATEMENT_RESULT_TYPE_BREAK:
-				goto end;
-		}
-
-		next = next->next;
-	}
-	
-end:
-	return ret;
-}
 
 
 
@@ -345,6 +491,9 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 			case JS_VALUE_TYPE_ARRAY:
 				allocsize += sizeof(JsArray) + sizeof(JsValue) * size;
 				break;
+			case JS_VALUE_TYPE_OBJECT:
+				allocsize += sizeof(JsObject);
+				break;
 		}
 	Heap * h = MEM_alloc(inter->excute_memory,  allocsize,line);
 	if(NULL == h){
@@ -374,9 +523,20 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				h->value.u.array->alloc = size;
 				h->value.u.array->elements = (JsValue*)(h->value.u.array + 1);
 				break;
+			case JS_VALUE_TYPE_OBJECT:
+				h->value.typ = JS_VALUE_TYPE_OBJECT;
+				h->value.u.object = (JsObject*)(h+1);
+				h->value.u.object->mark = 0;
+				break;
 		}
 	return &h->value;
 }
+
+
+
+
+
+
 
 
 JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line){
@@ -413,7 +573,7 @@ JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const J
 
 
 JsFunction *
-INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function){
+INTERPRETE_search_func_from_function_list(JsFunctionList* list,char* function){
 	while(NULL != list){
 		if(0 == strcmp(list->func.name,function)){
 			return &list->func;
@@ -427,7 +587,7 @@ INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function){
 JsFunction *
 INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function){
 	int length = strlen(function);
-	JsFucntionList* list ;
+	JsFunctionList* list ;
 	while(NULL != env){
 		list = env->funcs;
 		while(NULL != list){
@@ -468,7 +628,7 @@ INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* variable){
 
 
 JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* env,const char* func,ParameterList* args,Block* block,int line){
-	JsFucntionList* funclist = MEM_alloc(inter->excute_memory, sizeof(JsFucntionList), line);
+	JsFunctionList* funclist = MEM_alloc(inter->excute_memory, sizeof(JsFunctionList), line);
 	if(NULL == funclist){
 		return NULL;
 	}
@@ -483,7 +643,7 @@ JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* 
 		return &funclist->func;
 	}
 
-	JsFucntionList* list = env->funcs;
+	JsFunctionList* list = env->funcs;
 	while(NULL != list->next){
 		list = list->next;
 	}

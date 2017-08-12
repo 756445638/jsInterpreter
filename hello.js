@@ -1,19 +1,17 @@
 
-var arr = [1,2];
 
 
+var obj = new Object();
+obj["name"] = "yuyang";
 
-for(var i =0;;){
-	if(i == 100){
-		break;
-	}
-	arr.push(i);
-	i++;
+for(var pro in obj){
+	console.log(obj[pro]);
 }
 
 
 
-console.log("hello world\n");
+for(var i in (var arr = new Array(1,2,"hello world"))){
+	console.log(arr[i]);
+}
 
-console.log(arr.length);
 

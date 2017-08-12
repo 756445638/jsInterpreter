@@ -119,7 +119,7 @@ int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block)
         return -1;
     }
     if (NULL == current_interpreter->funcs){
-       current_interpreter->funcs = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFucntionList),get_line_number());
+       current_interpreter->funcs = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFunctionList),get_line_number());
        if(NULL == current_interpreter->funcs){
            MEM_free(current_interpreter->interpreter_memory,f);
            return -1;
@@ -129,14 +129,14 @@ int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block)
        return 0;
     }
 
-    JsFucntionList* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFucntionList),get_line_number());
+    JsFunctionList* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFunctionList),get_line_number());
     if(NULL == new){
         MEM_free(current_interpreter->interpreter_memory,f);
         return -1;
     }
     new->next = NULL;
     new->func = f;
-    JsFucntionList* next = current_interpreter->funcs;
+    JsFunctionList* next = current_interpreter->funcs;
     while(NULL != next->next){
         next = next->next;
     }
@@ -289,6 +289,27 @@ CREATE_for_statement(Expression* init,Expression* condition,Expression* afterblo
 	s->line = get_line_number();
     return s;
 }
+
+Statement* 
+CREATE_for_in_statement(char* identifier,Expression* target,Block* block){
+	Statement* s = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Statement) + sizeof(StatementForIn),get_line_number());
+    if(NULL == s){
+        return NULL;
+    }
+	s->typ = STATEMENT_TYPE_FOR_IN;
+	s->u.forin_statement = (StatementForIn*)(s+1);
+	s->u.forin_statement->identifer = identifier;
+	s->u.forin_statement->target = target;
+	s->u.forin_statement->block = block;
+	s->line = get_line_number();
+	return s;
+}
+
+
+
+
+
+
 Statement*
 CREATE_return_statement(Expression* e){
     Statement* s = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Statement),get_line_number());
@@ -548,7 +569,33 @@ CREATE_array_expression(ExpressionList* list){
 }
 
 
+Expression*
+CREATE_object_expression(){
+	Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) ,get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+	new->typ = EXPRESSION_TYPE_OBJECT;
+	new->line = get_line_number();
+	return new;
+}
 
+
+
+
+Expression*
+CREATE_new_expression(char* identifer,ExpressionList* args){
+	Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionNew) ,get_line_number());
+    if(NULL == new){
+        return NULL;
+    }
+	new->typ = EXPRESSION_TYPE_NEW;
+	new->u.new = (ExpressionNew*)(new+1);
+	new->u.new->identifier = identifer;
+	new->u.new->args = args;
+	new->line = get_line_number();
+	return new;
+}
 
 
 

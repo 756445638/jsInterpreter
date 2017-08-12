@@ -45,7 +45,8 @@ JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2);
 
 
 JsValue js_print(const JsValue *value);
-void js_println(const JsValue *value);
+JsValue js_println(const JsValue *value);
+
 
 
 void js_print_array(JsArray* array);
@@ -55,6 +56,7 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line);
 
 
 
+JsValue js_typeof(const JsValue* value);
 
 
 

@@ -1,4 +1,4 @@
-
+/*
 #include "statement.h"
 #include "expression.h"
 #include "js.h"
@@ -17,6 +17,7 @@ StamentResult statement_execute_if(JsInterpreter * inter,ExecuteEnvironment * en
 }
 
 
+*/
 
 
 

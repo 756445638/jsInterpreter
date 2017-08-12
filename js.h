@@ -26,7 +26,8 @@ typedef enum {
     JS_VALUE_TYPE_FUNCTION,
     JS_VALUE_TYPE_NULL,
     JS_VALUE_TYPE_UNDEFINED,
-    JS_VALUE_TYPE_OBJECT
+    JS_VALUE_TYPE_OBJECT,
+    JS_VALUE_TYPE_STRING_LITERAL
 } JS_VALUE_TYPE;
 
 typedef struct JsFunction_tag JsFunction;
@@ -54,6 +55,7 @@ struct JsValue_tag {
 		JsArray* array;
 		JsString* string;
 		JsObject* object;
+		char* literal_string;
     }u;
 };
 
@@ -85,6 +87,7 @@ typedef  enum {
 }JS_OBJECT_TYPE;
 
 struct JsObject_tag{
+	char mark;
 	JS_OBJECT_TYPE typ;
 	JsKvList* eles; 
 };
@@ -130,12 +133,22 @@ typedef struct IdentifierList_tag{
 typedef IdentifierList ParameterList ;
 typedef struct Expression_tag  Expression;
 
+typedef struct ExpressionList_tag  ExpressionList;
+
 
 
 typedef struct ExpressionBinary_tag{
     Expression* left;
     Expression* right;
 }ExpressionBinary;
+
+
+
+
+typedef struct ExpressionNew_tag {
+	char* identifier;
+	ExpressionList* args;
+}ExpressionNew;
 
 typedef struct ExpressionCreateLocalVarialbe_tag{
     char* identifier;
@@ -159,17 +172,12 @@ typedef struct ExpressionIndex_tag{
 }ExpressionIndex;
 
 
-typedef struct ExpressionField_tag{
-    Expression* e;
-    char* field;
-}ExpressionField;
 
 
-
-typedef struct ExpressionList_tag {
+struct ExpressionList_tag {
     Expression*  expression;
     struct ExpressionList_tag* next;
-}ExpressionList;
+};
 
 typedef ExpressionList ArgumentList;
 
@@ -194,6 +202,7 @@ typedef enum {
     EXPRESSION_TYPE_FLOAT,
     EXPRESSION_TYPE_STRING,
     EXPRESSION_TYPE_ARRAY,
+    EXPRESSION_TYPE_OBJECT,
     EXPRESSION_TYPE_LOGICAL_OR,
     EXPRESSION_TYPE_LOGICAL_AND,
     EXPRESSION_TYPE_ASSIGN,
@@ -216,7 +225,8 @@ typedef enum {
     EXPRESSION_TYPE_NEGATIVE,
     EXPRESSION_TYPE_IDENTIFIER,/*identifier right value*/
     EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE,
-    EXPRESSION_TYPE_NULL
+    EXPRESSION_TYPE_NULL,
+    EXPRESSION_TYPE_NEW
     
 }EXPRESSION_TYPE;
 
@@ -237,7 +247,7 @@ struct Expression_tag {
 		ExpressionCreateLocalVarialbe* create_var;
 		char* string;
         ExpressionList* expression_list;
-        ExpressionField* access_field;
+		ExpressionNew * new;
     }u;
 };
 
@@ -246,6 +256,7 @@ typedef enum {
     STATEMENT_TYPE_EXPRESSION = 1,
     STATEMENT_TYPE_IF,
     STATEMENT_TYPE_FOR,
+    STATEMENT_TYPE_FOR_IN,
     STATEMENT_TYPE_WHILE,
     STATEMENT_TYPE_CONTINUE,
     STATEMENT_TYPE_RETURN,
@@ -289,6 +300,12 @@ typedef struct StatementFor_tag {
     Expression* afterblock;
 }StatementFor;
 
+typedef struct StatementForIn_tag {
+	char* identifer;
+	Expression* target;
+	Block* block;
+}StatementForIn;
+
 
 typedef struct StatementWhile_tag {
     Expression* condition;
@@ -308,6 +325,7 @@ struct Statement_tag{
         Expression* expression_statement;
         StatementIf* if_statement;
         StatementFor* for_statement;
+		StatementForIn* forin_statement;
         StatementWhile* while_statement;
         Expression* return_expression;
     }u;
@@ -342,10 +360,10 @@ struct JsFunction_tag {
 };
 
 
-typedef  struct JsFucntionList_tag{
+typedef  struct JsFunctionList_tag{
     JsFunction func;
-    struct JsFucntionList_tag* next;
-}JsFucntionList;
+    struct JsFunctionList_tag* next;
+}JsFunctionList;
 
 
 
@@ -370,7 +388,7 @@ typedef struct Heap_tag {
 
 
 typedef  struct ExecuteEnvironment_tag {
-	JsFucntionList* funcs;
+	JsFunctionList* funcs;
 	VariableList* vars;
 	struct ExecuteEnvironment_tag* outter;
 }ExecuteEnvironment;

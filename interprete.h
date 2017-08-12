@@ -40,7 +40,7 @@ JsValue* INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,
 
 
 JsFunction *
-INTERPRETE_search_func_from_function_list(JsFucntionList* list,char* function);
+INTERPRETE_search_func_from_function_list(JsFunctionList* list,char* function);
 
 
 
@@ -51,6 +51,18 @@ void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env);
 
 JsValue *
 INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* function);
+
+
+
+
+JsValue* INTERPRETE_search_field_from_object(JsObject* obj,const char* key);
+
+JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const char* key,JsValue* value,int line);
+
+
+JsFunction *
+INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function);
+
 
 
 

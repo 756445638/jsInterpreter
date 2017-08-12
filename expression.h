@@ -39,7 +39,7 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 
 int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e);
 
-JsValue* get_left_value(ExecuteEnvironment* env,Expression* e);
+JsValue* get_left_value(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e);
 
  
 Variable* search_variable_from_variablelist(VariableList* list,char* identifier);
