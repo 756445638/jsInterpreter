@@ -15,10 +15,17 @@ var lily = MKHuman(18,"lily");
 lily.sayHai();
 
 for(var i = 0;i<10;i++){
-	console.log("hello world");
+	if(i%3 == 0){
+		console.log(0);
+	}elseif(i%3 == 1){
+		console.log(1);
+	}else{
+		console.log(2);
+	}
 }
 
-console.log(i);
+
+
 
 
 

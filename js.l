@@ -19,7 +19,7 @@ yywrap(void)
 <INITIAL>"function"     return FUNCTION;
 <INITIAL>"if"           return IF;
 <INITIAL>"else"         return ELSE;
-<INITIAL>"elseif"        return ELSIF;
+<INITIAL>else[ ]*if        return ELSIF;
 <INITIAL>"while"        return WHILE;
 <INITIAL>"for"          return FOR;
 <INITIAL>"return"       return RETURN_T;
