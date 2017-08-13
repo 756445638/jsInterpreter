@@ -9,14 +9,14 @@ int INTERPRETE_interprete(JsInterpreter* inter);
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s);
 
 
-StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvironment* env,StatementFor* f);
+StamentResult INTERPRETE_execute_statement_for(JsInterpreter* inter,ExecuteEnvironment* env,StatementFor* f,int line);
 
 
-StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnvironment* env,StatementIf* i);
+StamentResult INTERPRETE_execute_statement_if(JsInterpreter* inter,ExecuteEnvironment* env,StatementIf* i,int line);
 
 
 
-StamentResult INTERPRETE_execute_statement_while(	JsInterpreter* inter,	ExecuteEnvironment* env,	StatementWhile* w);
+StamentResult INTERPRETE_execute_statement_while(	JsInterpreter* inter,	ExecuteEnvironment* env,	StatementWhile* w,int line);
 
 
 
@@ -66,6 +66,11 @@ INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function);
 
 
 void INTERPRETE_add_buildin(JsInterpreter* inter);
+
+ExecuteEnvironment*
+INTERPRETE_alloc_env(JsInterpreter* inter,int line);
+
+
 
 #endif
 

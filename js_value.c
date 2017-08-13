@@ -196,8 +196,6 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 			case JS_VALUE_TYPE_STRING_LITERAL:
 				v = *value;
 				break;
-			default:
-				ERROR_runtime_error(RUNTIME_ERROR_TYPE_NOE_RIGHT, line);
 	}
 	return v;
 }
@@ -302,46 +300,109 @@ JsValue js_value_sub(const JsValue* v1,const JsValue* v2){
 
 
 
+JSBool js_value_equal_string(const JsValue* v1,const JsValue* v2){
+	char * first;
+	char* second;
+	if(JS_VALUE_TYPE_STRING == v1->typ){
+		first = v1->u.string->s;
+	}else{
+		first = v1->u.literal_string;
+	}
+	if(JS_VALUE_TYPE_STRING == v2->typ){
+		second = v2->u.string->s;
+	}else{
+		second = v2->u.literal_string;
+	}
+
+	if(0 == strcmp(first, second)){
+		return JS_BOOL_TRUE;
+	}else{
+		return JS_BOOL_FALSE;
+	}
+	
+}
 
 
 
 JSBool js_value_equal(const JsValue* v1,const JsValue* v2){
+	if(
+		(JS_VALUE_TYPE_STRING == v1->typ|| JS_VALUE_TYPE_STRING_LITERAL == v1->typ)
+		&& (JS_VALUE_TYPE_STRING == v2->typ|| JS_VALUE_TYPE_STRING_LITERAL == v2->typ)
+	){
+		return js_value_equal_string(v1,v2);
+	}
 	if(v1->typ != v2->typ){
 		return JS_BOOL_FALSE;
 	}
-	if(JS_VALUE_TYPE_BOOL == v1->typ){
-		if(v1->u.boolvalue == v2->u.boolvalue){
-			return JS_BOOL_TRUE;
-		}else{
+	switch(v1->typ){
+		case JS_VALUE_TYPE_BOOL:
+			if(v1->u.boolvalue == v2->u.boolvalue){
+				return JS_BOOL_TRUE;
+			}else{
+				return JS_BOOL_FALSE;
+			}
+		case JS_VALUE_TYPE_INT:
+			if(v1->u.intvalue == v2->u.intvalue){
+				return JS_BOOL_TRUE;
+			}else{
+				return JS_BOOL_FALSE;
+			}
+		case JS_VALUE_TYPE_FLOAT:
+			if(v1->u.floatvalue == v2->u.floatvalue){
+				return JS_BOOL_TRUE;
+			}else{
+				return JS_BOOL_FALSE;
+			}
+		case JS_VALUE_TYPE_ARRAY:
+			if(v1->u.array == v2->u.array){
+				return JS_BOOL_TRUE;
+			}else{
+				return JS_BOOL_FALSE;
+			}
+		case JS_VALUE_TYPE_OBJECT:
+			if(v1->u.object == v2->u.object){
+				return JS_BOOL_TRUE;
+			}else{
+				return JS_BOOL_FALSE;
+			}
+		default:
 			return JS_BOOL_FALSE;
-		}
 	}
-	if(JS_VALUE_TYPE_INT == v1->typ){
-		if(v1->u.intvalue == v2->u.intvalue){
-			return JS_BOOL_TRUE;
-		}else{
-			return JS_BOOL_FALSE;
-		}
-	}
-	if(JS_VALUE_TYPE_FLOAT == v1->typ){
-		if(v1->u.floatvalue == v2->u.floatvalue){
-			return JS_BOOL_TRUE;
-		}else{
-			return JS_BOOL_FALSE;
-		}
-	}
-	if(JS_VALUE_TYPE_STRING == v1->typ){  /*must be a obejct*/
-		if(0 == strcmp(v1->u.string->s,v2->u.string->s)){
-			return JS_BOOL_TRUE;
-		}else{
-			return JS_BOOL_FALSE;
-		}
-	}
-	return JS_BOOL_FALSE;
+	
+	
 }
 
 
+JSBool js_value_greater_string(const JsValue* v1,const JsValue* v2){
+	char * first;
+	char* second;
+	if(JS_VALUE_TYPE_STRING == v1->typ){
+		first = v1->u.string->s;
+	}else{
+		first = v1->u.literal_string;
+	}
+	if(JS_VALUE_TYPE_STRING == v2->typ){
+		second = v2->u.string->s;
+	}else{
+		second = v2->u.literal_string;
+	}
+	if(strcmp(first,second) > 0 ){
+		return JS_BOOL_TRUE;
+	}else{
+		return JS_BOOL_FALSE;
+	}
+}
+
+
+
 JSBool js_value_greater(const JsValue* v1,const JsValue* v2){
+	if(
+		(JS_VALUE_TYPE_STRING == v1->typ|| JS_VALUE_TYPE_STRING_LITERAL == v1->typ)
+		&& (JS_VALUE_TYPE_STRING == v2->typ|| JS_VALUE_TYPE_STRING_LITERAL == v2->typ)
+	){
+		return js_value_greater_string(v1,v2);
+	}
+
 	if(JS_VALUE_TYPE_INT == v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		if(v1->u.intvalue > v2->u.intvalue){
 			return JS_BOOL_TRUE;
@@ -373,13 +434,6 @@ JSBool js_value_greater(const JsValue* v1,const JsValue* v2){
 			}
 	}
 
-	if(JS_VALUE_TYPE_STRING == v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
-		if(strcmp(v1->u.string->s,v2->u.string->s) > 0){
-			return JS_BOOL_TRUE;
-		}else{
-			return JS_BOOL_FALSE;
-		}
-	}
 	return JS_BOOL_FALSE;
 }
 

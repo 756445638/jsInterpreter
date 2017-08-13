@@ -33,7 +33,7 @@ typedef enum{
 void ERROR_compile_error(COMPILE_ERROR typ,char* buf);
 
 
-void ERROR_runtime_error(RUNTIME_ERROR typ,int line);
+void ERROR_runtime_error(RUNTIME_ERROR typ,char* who,int line);
 
 
 

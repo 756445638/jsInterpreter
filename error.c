@@ -41,8 +41,8 @@ void ERROR_compile_error(COMPILE_ERROR typ,char* buf){
 }
 
 
-void ERROR_runtime_error(RUNTIME_ERROR typ,int line){
-	printf("runtime failed,err:%s line:%d\n",RuntimeErrorMessages[typ].message,line);
+void ERROR_runtime_error(RUNTIME_ERROR typ,char* who,int line){
+	printf("runtime failed,%s:%s line:%d\n",who,RuntimeErrorMessages[typ].message,line);
     _exit(1);
 }
 
