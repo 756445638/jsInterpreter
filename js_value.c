@@ -132,29 +132,18 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 
 
 	/*handle string part*/
-	if(JS_VALUE_TYPE_STRING == v1->typ){
-		JsValue vv2;
-		if(JS_VALUE_TYPE_STRING == v2->typ){
-			v = *(INTERPRETE_concat_string( inter,  v1, v2, line));
-		}else{
-			vv2 = js_to_string(inter, v2 , line);
-			v = *(INTERPRETE_concat_string( inter,  v1,  &vv2, line));
-		}
+	if(JS_VALUE_TYPE_STRING == v1->typ || JS_VALUE_TYPE_STRING_LITERAL == v1->typ){
+		JsValue vv2 = js_to_string(inter,v2,line);
+		v = *INTERPRETE_concat_string(inter,v1,&vv2,line);
 		return v;
 	}
 
 
-	if(JS_VALUE_TYPE_STRING == v2->typ){
-		JsValue vv1;
-		if(JS_VALUE_TYPE_STRING == v1->typ){
-			v =*(INTERPRETE_concat_string(inter,v1,v2,line));
-		}else{
-			vv1 = js_to_string(inter, v1, line);
-			v =*(INTERPRETE_concat_string(inter,&vv1,v2,line));
-		}
-		return v;
+	if(JS_VALUE_TYPE_STRING == v2->typ || JS_VALUE_TYPE_STRING_LITERAL == v2->typ){
+		JsValue vv1 = js_to_string(inter,v1,line);
+		v = *INTERPRETE_concat_string(inter,v1,v2,line);
 	}
-
+	
 	
 	return v;
 }
@@ -166,59 +155,51 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 
 
 JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
-	JsValue* v;
+	JsValue v;
 	switch (value->typ)
 		{
 			case JS_VALUE_TYPE_BOOL:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,6, line);
-				if(JS_BOOL_TRUE == v->u.boolvalue){
-					v->u.string->length = 4;
-					strncpy(v->u.string->s,"true",4);
-					v->u.string->s[v->u.string->length] = 0;
+				v.typ = JS_VALUE_TYPE_STRING;
+				if(JS_BOOL_TRUE == value->u.boolvalue){
+					v.u.literal_string = "true";
 				}else{
-					v->u.string->length = 5;
-					strncpy(v->u.string->s,"false",5);
-					v->u.string->s[v->u.string->length] = 0;
+					v.u.literal_string = "false";
 				}
 				break;
 			case JS_VALUE_TYPE_INT:/*how to calculate size */
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				v->u.string->length = snprintf(v->u.string->s,100,"%d",value->u.intvalue);
+				v = *(INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line));
+				v.u.string->length = snprintf(v.u.string->s,100,"%d",value->u.intvalue);
 				break;
 			case JS_VALUE_TYPE_FLOAT:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				v->u.string->length = snprintf(v->u.string->s,100,"%f",value->u.floatvalue);
+				v = *(INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line));
+				v.u.string->length = snprintf(v.u.string->s,100,"%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
-				v = value;
+				v = *value;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,6, line);
-				v->u.string->length = 5;
-				strncpy(v->u.string->s,"array",5);
-				v->u.string->s[v->u.string->length] = 0;
+				v.typ = JS_VALUE_TYPE_STRING;
+				v.u.literal_string = "array";
 				break;
 			case JS_VALUE_TYPE_FUNCTION:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				v->u.string->length = snprintf(v->u.string->s,100,"function:%s",value->u.func->name);
-				v->u.string->s[v->u.string->length] = 0;
+				v.typ = JS_VALUE_TYPE_STRING;
+				v.u.literal_string = "function";
 				break;
 			case JS_VALUE_TYPE_NULL:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,5, line);
-				v->u.string->length = 4;
-				strncpy(v->u.string->s,"null",4);
-				v->u.string->s[v->u.string->length] = 0;
+				v.typ = JS_VALUE_TYPE_STRING;
+				v.u.literal_string = "null";
 				break;
 			case JS_VALUE_TYPE_UNDEFINED:
-				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,10, line);
-				v->u.string->length = 9;
-				strncpy(v->u.string->s,"undefined",9);
-				v->u.string->s[v->u.string->length] = 0;
+				v.typ = JS_VALUE_TYPE_STRING;
+				v.u.literal_string = "undefined";
+				break;
+			case JS_VALUE_TYPE_STRING_LITERAL:
+				v = *value;
 				break;
 			default:
 				ERROR_runtime_error(RUNTIME_ERROR_TYPE_NOE_RIGHT, line);
 	}
-	return *v;
+	return v;
 }
 
 

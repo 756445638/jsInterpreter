@@ -20,15 +20,10 @@ JsFunctionBuildin typeof_buildin;
 
 
 
-
-
-
-
 int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
         return -1;/*no statement list*/
     }
-	INTERPRETE_add_buildin(inter);
     StatementList *next = inter->statement_list;
     StamentResult result;
     while(NULL != next){
@@ -114,10 +109,9 @@ end:
 
 
 JsValue* INTERPRETE_search_field_from_object(JsObject* obj,const char* key){
-	int length = strlen(key);
 	JsKvList* list = obj->eles;
 	while(NULL != list){
-		if(0 == strncmp(key,list->kv.key,length)){
+		if(0 == strcmp(key,list->kv.key)){
 			return &list->kv.value;
 		}
 		list = list->next;
@@ -436,8 +430,7 @@ INTERPRETE_creaet_variable(
 		JsValue* v,
 		int line
 ){
-	int length = strlen(name);
-	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList) + length + 1,line);
+	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList),line);
 	if(NULL == newlist){
 		return NULL;
 	}
@@ -451,11 +444,11 @@ INTERPRETE_creaet_variable(
 		}
 		t->next = newlist;
 	}
-	newlist->var.name= (char*)(newlist + 1);
-	strncpy(newlist->var.name,name,length);/*copy name*/
-	newlist->var.name[length] = 0 ;
+	newlist->var.name = name;
 	if(NULL != v){
 		newlist->var.value = *v;
+	}else{
+		newlist->var.value.typ = JS_VALUE_TYPE_NULL;
 	}
 	newlist->var.value.left_value =  &newlist->var.value;
 	return &newlist->var;
@@ -538,33 +531,32 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 
 
 
-
+/* must be string or string_literal*/
 JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line){
-	if(JS_VALUE_TYPE_STRING != v1->typ || JS_VALUE_TYPE_STRING != v2->typ){
-		return v1;
+	char* first;
+	int first_length;
+	char* second;
+	int second_lenth;
+	if(JS_VALUE_TYPE_STRING == v1->typ){
+		first = v1->u.string->s;
+		first_length = v1->u.string->length;
+	}else{/*string literal*/
+		first = v1->u.literal_string;
+		first_length = strlen(v1->u.literal_string);
 	}
-	if( v1->u.string->length == 0 &&  v2->u.string->length == 0){
-		return v1;
+	if(JS_VALUE_TYPE_STRING == v2->typ){
+			second= v2->u.string->s;
+			second_lenth = v2->u.string->length;
+	}else{/*string literal*/
+		second = v2->u.literal_string;
+		second_lenth = strlen(v2->u.literal_string);
 	}
-	if(v1->u.string->length ==0 && v2->u.string->length > 0){
-		return v2;
-	}
-	if(v1->u.string->length >0 && v2->u.string->length == 0){
-		return v1;
-	}
-	JsValue* v;
-	int length = v1->u.string->length + v2->u.string->length;
-	v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length*2 + 1,  line);
-	int i =0;
-	for(;i<v1->u.string->length;i++){
-		v->u.string->s[i] = v1->u.string->s[i];
-	}
-	i = 0;
-	for(;i<v2->u.string->length;i++){
-		v->u.string->s[i+v1->u.string->length] = v2->u.string->s[i];
-	}
-	v->u.string->length = length;
+	int length = first_length + second_lenth;
+	JsValue* v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
+	strncpy(v->u.string->s,first,first_length);
+	strncpy(v->u.string->s + first_length,second,second_lenth);
 	v->u.string->s[length] = 0;
+	v->u.string->length = length;
 	return v;
 	
 }
@@ -586,15 +578,22 @@ INTERPRETE_search_func_from_function_list(JsFunctionList* list,char* function){
 
 JsFunction *
 INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function){
-	int length = strlen(function);
-	JsFunctionList* list ;
+	JsFunctionList* funclist;
+	VariableList* variablelist;
 	while(NULL != env){
-		list = env->funcs;
-		while(NULL != list){
-			if(0 == strncmp(list->func.name,function,length)){
-				return &list->func;
+		funclist = env->funcs;
+		while(NULL != funclist){
+			if(0 == strcmp(funclist->func.name,function)){
+				return &funclist->func;
 			}
-			list = list->next;
+			funclist = funclist->next;
+		}
+		variablelist = env->vars;
+		while(NULL != variablelist){
+			if(0 == strcmp(variablelist->var.name,function) && JS_VALUE_TYPE_FUNCTION== variablelist->var.value.typ){
+				return variablelist->var.value.u.func;
+			}
+			variablelist = variablelist->next;
 		}
 		env = env->outter;
 	}

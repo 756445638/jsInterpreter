@@ -30,6 +30,8 @@ int main(int argc,char **argv){
         _exit(1);
     }
 
+
+	INTERPRETE_add_buildin(interpreter);
     current_interpreter = interpreter;
     extern int yyparse(void);
     extern FILE *yyin;

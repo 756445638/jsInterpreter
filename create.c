@@ -61,18 +61,6 @@ Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
     return e;
 }
 
-// Expression* CREATE_alloc_string_expression(){
-//     Expression* e =(Expression*) MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(JsObecjt),get_line_number());
-//     if(NULL == e){
-//         return NULL;
-//     }
-//     e->typ = EXPRESSION_TYPE_STRING;
-// 	e->u.object = (JsObecjt*)(e + 1);
-// 	e->line = get_line_number();
-//     return e;
-// }
-
-
 
 
 StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
@@ -105,45 +93,12 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
     if(NULL == f){
         return NULL;
     }
+	f->typ = JS_FUNCTION_TYPE_USER;
     f->block = block;
     f->parameter_list = parameterlist;
     f->name = name;
     return f;
 }
-
-
-/*
-int CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
-    JsFunction* f = CREATE_function(name,parameterlist,block);
-    if(NULL == f){
-        return -1;
-    }
-    if (NULL == current_interpreter->funcs){
-       current_interpreter->funcs = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFunctionList),get_line_number());
-       if(NULL == current_interpreter->funcs){
-           MEM_free(current_interpreter->interpreter_memory,f);
-           return -1;
-       }
-       current_interpreter->funcs->func = f;
-       current_interpreter->funcs->next = NULL;
-       return 0;
-    }
-
-    JsFunctionList* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(JsFunctionList),get_line_number());
-    if(NULL == new){
-        MEM_free(current_interpreter->interpreter_memory,f);
-        return -1;
-    }
-    new->next = NULL;
-    new->func = f;
-    JsFunctionList* next = current_interpreter->funcs;
-    while(NULL != next->next){
-        next = next->next;
-    }
-    next->next = new;
-    return 0;
-}
-*/
 
 
 JsFunction* CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
@@ -386,6 +341,23 @@ CREATE_assign_expression(Expression* e1,Expression* e2){
 	e->line = get_line_number();
     return e;
 }
+
+Expression*
+CREATE_assign_function_expression(Expression* dest,char* identifier,JsFunction* func){
+	Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionAssignFunction) , get_line_number()); 
+    if(NULL == e){
+        return NULL;
+    }
+	e->typ = EXPRESSION_TYPE_ASSIGN_FUNCTION;
+    e->u.assign_function = (ExpressionAssignFunction*)(e + 1);
+	e->u.assign_function->identifier = identifier;
+    e->u.assign_function->dest = dest;
+    e->u.assign_function->func = func;
+	e->line = get_line_number();
+    return e;
+}
+
+
 
 
 Expression* 

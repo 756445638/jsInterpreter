@@ -142,6 +142,13 @@ typedef struct ExpressionBinary_tag{
     Expression* right;
 }ExpressionBinary;
 
+typedef struct ExpressionAssignFunction_tag{	
+	char* identifier;
+    Expression* dest;
+    JsFunction* func;
+}ExpressionAssignFunction;
+
+
 
 
 
@@ -206,6 +213,7 @@ typedef enum {
     EXPRESSION_TYPE_LOGICAL_OR,
     EXPRESSION_TYPE_LOGICAL_AND,
     EXPRESSION_TYPE_ASSIGN,
+    EXPRESSION_TYPE_ASSIGN_FUNCTION,
     EXPRESSION_TYPE_EQ,
     EXPRESSION_TYPE_NE,
     EXPRESSION_TYPE_GE,
@@ -248,6 +256,7 @@ struct Expression_tag {
 		char* string;
         ExpressionList* expression_list;
 		ExpressionNew * new;
+		ExpressionAssignFunction* assign_function;
     }u;
 };
 

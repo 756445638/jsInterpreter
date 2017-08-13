@@ -65,6 +65,7 @@ INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function);
 
 
 
+void INTERPRETE_add_buildin(JsInterpreter* inter);
 
 #endif
 

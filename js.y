@@ -103,12 +103,15 @@ statement
     {
         $$ = CREATE_expression_statement($1);
     }
-    |postfix_expression ASSIGN function_noname_definition{
-        printf("create method\n");
+    |postfix_expression ASSIGN function_noname_definition
+    {
+    	Expression* e = CREATE_assign_function_expression($1,NULL,$3);
+        $$ = CREATE_expression_statement(e);
     }
     |VAR IDENTIFIER ASSIGN function_noname_definition
     {
-        printf("create local function");
+    	Expression* e = CREATE_assign_function_expression(NULL,$2,$4);
+        $$ = CREATE_expression_statement(e);
     }
     | if_statement
     | while_statement
