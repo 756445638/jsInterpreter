@@ -101,6 +101,7 @@ yywrap(void)
 <COMMENT>.      ;
 <STRING_LITERAL_STATE>\"        {
     Expression *expression = CREATE_alloc_expression(EXPRESSION_TYPE_STRING);
+    appendchar_temprory_string('\0');
     expression->u.string = literal_string_holder->s;
     yylval.expression = expression;
     BEGIN INITIAL;

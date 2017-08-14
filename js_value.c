@@ -141,7 +141,7 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 
 	if(JS_VALUE_TYPE_STRING == v2->typ || JS_VALUE_TYPE_STRING_LITERAL == v2->typ){
 		JsValue vv1 = js_to_string(inter,v1,line);
-		v = *INTERPRETE_concat_string(inter,v1,v2,line);
+		v = *INTERPRETE_concat_string(inter,&vv1,v2,line);
 	}
 	
 	
