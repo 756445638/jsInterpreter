@@ -119,6 +119,33 @@ JsValue* INTERPRETE_search_field_from_object(JsObject* obj,const char* key){
 	return NULL;
 }
 
+JsValue* INTERPRETE_search_field_from_object_include_prototype(JsObject* obj,const char* key){
+	JsValue* prototype ;
+	JsKvList* list ; 
+	while(NULL != obj){
+		prototype = NULL;
+		list = obj->eles;
+		while(NULL != list){
+		if(0 == strcmp(list->kv.key,"prototype")){
+			prototype = &list->kv.value;
+		}
+		if(0 == strcmp(key,list->kv.key)){
+			return &list->kv.value;
+		}
+		list = list->next;
+		}
+		if(NULL != prototype && JS_VALUE_TYPE_OBJECT == prototype->typ){
+			obj = prototype->u.object;
+		}else{
+			obj = NULL;
+		}
+	}
+	
+	return NULL;
+}
+
+
+
 JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const char* key,JsValue* value,int line){
 	JsValue* v = INTERPRETE_search_field_from_object(obj,key);
 	if(NULL != v){

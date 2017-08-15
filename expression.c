@@ -240,15 +240,15 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 	
 	JsValue* value = NULL;
 	if(INDEX_TYPE_IDENTIFIER == index->typ){
-		value = INTERPRETE_search_field_from_object(v.u.object,index->identifier);		
+		value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,index->identifier);		
 	}else{/*index_type_expression*/
 		eval_expression(inter,env,e->u.index->index);
 		JsValue key = pop_stack(&inter->stack);
 		if(JS_VALUE_TYPE_STRING == key.typ){
-			value = INTERPRETE_search_field_from_object(v.u.object,key.u.string->s);		
+			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,key.u.string->s);		
 		}
 		if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
-			value = INTERPRETE_search_field_from_object(v.u.object,key.u.literal_string);	
+			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,key.u.literal_string);	
 		}
 	}
 	if(NULL == value){
@@ -586,7 +586,7 @@ int eval_method_call_expression(JsInterpreter * inter,ExecuteEnvironment *env,Ex
 		return RUNTIME_ERROR_IS_NOT_AN_OBJECT;
 	}
 
-	JsValue* value = INTERPRETE_search_field_from_object(object.u.object,call->method);
+	JsValue* value = INTERPRETE_search_field_from_object_include_prototype(object.u.object,call->method);
 	if(NULL == value){
 		ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED,call->method,e->line);
 		return RUNTIME_ERROR_FIELD_NOT_DEFINED;
