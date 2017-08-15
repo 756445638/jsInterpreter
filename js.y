@@ -21,7 +21,7 @@
 %token <expression>     DOUBLE_LITERAL
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
-%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN
+%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN PLUS_ASSIGN MINUS_ASSIGN
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
@@ -228,6 +228,16 @@ expression
     {
         $$ = CREATE_assign_expression($1, $3);
     }
+    | postfix_expression PLUS_ASSIGN expression
+    {
+		$$ = CREATE_plus_assign_expression($1, $3);
+    }
+
+    | postfix_expression MINUS_ASSIGN expression
+    {
+		$$ = CREATE_minus_assign_expression($1,$3);
+    }
+
     |VAR IDENTIFIER ASSIGN expression
     {
         $$ = CREATE_localvariable_declare_expression($2, $4);

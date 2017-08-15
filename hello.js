@@ -14,19 +14,14 @@ var lily = MKHuman(18,"lily");
 
 lily.sayHai();
 
-for(var i = 0;i<10;i++){
-	if(i%3 == 0){
-		console.log(i + "%3 = 0");
-	}elseif(i%3 == 1){
-		console.log(i + "%3 = 1" );
-	}else{
-		console.log(i + "%3 = 2" );
-	}
-}
+
+lily.age += 10;
+
+lily.sayHai();
+lily.age -= 10;
 
 
-
-
+lily.sayHai();
 
 
 
