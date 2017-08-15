@@ -574,6 +574,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				h->value.typ = JS_VALUE_TYPE_OBJECT;
 				h->value.u.object = (JsObject*)(h+1);
 				h->value.u.object->mark = 0;
+				h->value.u.object->eles = NULL;
 				break;
 		}
 	return &h->value;
