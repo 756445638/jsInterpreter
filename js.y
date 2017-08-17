@@ -22,7 +22,7 @@
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
 %token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN PLUS_ASSIGN MINUS_ASSIGN
-        LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR
+        LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR TYPEOF
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
 %type   <parameter_list> parameter_list
@@ -394,6 +394,11 @@ primary_expression
         | array_literal
         | object_literal
         | new_object
+        | TYPEOF expression
+        {
+        	ExpressionList* args = CREATE_argument_list($2);
+			$$ = CREATE_function_call_expression("typeof", args);
+        }
         ;
 
 new_object

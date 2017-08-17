@@ -24,6 +24,9 @@ lily.age -= 10;
 lily.sayHai();
 
 
+console.log(typeof lily);
+
+
 
 
 
