@@ -36,6 +36,8 @@ JS_create_interpreter(){
 		MEM_close_storage(interpreter->excute_memory);
 		return NULL;
 	}
+    interpreter->current_env = &interpreter->env;
+	interpreter->heap_count = 0;
     return interpreter;
 }
 
@@ -100,7 +102,7 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
     return f;
 }
 
-
+ 
 JsFunction* CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
 	return INTERPRETE_create_function(current_interpreter, &current_interpreter->env,name, parameterlist,block,get_line_number());
 }
@@ -580,14 +582,16 @@ CREATE_array_expression(ExpressionList* list){
 }
 
 
+
 Expression*
-CREATE_object_expression(){
+CREATE_object_expression(ExpressionObjectKVList* list){
 	Expression* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) ,get_line_number());
     if(NULL == new){
         return NULL;
     }
 	new->typ = EXPRESSION_TYPE_OBJECT;
 	new->line = get_line_number();
+	new->u.object_kv_list = list;
 	return new;
 }
 
@@ -607,6 +611,43 @@ CREATE_new_expression(char* identifer,ExpressionList* args){
 	new->line = get_line_number();
 	return new;
 }
+
+
+
+
+ExpressionObjectKV* CREATE_object_kv(char* identifier_key,Expression* expression_key,Expression* value){
+	ExpressionObjectKV* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionObjectKV) ,get_line_number());
+	new->identifier_key = identifier_key;
+	new->expression_key = expression_key;
+	new->value = value;
+	return new;
+	
+}
+
+ExpressionObjectKVList* CREATE_object_kv_list(ExpressionObjectKV* kv){
+	ExpressionObjectKVList* list = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionObjectKVList) ,get_line_number());
+	list->kv = kv;
+	list->next = NULL;
+	return list;
+}
+
+
+ExpressionObjectKVList* CREATE_chain_object_kv_list(ExpressionObjectKVList* list,ExpressionObjectKV* kv){
+	
+	ExpressionObjectKVList* newlist = CREATE_object_kv_list(kv);
+	if(NULL == list){
+		return newlist;
+	}
+
+	ExpressionObjectKVList* next = list;
+	while(NULL != next->next){
+			next = next->next;
+	}
+	next->next = newlist;
+	return list;
+
+}
+
 
 
 

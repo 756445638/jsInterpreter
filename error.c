@@ -27,6 +27,7 @@ MessageFormat RuntimeErrorMessages[] = {
 	{"method not found"},
 	{"can not use this as left value"},
 	{"unkown new type,only support Object and Array"},
+	{"normal value on heap"},
 	{"dummy"},
 };
 

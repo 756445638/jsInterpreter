@@ -16,13 +16,16 @@
     Block               *block;
     Elsif               *elsif;
     JsFunction          *function;
+    ExpressionObjectKVList* objectkvlist;
+    ExpressionObjectKV* objectkv;
 }
 %token <expression>     INT_LITERAL
 %token <expression>     DOUBLE_LITERAL
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
-%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN PLUS_ASSIGN MINUS_ASSIGN
-        LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND LOGICAL_OR TYPEOF
+%token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN 
+        PLUS_ASSIGN MINUS_ASSIGN LOGICAL_OR TYPEOF
+        LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND 
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
 %type   <parameter_list> parameter_list
@@ -40,6 +43,8 @@
 %type   <block> block
 %type   <elsif> elsif elsif_list
 %type   <function> function_definition function_noname_definition
+%type   <objectkvlist>  objectkvlist
+%type   <objectkv>  objectkv
 %%
 translation_unit
         : definition_or_statement
@@ -416,9 +421,34 @@ array_literal
 object_literal
 		:LC RC
 		{
-			$$ = CREATE_object_expression();
+			$$ = CREATE_object_expression(NULL);
 		}
+        |LC objectkvlist RC
+        {
+            $$ = CREATE_object_expression($2);
+        }
 	    ;
 
+objectkvlist
+    : objectkvlist COMMA objectkv
+    {
+        $$ = CREATE_chain_object_kv_list($1,$3);
+    }
+    | objectkv
+    {
+        $$ = CREATE_object_kv_list($1);
+    }
+    ;
+
+objectkv
+    :IDENTIFIER COLON expression
+    {
+        $$ = CREATE_object_kv($1,NULL,$3);
+    }
+    |expression COLON expression
+    {
+        $$ = CREATE_object_kv(NULL,$1,$3);
+    }
+    ;
 
 %%

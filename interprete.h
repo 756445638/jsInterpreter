@@ -68,7 +68,7 @@ INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function);
 void INTERPRETE_add_buildin(JsInterpreter* inter);
 
 ExecuteEnvironment*
-INTERPRETE_alloc_env(JsInterpreter* inter,int line);
+INTERPRETE_alloc_env(JsInterpreter* inter,ExecuteEnvironment* outter,int line);
 
 
 

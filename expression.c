@@ -328,23 +328,28 @@ int eval_method_and_function_call(
 	int line
 	){
 
-	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,line);
-	if(NULL == callenv){
-		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",line);
-		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-	}
+	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,env,line);
+	inter->current_env = callenv;
 	if(NULL == object){
 		object = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
 		if(NULL == object){
+			INTERPRETE_free_env(inter,env);
+			inter->current_env = env;
 			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",line);
 			return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 		}
 	}
-	callenv->outter = env;
 	ParameterList* paras = func->parameter_list;
 	JsValue v ;
 	v.typ = JS_VALUE_TYPE_NULL;
-
+	int args_count = get_expression_list_length(args);
+	JsValue* arguments = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,args_count,line);
+	if(NULL == arguments){
+			INTERPRETE_free_env(inter,env);
+			inter->current_env = env;
+			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",line);
+			return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
+	}
 	while(NULL != args){
 		/*make value*/
 		eval_expression(inter, env, args->expression);
@@ -353,6 +358,8 @@ int eval_method_and_function_call(
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,line);
 			paras = paras->next;
 		}
+		arguments->u.array->elements[arguments->u.array->length] = v;
+		arguments->u.array->length++;
 		args = args->next;
 	}
 	v.typ = JS_VALUE_TYPE_NULL;
@@ -360,6 +367,8 @@ int eval_method_and_function_call(
 		INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,line);
 		paras = paras->next;
 	}
+
+	INTERPRETE_creaet_variable(inter,callenv,"arguments",arguments,line);
 	JsValue this;
 	this.typ = JS_VALUE_TYPE_OBJECT;
 	this.u.object = object;
@@ -388,13 +397,13 @@ int eval_method_and_function_call(
 					}
 				list = list->next;
 		}
-		
 funcend:
 	INTERPRETE_free_env(inter, callenv);
 	if(0 == returned){
 		v.typ = JS_VALUE_TYPE_NULL;
 		push_stack(&inter->stack, &v);
-	}	
+	}
+	inter->current_env = env;
 	return 0;
 	
 }
@@ -424,6 +433,32 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",e->line);
 		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
 	}
+
+	ExpressionObjectKVList* list = e->u.object_kv_list;
+	JsValue value;
+	while(NULL != list){
+		if(NULL != list->kv->identifier_key){
+			eval_expression(inter, env, list->kv->value);
+			value = pop_stack(&inter->stack);
+			INTERPRETE_create_object_field(inter,v->u.object,list->kv->identifier_key,&value,list->kv->value->line);
+		}else{/*expression*/
+			eval_expression(inter, env, list->kv->expression_key);
+			JsValue key = pop_stack(&inter->stack);
+			if(JS_VALUE_TYPE_STRING_LITERAL != key.typ && JS_VALUE_TYPE_STRING != key.typ){
+				ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE,"only string can be used as object key",list->kv->expression_key->line);
+				return RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE;
+			}
+			eval_expression(inter, env, list->kv->value);
+			value = pop_stack(&inter->stack);
+			if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
+				INTERPRETE_create_object_field(inter,v->u.object,key.u.literal_string,&value,list->kv->value->line);
+			}else{
+				INTERPRETE_create_object_field(inter,v->u.object,key.u.string->s,&value,list->kv->value->line);
+			}
+		}
+		list = list->next;
+	}
+	
 	push_stack(&inter->stack,v);
 	return 0;
 }

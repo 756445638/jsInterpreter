@@ -199,6 +199,17 @@ typedef struct ExpressionFunctionCall_tag {
     ArgumentList* args;
 }ExpressionFunctionCall;
 
+typedef struct ExpressionObjectKV_tag {
+	char* identifier_key;
+	Expression* expression_key;
+	Expression* value;
+} ExpressionObjectKV;
+
+
+typedef struct ExpressionObjectKVList_tag {
+	ExpressionObjectKV* kv;
+	struct ExpressionObjectKVList_tag* next;
+}ExpressionObjectKVList;
 
 
 
@@ -259,6 +270,7 @@ struct Expression_tag {
         ExpressionList* expression_list;
 		ExpressionNew * new;
 		ExpressionAssignFunction* assign_function;
+		ExpressionObjectKVList* object_kv_list;
     }u;
 };
 
@@ -406,12 +418,6 @@ typedef  struct ExecuteEnvironment_tag {
 
 
 
-/*typedef struct JsFunctionCallRuntime_tag{
-	
-}JsFunctionCallRuntime;
-*/
-
-
 
 /*runtime struct*/
 typedef struct  JsInterpreter_tag {
@@ -423,7 +429,9 @@ typedef struct  JsInterpreter_tag {
     VariableList* vars;
 	Stack stack;
 	ExecuteEnvironment env;
-	Heap* heap;
+    ExecuteEnvironment* current_env;
+	Heap* heap;  /*header heap is not use*/
+	unsigned int heap_count;
 }JsInterpreter;
 
 
@@ -437,15 +445,6 @@ typedef enum {
 typedef  struct StamentResult_tag{
 	STATEMENT_RESULT_TYPE typ;
 }StamentResult; 
-
-
-
-
-
-
-
-
-
 
 
 
