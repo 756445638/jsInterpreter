@@ -577,7 +577,7 @@ void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env){
 }
 
 
-JsValue*
+JsValue
 INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line){
 	int allocsize = sizeof(Heap);
 	switch (typ)
@@ -594,7 +594,8 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 		}
 	Heap * h = MEM_alloc(inter->excute_memory,  allocsize,line);
 	if(NULL == h){
-		return NULL;
+		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"", line);
+		return ;
 	}
 	h->prev = NULL;
 	h->next = NULL;
@@ -639,7 +640,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 		gc_mark(inter->current_env);
 		gc_sweep(inter);
 	}
-	return &h->value;
+	return h->value;
 }
 
 
@@ -669,12 +670,12 @@ JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const J
 		second_lenth = strlen(v2->u.literal_string);
 	}
 	int length = first_length + second_lenth;
-	JsValue* v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
-	strncpy(v->u.string->s,first,first_length);
-	strncpy(v->u.string->s + first_length,second,second_lenth);
-	v->u.string->s[length] = 0;
-	v->u.string->length = length;
-	return v;
+	JsValue v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
+	strncpy(v.u.string->s,first,first_length);
+	strncpy(v.u.string->s + first_length,second,second_lenth);
+	v.u.string->s[length] = 0;
+	v.u.string->length = length;
+	return &v;
 	
 }
 

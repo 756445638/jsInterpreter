@@ -142,6 +142,7 @@ JsValue js_value_add(JsInterpreter* inter,const JsValue* const v1,const JsValue*
 	if(JS_VALUE_TYPE_STRING == v2->typ || JS_VALUE_TYPE_STRING_LITERAL == v2->typ){
 		JsValue vv1 = js_to_string(inter,v1,line);
 		v = *INTERPRETE_concat_string(inter,&vv1,v2,line);
+		return v;
 	}
 	
 	
@@ -167,11 +168,11 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 				}
 				break;
 			case JS_VALUE_TYPE_INT:/*how to calculate size */
-				v = *(INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line));
+				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
 				v.u.string->length = snprintf(v.u.string->s,100,"%d",value->u.intvalue);
 				break;
 			case JS_VALUE_TYPE_FLOAT:
-				v = *(INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line));
+				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
 				v.u.string->length = snprintf(v.u.string->s,100,"%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:

@@ -204,11 +204,11 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
-		JsValue* newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
-		strncpy(newv->u.string->s,value.u.literal_string,length);
-		newv->u.string->s[length] = 0;
-		newv->u.string->length = length;
-		*dest = *newv;
+		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
+		strncpy(newv.u.string->s,value.u.literal_string,length);
+		newv.u.string->s[length] = 0;
+		newv.u.string->length = length;
+		*dest = newv;
 	}else{
 		*dest = value;
 	}
@@ -297,22 +297,18 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	int length = get_expression_list_length(e->u.expression_list);
-	JsValue* v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,length * 2 + 1,e->line);
-	if(NULL == v){
-		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",e->line);
-		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-	}
-	v->u.array->length = 0;
+	JsValue v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,length * 2 + 1,e->line);
+	v.u.array->length = 0;
 	ExpressionList* list = e->u.expression_list;
 	JsValue vv ;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		vv = pop_stack(&inter->stack);
-		v->u.array->elements[v->u.array->length] = vv;
-		v->u.array->length++;
+		v.u.array->elements[v.u.array->length] = vv;
+		v.u.array->length++;
 		list = list->next;
 	}
-	push_stack(&inter->stack,  v);
+	push_stack(&inter->stack,  &v);
 	return 0;
 }
 
@@ -331,25 +327,15 @@ int eval_method_and_function_call(
 	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,env,line);
 	inter->current_env = callenv;
 	if(NULL == object){
-		object = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
-		if(NULL == object){
-			INTERPRETE_free_env(inter,env);
-			inter->current_env = env;
-			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",line);
-			return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-		}
+		JsValue createobject = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
+		object = createobject.u.object;
 	}
+	
 	ParameterList* paras = func->parameter_list;
 	JsValue v ;
 	v.typ = JS_VALUE_TYPE_NULL;
 	int args_count = get_expression_list_length(args);
-	JsValue* arguments = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,args_count,line);
-	if(NULL == arguments){
-			INTERPRETE_free_env(inter,env);
-			inter->current_env = env;
-			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",line);
-			return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-	}
+	JsValue arguments = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,args_count,line);
 	while(NULL != args){
 		/*make value*/
 		eval_expression(inter, env, args->expression);
@@ -358,8 +344,8 @@ int eval_method_and_function_call(
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,line);
 			paras = paras->next;
 		}
-		arguments->u.array->elements[arguments->u.array->length] = v;
-		arguments->u.array->length++;
+		arguments.u.array->elements[arguments.u.array->length] = v;
+		arguments.u.array->length++;
 		args = args->next;
 	}
 	v.typ = JS_VALUE_TYPE_NULL;
@@ -368,7 +354,7 @@ int eval_method_and_function_call(
 		paras = paras->next;
 	}
 
-	INTERPRETE_creaet_variable(inter,callenv,"arguments",arguments,line);
+	INTERPRETE_creaet_variable(inter,callenv,"arguments",&arguments,line);
 	JsValue this;
 	this.typ = JS_VALUE_TYPE_OBJECT;
 	this.u.object = object;
@@ -428,11 +414,7 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 
 
 int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
-	JsValue * v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
-	if(NULL == v){
-		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",e->line);
-		return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-	}
+	JsValue  v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
 
 	ExpressionObjectKVList* list = e->u.object_kv_list;
 	JsValue value;
@@ -440,7 +422,7 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 		if(NULL != list->kv->identifier_key){
 			eval_expression(inter, env, list->kv->value);
 			value = pop_stack(&inter->stack);
-			INTERPRETE_create_object_field(inter,v->u.object,list->kv->identifier_key,&value,list->kv->value->line);
+			INTERPRETE_create_object_field(inter,v.u.object,list->kv->identifier_key,&value,list->kv->value->line);
 		}else{/*expression*/
 			eval_expression(inter, env, list->kv->expression_key);
 			JsValue key = pop_stack(&inter->stack);
@@ -451,15 +433,15 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 			eval_expression(inter, env, list->kv->value);
 			value = pop_stack(&inter->stack);
 			if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
-				INTERPRETE_create_object_field(inter,v->u.object,key.u.literal_string,&value,list->kv->value->line);
+				INTERPRETE_create_object_field(inter,v.u.object,key.u.literal_string,&value,list->kv->value->line);
 			}else{
-				INTERPRETE_create_object_field(inter,v->u.object,key.u.string->s,&value,list->kv->value->line);
+				INTERPRETE_create_object_field(inter,v.u.object,key.u.string->s,&value,list->kv->value->line);
 			}
 		}
 		list = list->next;
 	}
 	
-	push_stack(&inter->stack,v);
+	push_stack(&inter->stack,&v);
 	return 0;
 }
 
@@ -468,8 +450,8 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 int eval_new_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	ExpressionNew* new = e->u.new;
 	if(0 == strcmp("Object",new->identifier)){
-		JsValue* v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
-		push_stack(&inter->stack,v);
+		JsValue v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
+		push_stack(&inter->stack,&v);
 		return 0;
 	}
 	if(0 == strcmp("Array",new->identifier)){
@@ -585,18 +567,14 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 int eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,JsValue* array,ExpressionMethodCall* call){
 	int length = get_expression_list_length(call->args);
 	if((length + array->u.array->length) > array->u.array->alloc){
-		JsValue* new = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,2 * (length + array->u.array->length) + 1,call->e->line);
-		if(NULL == new){
-			ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"",call->e->line);
-			return RUNTIME_ERROR_CANNOT_ALLOC_MEMORY;
-		}
-		new->u.array->length = array->u.array->length;
+		JsValue new = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,2 * (length + array->u.array->length) + 1,call->e->line);
+		new.u.array->length = array->u.array->length;
 		int i = 0 ;
 		for(;i<array->u.array->length;i++){  /*copy old values*/
-			new->u.array->elements[i] = array->u.array->elements[i];
+			new.u.array->elements[i] = array->u.array->elements[i];
 		}
 		JsValue * left = array->left_value;
-		*left = *new;
+		*left = new;
 		array = left;
 		array->left_value = left;
 	}
@@ -751,11 +729,11 @@ int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *en
 	}
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
-		JsValue* newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
-		strncpy(newv->u.string->s,value.u.literal_string,length);
-		newv->u.string->s[length] = 0;
-		newv->u.string->length = length;
-		*dest = *newv;
+		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
+		strncpy(newv.u.string->s,value.u.literal_string,length);
+		newv.u.string->s[length] = 0;
+		newv.u.string->length = length;
+		*dest = newv;
 	}else{
 		*dest = value;
 	}

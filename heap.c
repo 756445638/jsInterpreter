@@ -102,8 +102,6 @@ void gc_sweep(JsInterpreter* inter){
 	if(NULL == inter->heap){
 		return ;
 	}
-
-	print_heap(inter->heap);
 	Heap* head = inter->heap;
 	Heap* index = inter->heap->prev;
 	Heap* prev;

@@ -35,7 +35,7 @@ INTERPRETE_creaet_variable(
 
 
 
-JsValue* INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line);
+JsValue INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line);
 
 
 
