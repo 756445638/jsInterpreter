@@ -1,5 +1,5 @@
-#include "heap.h"
 #include "error.h"
+#include "heap.h"
 
 
 void
@@ -10,6 +10,7 @@ push_heap(Heap* head,Heap* h){
 	Heap* oldlast = head->prev;
 	head->prev = h;
 	h->next = head;
+	
 	oldlast->next = h;
 	h->prev = oldlast;
 }
@@ -22,7 +23,6 @@ void print_heap(Heap* head){
 		next = next->next;
 	}
 }
-
 
 
 
@@ -99,9 +99,6 @@ int gc_sweep_get_mark(const JsValue* const v,int line){
 
 
 void gc_sweep(JsInterpreter* inter){
-	if(NULL == inter->heap){
-		return ;
-	}
 	Heap* head = inter->heap;
 	Heap* index = inter->heap->prev;
 	Heap* prev;
@@ -123,6 +120,7 @@ void gc_sweep(JsInterpreter* inter){
 		MEM_free(inter->excute_memory,index);
 		index = prev;
 	}
+	
 }
 
 

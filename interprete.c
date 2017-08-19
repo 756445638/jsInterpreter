@@ -43,6 +43,7 @@ int INTERPRETE_interprete(JsInterpreter* inter){
 	inter->env.vars = NULL;
 	gc_mark(&inter->env);
 	gc_sweep(inter);
+	print_heap(inter->heap);
 	return 0;
 	
 }
@@ -64,8 +65,6 @@ void INTERPRETE_add_buildin(JsInterpreter* inter){
 	console_var_list.var.name = "console";
 	console_var_list.var.value.typ = JS_VALUE_TYPE_OBJECT;
 	console_var_list.var.value.u.object = &console_object;
-
-
 	
 	inter->env.vars = &console_var_list;
 
@@ -158,6 +157,7 @@ JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const
 	if(NULL != v){
 		if(NULL != value){
 			*v = *value;
+			v->left_value = v;
 		}
 		return v;
 	}
@@ -179,11 +179,10 @@ JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const
 		}
 		last->next = list;
 	}
-
 	if(NULL != value){
 		list->kv.value = *value;
 	}
-
+	list->kv.value.left_value = &list->kv.value;
 	return &list->kv.value;
 	
 }
@@ -303,7 +302,14 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 		ret.typ = STATEMENT_RESULT_TYPE_CONTINUE;
 	}
 	if(STATEMENT_TYPE_RETURN == s->typ){/*push stack from outside*/
-		eval_expression( inter, env,s->u.return_expression);
+		if(NULL == s->u.return_expression){
+			JsValue v;
+			v.typ = JS_VALUE_TYPE_NULL;
+			push_stack(&inter->stack,&v);
+		}else{
+			eval_expression( inter, env,s->u.return_expression);
+		}
+		
 		ret.typ = STATEMENT_RESULT_TYPE_RETURN;
 	}
 	if(STATEMENT_TYPE_BREAK == s->typ){
@@ -324,7 +330,6 @@ StamentResult INTERPRETE_execute_statement_for(
 	{
 	ExecuteEnvironment* forenv = INTERPRETE_alloc_env(inter,env,line);
 	inter->current_env = forenv;
-	forenv->outter = env;
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	if(NULL != f->init){
@@ -601,12 +606,10 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	h->next = NULL;
 	h->line = line;
 	if(NULL == inter->heap){
-		Heap* heap = MEM_alloc(inter->excute_memory,sizeof(Heap),line);
-		heap->value.typ = JS_VALUE_TYPE_OBJECT;
-		heap->prev = heap;
-		heap->next = heap;
-		heap->line = -1;
-		inter->heap = heap;
+		inter->heap = MEM_alloc(inter->excute_memory,sizeof(Heap),line);
+		inter->heap->prev = inter->heap;
+		inter->heap->next = inter->heap;
+		inter->heap->line = -1;
 	}
 	switch (typ)
 		{
@@ -635,11 +638,6 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				break;
 		}
 	push_heap(inter->heap,h);
-	inter->heap_count++;
-	if(0 == (inter->heap_count % 10)){
-		gc_mark(inter->current_env);
-		gc_sweep(inter);
-	}
 	return h->value;
 }
 

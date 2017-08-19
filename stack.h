@@ -8,7 +8,7 @@
 
 
 
-void push_stack(Stack* s,JsValue *v);
+void push_stack(Stack* s,const JsValue *v);
 
 JsValue pop_stack(Stack* s);
 

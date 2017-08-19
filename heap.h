@@ -13,6 +13,9 @@ void gc_sweep(JsInterpreter* inter);
 
 
 
+void print_heap(Heap* head);
+
+
 
 #endif
 

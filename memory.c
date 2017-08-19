@@ -9,8 +9,8 @@ Memory* MEM_open_storage(){
     }
     m->pointer = NULL;
     m->line = -1 ;
-    m->next = NULL;
-    m->prev = NULL;
+    m->next = m;
+    m->prev = m;
     return m;
 }
 
@@ -20,7 +20,7 @@ void MEM_close_storage(Memory* m){
     }
     Memory* next = m->next;
     Memory* p = next;
-    while(next != NULL && next != m){
+    while(next != m){
         p = next->next;
         free(next);
         next = p;
@@ -29,39 +29,33 @@ void MEM_close_storage(Memory* m){
 }
 
 
-void* MEM_alloc(Memory *m,int size,int line){
+char* MEM_alloc(Memory *m,int size,int line){
     Memory* new = (Memory*)malloc(sizeof(Memory) + size);
     if(NULL == new){
         return NULL;
     }
     Memory* last = m->prev;
-    new->pointer =(void*)(new + 1) ;
+    new->pointer =(char*)(new + 1) ;
     new->line = line;
     m->prev = new;
     new->next = m ;
-    if (NULL == last){
-       last = m ;
-    }
     last->next = new;
     new->prev = last;
     return new->pointer;
 }
 
 
-void MEM_free(Memory *head,void* p){
-    Memory* next = head->next;
-    int found = 0 ;
-    while(next != head && next != NULL){
-        if(next->pointer == p){
-            found  = 1;
-            break;
-        }
-        next = next->next;
-    }
-    if(0 == found){
-        return ;
-    }
-    free(next);
+void MEM_free(Memory *head,char* p){
+	Memory * next = head->next;
+	while(next != head){
+		if(next->pointer == p){ /*found*/
+			next->prev->next = next->next;
+			next->next->prev = next->prev;
+			free(next);
+			return ;
+		}
+		next = next->next;
+	}
 }
 
 

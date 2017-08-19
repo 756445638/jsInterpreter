@@ -65,7 +65,6 @@ struct JsFunctionBuildin_tag {
 	union{
 		JsValue (*func1)(const JsValue *); /*��������Ϊ1*/
 	}u;
-	
 };
 
 
@@ -423,15 +422,12 @@ typedef  struct ExecuteEnvironment_tag {
 typedef struct  JsInterpreter_tag {
     Memory* interpreter_memory;
     Memory* excute_memory;
-    
     StatementList* statement_list;
-    /*int current_line_number;*/
     VariableList* vars;
 	Stack stack;
 	ExecuteEnvironment env;
     ExecuteEnvironment* current_env;
 	Heap* heap;  /*header heap is not use*/
-	unsigned int heap_count;
 }JsInterpreter;
 
 

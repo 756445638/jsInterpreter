@@ -45,6 +45,7 @@ int eval_increment_decrement_expression(JsInterpreter * inter,ExecuteEnvironment
 	}else{
 		*left = js_increment_or_decrment( left,0);
 	}
+	left->left_value = left;
 	push_stack(&inter->stack,left);
 	return 0;
 }
@@ -170,6 +171,7 @@ int eval_plus_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Ex
 	}
 	JsValue newvalue = js_value_add(inter,dest,&value,e->line);
 	*dest = newvalue;
+	dest->left_value = dest;
 	push_stack(&inter->stack,dest);
 	return 0;
 }
@@ -186,6 +188,7 @@ int eval_minus_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,E
 	}
 	JsValue newvalue = js_value_sub(dest,&value);
 	*dest = newvalue;
+	dest->left_value = dest;
 	push_stack(&inter->stack,dest);
 	return 0;
 }
@@ -212,6 +215,7 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}else{
 		*dest = value;
 	}
+	dest->left_value = dest;
 	push_stack(&inter->stack,dest);
 	return 0;
 }
@@ -423,6 +427,7 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 			eval_expression(inter, env, list->kv->value);
 			value = pop_stack(&inter->stack);
 			INTERPRETE_create_object_field(inter,v.u.object,list->kv->identifier_key,&value,list->kv->value->line);
+
 		}else{/*expression*/
 			eval_expression(inter, env, list->kv->expression_key);
 			JsValue key = pop_stack(&inter->stack);
@@ -737,7 +742,7 @@ int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *en
 	}else{
 		*dest = value;
 	}
-	
+	dest->left_value = dest;
 	push_stack(&inter->stack, dest);
 	return 0;
 

@@ -5,7 +5,7 @@
 #include "stack.h"
 
 
-void push_stack(Stack* s,JsValue* v){
+void push_stack(Stack* s,const JsValue* v){
 	if(s->sp >= s->alloc -1){ /*TODO:: alloc more memory*/
 		printf("stack overflow\n");
 		_exit(3);

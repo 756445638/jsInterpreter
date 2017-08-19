@@ -1,5 +1,3 @@
-
-
 var MKHuman = function(age,name){
 	this.age = age;
 	this.name = name;
@@ -11,22 +9,7 @@ var MKHuman = function(age,name){
 
 var lily = MKHuman(18,"lily");
 
-
 lily.sayHai();
-
-var yuyang = {name:"yuyang","age":22};
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

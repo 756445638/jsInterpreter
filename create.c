@@ -37,7 +37,6 @@ JS_create_interpreter(){
 		return NULL;
 	}
     interpreter->current_env = &interpreter->env;
-	interpreter->heap_count = 0;
     return interpreter;
 }
 
