@@ -99,12 +99,28 @@ int gc_sweep_get_mark(const JsValue* const v,int line){
 
 
 void gc_sweep(JsInterpreter* inter){
+	if(NULL == inter->heap){
+		return ;
+	}
 	Heap* head = inter->heap;
 	Heap* index = inter->heap->prev;
 	Heap* prev;
 	Heap* next;
 	while(index != head){
-		if(1 == gc_sweep_get_mark(&index->value,index->line)){
+		if(1 == gc_sweep_get_mark(&index->value,index->line)){ /*reset mark*/
+			switch(index->value.typ){
+				case JS_VALUE_TYPE_STRING:
+					index->value.u.string->mark = 0;
+					break;
+				case JS_VALUE_TYPE_ARRAY:
+					index->value.u.array->mark = 0 ;
+					break;
+				case JS_VALUE_TYPE_OBJECT:
+					index->value.u.object->mark = 0;
+					break;
+				default:
+					ERROR_runtime_error(RUNTIME_ERROR_NORMAL_VALUE_ON_HEAP,"",index->line);
+			}
 			index = index->prev;
 			continue;
 		}

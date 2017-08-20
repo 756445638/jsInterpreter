@@ -426,7 +426,6 @@ typedef struct  JsInterpreter_tag {
     VariableList* vars;
 	Stack stack;
 	ExecuteEnvironment env;
-    ExecuteEnvironment* current_env;
 	Heap* heap;  /*header heap is not use*/
 }JsInterpreter;
 

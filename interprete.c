@@ -19,6 +19,9 @@ JsFunctionList   jstypeof;
 JsFunctionBuildin typeof_buildin;
 
 
+static unsigned int create_heap_count = 0;
+
+
 
 int INTERPRETE_interprete(JsInterpreter* inter){
     if(NULL == inter->statement_list){
@@ -41,7 +44,7 @@ int INTERPRETE_interprete(JsInterpreter* inter){
 	INTERPRETE_free_env(inter,&inter->env);
 	inter->env.funcs = NULL;
 	inter->env.vars = NULL;
-	gc_mark(&inter->env);
+	gc_mark(NULL);
 	gc_sweep(inter);
 	print_heap(inter->heap);
 	return 0;
@@ -202,14 +205,12 @@ StamentResult INTERPRETE_execute_statement_for_in(
 ){
 
 	ExecuteEnvironment *forinenv = INTERPRETE_alloc_env(inter,env,line);
-	inter->current_env = forinenv;
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	eval_expression(inter,env,in->target);
 	JsValue target = pop_stack(&inter->stack);
 	if(JS_VALUE_TYPE_ARRAY != target.typ && JS_VALUE_TYPE_OBJECT != target.typ){
 		INTERPRETE_free_env(inter, forinenv);
-		inter->current_env = forinenv;
 		return ret; /*can for in this type,just return nothing to do*/
 	}
 	Variable* var;
@@ -272,7 +273,6 @@ end:
 	}
 
 	INTERPRETE_free_env(inter, forinenv);
-	inter->current_env = forinenv;
 	return ret;
 	
 }
@@ -315,6 +315,8 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 	if(STATEMENT_TYPE_BREAK == s->typ){
 		ret.typ = STATEMENT_RESULT_TYPE_BREAK;
 	}
+
+	
 	
 	return ret;
    
@@ -329,7 +331,6 @@ StamentResult INTERPRETE_execute_statement_for(
 	)
 	{
 	ExecuteEnvironment* forenv = INTERPRETE_alloc_env(inter,env,line);
-	inter->current_env = forenv;
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	if(NULL != f->init){
@@ -378,7 +379,6 @@ end:
 			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 		}
 		INTERPRETE_free_env(inter,forenv);
-		inter->current_env = env;
 		return ret;
 }
 
@@ -407,19 +407,15 @@ StamentResult INTERPRETE_execute_statement_if(
 	StatementList* list;
 	if(JS_BOOL_TRUE == istrue){  /*handle true part*/
 		ExecuteEnvironment* ifenv = INTERPRETE_alloc_env(inter,env,line);
-		inter->current_env = ifenv;
 		ret = INTERPRETE_execute_normal_statement_list(inter,ifenv,i->then->list);
 		INTERPRETE_free_env(inter, ifenv);
-		inter->current_env = env;
 		return ret;
 	}
 	
 	if(NULL == i->elseIfList && NULL != i->els){ /*handle else part*/
 		ExecuteEnvironment* ifenv = INTERPRETE_alloc_env(inter,env,line);
-		inter->current_env = ifenv;
 		ret =  INTERPRETE_execute_normal_statement_list(inter,ifenv,i->els->list);
 		INTERPRETE_free_env(inter, ifenv);
-		inter->current_env = env;
 		return ret;
 	}
 	if(NULL == i->elseIfList){
@@ -432,20 +428,16 @@ StamentResult INTERPRETE_execute_statement_if(
 		istrue = is_js_value_true(&v);
 		if(JS_BOOL_TRUE == istrue){
 			ExecuteEnvironment* ifenv = INTERPRETE_alloc_env(inter,env,line);
-			inter->current_env = ifenv;
 			ret = INTERPRETE_execute_normal_statement_list(inter,ifenv,elsifnext->elsif.block->list);
 			INTERPRETE_free_env(inter, ifenv);
-			inter->current_env = env;
 			return ret;
 		}
 		elsifnext = elsifnext->next;
 	}
 
 	ExecuteEnvironment* ifenv = INTERPRETE_alloc_env(inter,env,line);
-	inter->current_env = ifenv;
 	ret =  INTERPRETE_execute_normal_statement_list(inter,ifenv,i->els->list);
 	INTERPRETE_free_env(inter, ifenv);
-	inter->current_env = env;
 	return ret;
 		
 }
@@ -459,7 +451,6 @@ StamentResult INTERPRETE_execute_statement_while(
 	int line
 ){
 	ExecuteEnvironment* whileenv = INTERPRETE_alloc_env(inter,env,line);
-	inter->current_env = whileenv;
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	StatementList* list;
@@ -496,7 +487,6 @@ end:
 		ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	}
 	INTERPRETE_free_env(inter,whileenv);
-	inter->current_env = whileenv;
 	return ret;
 }
 
@@ -514,6 +504,9 @@ INTERPRETE_creaet_variable(
 		JsValue* v,
 		int line
 ){
+
+	
+	
 	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList),line);
 	if(NULL == newlist){
 		return NULL;

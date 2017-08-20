@@ -36,7 +36,6 @@ JS_create_interpreter(){
 		MEM_close_storage(interpreter->excute_memory);
 		return NULL;
 	}
-    interpreter->current_env = &interpreter->env;
     return interpreter;
 }
 

@@ -217,6 +217,8 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}
 	dest->left_value = dest;
 	push_stack(&inter->stack,dest);
+	gc_mark(env);
+	gc_sweep(inter);
 	return 0;
 }
 
@@ -329,7 +331,6 @@ int eval_method_and_function_call(
 	){
 
 	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,env,line);
-	inter->current_env = callenv;
 	if(NULL == object){
 		JsValue createobject = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
 		object = createobject.u.object;
@@ -363,7 +364,8 @@ int eval_method_and_function_call(
 	this.typ = JS_VALUE_TYPE_OBJECT;
 	this.u.object = object;
 	INTERPRETE_creaet_variable(inter,callenv,"this",&this,line);
-	
+	gc_mark(callenv);
+	gc_sweep(inter);
 	StatementList* list = func->block->list;
 		StamentResult ret ;
 		char returned = 0;
@@ -393,7 +395,6 @@ funcend:
 		v.typ = JS_VALUE_TYPE_NULL;
 		push_stack(&inter->stack, &v);
 	}
-	inter->current_env = env;
 	return 0;
 	
 }
