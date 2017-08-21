@@ -38,6 +38,16 @@ JSBool is_js_value_true(const JsValue* v){
 			return JS_BOOL_TRUE;
 		}
 	}
+	if(JS_VALUE_TYPE_OBJECT == v->typ){
+		return JS_BOOL_TRUE;
+	}
+	if(JS_VALUE_TYPE_STRING_LITERAL == v->typ){
+		if(0 == strlen(v->u.literal_string)){
+			return JS_BOOL_FALSE;
+		}else{
+			return JS_BOOL_TRUE;
+		}
+	}
 	return JS_BOOL_FALSE;
 	
 }
@@ -544,6 +554,7 @@ void js_print_array(JsArray* array){
 
  JsValue js_println(const JsValue *value){
 	JsValue v;
+	v.typ = JS_VALUE_TYPE_NULL;
 	v = js_print(value);
 	printf("\n");
 	return v;

@@ -268,7 +268,7 @@ StamentResult INTERPRETE_execute_statement_for_in(
 	
  
 end:
-	if(STATEMENT_RESULT_TYPE_RETURN == ret.typ){
+	if(STATEMENT_RESULT_TYPE_RETURN != ret.typ){
 		ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	}
 
