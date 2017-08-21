@@ -160,7 +160,6 @@ JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const
 	if(NULL != v){
 		if(NULL != value){
 			*v = *value;
-			v->left_value = v;
 		}
 		return v;
 	}
@@ -185,7 +184,6 @@ JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const
 	if(NULL != value){
 		list->kv.value = *value;
 	}
-	list->kv.value.left_value = &list->kv.value;
 	return &list->kv.value;
 	
 }
@@ -216,7 +214,8 @@ StamentResult INTERPRETE_execute_statement_for_in(
 	Variable* var;
 	/*handle array part*/
 	if(JS_VALUE_TYPE_ARRAY == target.typ){
-		int length = target.u.array->length;
+		JsArray* array= *(target.u.array);
+		int length = array->length;
 		int i = 0;
 		for(;i<length;i++){
 			if(0 == i){
@@ -527,7 +526,6 @@ INTERPRETE_creaet_variable(
 	}else{
 		newlist->var.value.typ = JS_VALUE_TYPE_NULL;
 	}
-	newlist->var.value.left_value =  &newlist->var.value;
 	return &newlist->var;
 }
 
@@ -604,34 +602,37 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 		inter->heap->next = inter->heap;
 		inter->heap->line = -1;
 	}
+	JsValue v;
+	v.typ = typ;
+	h->typ = typ;
 	switch (typ)
 		{
 			case JS_VALUE_TYPE_STRING:
-				h->value.typ = JS_VALUE_TYPE_STRING;
-				h->value.u.string = (JsString*)(h+1);
-				h->value.u.string->alloc = size;
-				h->value.u.string->length = 0;
-				h->value.u.string->s = (char*)(h->value.u.string+1);
-				h->value.u.string->s[0] = 0;
-				h->value.u.string->mark = 0;
+				h->u.string = (JsString*)(h+1);
+				v.u.string = &h->u.string;
+				h->u.string->alloc = size;
+				h->u.string->length = 0;
+				h->u.string->s = (char*)(h->u.string+1);
+				h->u.string->s[0] = 0;
+				h->u.string->mark = 0;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
-				h->value.typ = JS_VALUE_TYPE_ARRAY;
-				h->value.u.array = (JsArray*)(h+1);
-				h->value.u.array->mark = 0;
-				h->value.u.array->length = 0;
-				h->value.u.array->alloc = size;
-				h->value.u.array->elements = (JsValue*)(h->value.u.array + 1);
+				h->u.array = (JsArray*)(h+1);
+				v.u.array = &h->u.array;
+				h->u.array->mark = 0;
+				h->u.array->length = 0;
+				h->u.array->alloc = size;
+				h->u.array->elements = (JsValue*)(h->u.array + 1);
 				break;
 			case JS_VALUE_TYPE_OBJECT:
-				h->value.typ = JS_VALUE_TYPE_OBJECT;
-				h->value.u.object = (JsObject*)(h+1);
-				h->value.u.object->mark = 0;
-				h->value.u.object->eles = NULL;
+				h->u.object = (JsObject*)(h+1);
+				v.u.object  = h->u.object;
+				h->u.object->mark = 0;
+				h->u.object->eles = NULL;
 				break;
 		}
 	push_heap(inter->heap,h);
-	return h->value;
+	return v;
 }
 
 
@@ -646,26 +647,30 @@ JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const Js
 	int first_length;
 	char* second;
 	int second_lenth;
+	JsString* string;
 	if(JS_VALUE_TYPE_STRING == v1->typ){
-		first = v1->u.string->s;
-		first_length = v1->u.string->length;
+		string = *(v1->u.string);
+		first = string->s;
+		first_length = string->length;
 	}else{/*string literal*/
 		first = v1->u.literal_string;
 		first_length = strlen(v1->u.literal_string);
 	}
 	if(JS_VALUE_TYPE_STRING == v2->typ){
-			second= v2->u.string->s;
-			second_lenth = v2->u.string->length;
+			string = *(v2->u.string);;
+			second= string->s;
+			second_lenth = string->length;
 	}else{/*string literal*/
 		second = v2->u.literal_string;
 		second_lenth = strlen(v2->u.literal_string);
 	}
 	int length = first_length + second_lenth;
 	JsValue v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
-	strncpy(v.u.string->s,first,first_length);
-	strncpy(v.u.string->s + first_length,second,second_lenth);
-	v.u.string->s[length] = 0;
-	v.u.string->length = length;
+	string = *(v.u.string);
+	strncpy(string->s,first,first_length);
+	strncpy(string->s + first_length,second,second_lenth);
+	string->s[length] = 0;
+	string->length = length;
 	return v;
 	
 }

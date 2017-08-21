@@ -46,14 +46,13 @@ typedef struct JsKvList_tag JsKvList;
 
 struct JsValue_tag {
     JS_VALUE_TYPE typ;
-	JsValue* left_value;
     union{
         JSBool boolvalue;
         int intvalue;
         double floatvalue;
 		JsFunction* func;
-		JsArray* array;
-		JsString* string;
+		JsArray** array;
+		JsString** string;
 		JsObject* object;
 		char* literal_string;
     }u;
@@ -401,7 +400,12 @@ typedef struct Stack_tag{
 typedef struct Heap_tag {
 	struct Heap_tag * prev;
 	struct Heap_tag * next;
-	JsValue value;
+	JS_VALUE_TYPE typ;
+	union{
+		JsString* string;
+		JsObject* object;
+		JsArray* array;
+	}u;
     int line;/*alloc by which line*/
 }Heap;
 

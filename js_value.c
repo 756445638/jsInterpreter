@@ -24,7 +24,7 @@ JSBool is_js_value_true(const JsValue* v){
 		}
 	}
 	if(JS_VALUE_TYPE_STRING == v->typ){
-		int length = v->u.string->length;
+		int length = (*v->u.string)->length;
 		if(0 == length){
 			return JS_BOOL_FALSE;
 		}else{
@@ -32,7 +32,7 @@ JSBool is_js_value_true(const JsValue* v){
 		}
 	}
 	if(JS_VALUE_TYPE_ARRAY == v->typ){
-		if(0 == v->u.array->length){
+		if(0 == (*v->u.array)->length){
 			return JS_BOOL_FALSE;
 		}else{
 			return JS_BOOL_TRUE;
@@ -177,11 +177,11 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 				break;
 			case JS_VALUE_TYPE_INT:/*how to calculate size */
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				v.u.string->length = snprintf(v.u.string->s,100,"%d",value->u.intvalue);
+				(*v.u.string)->length = snprintf((*v.u.string)->s,100,"%d",value->u.intvalue);
 				break;
 			case JS_VALUE_TYPE_FLOAT:
 				v = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING ,100, line);
-				v.u.string->length = snprintf(v.u.string->s,100,"%f",value->u.floatvalue);
+				(*v.u.string)->length = snprintf((*v.u.string)->s,100,"%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
 				v = *value;
@@ -313,12 +313,12 @@ JSBool js_value_equal_string(const JsValue* v1,const JsValue* v2){
 	char * first;
 	char* second;
 	if(JS_VALUE_TYPE_STRING == v1->typ){
-		first = v1->u.string->s;
+		first = (*v1->u.string)->s;
 	}else{
 		first = v1->u.literal_string;
 	}
 	if(JS_VALUE_TYPE_STRING == v2->typ){
-		second = v2->u.string->s;
+		second = (*v2->u.string)->s;
 	}else{
 		second = v2->u.literal_string;
 	}
@@ -386,12 +386,12 @@ JSBool js_value_greater_string(const JsValue* v1,const JsValue* v2){
 	char * first;
 	char* second;
 	if(JS_VALUE_TYPE_STRING == v1->typ){
-		first = v1->u.string->s;
+		first = (*v1->u.string)->s;
 	}else{
 		first = v1->u.literal_string;
 	}
 	if(JS_VALUE_TYPE_STRING == v2->typ){
-		second = v2->u.string->s;
+		second = (*v2->u.string)->s;
 	}else{
 		second = v2->u.literal_string;
 	}
@@ -481,7 +481,7 @@ JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2){
 	}
 
 	if(JS_VALUE_TYPE_STRING== v1->typ && JS_VALUE_TYPE_STRING ==  v2->typ){
-		if(strcmp(v1->u.string->s,v2->u.string->s) >= 0){
+		if(strcmp((*v1->u.string)->s,(*v2->u.string)->s) >= 0){
 			return JS_BOOL_TRUE;
 		}else{
 			return JS_BOOL_FALSE;
@@ -512,7 +512,7 @@ JsValue js_print(const JsValue *value){
 				printf("%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
-				printf("%s",value->u.string->s);
+				printf("%s",(*value->u.string)->s);
 				break;
 			case JS_VALUE_TYPE_NULL:
 				printf("null");
@@ -521,7 +521,7 @@ JsValue js_print(const JsValue *value){
 				printf("undefined");
 				break;
 			case JS_VALUE_TYPE_ARRAY:
-				js_print_array(value->u.array);
+				js_print_array(*value->u.array);
 				break;
 			case JS_VALUE_TYPE_FUNCTION:
 				printf("function");
