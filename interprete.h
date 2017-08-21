@@ -44,7 +44,7 @@ INTERPRETE_search_func_from_function_list(JsFunctionList* list,char* function);
 
 
 
-JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line);
+JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line);
 
 
 void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env);

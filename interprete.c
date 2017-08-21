@@ -641,7 +641,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 
 
 /* must be string or string_literal*/
-JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line){
+JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const JsValue* v2,int line){
 	char* first;
 	int first_length;
 	char* second;
@@ -666,7 +666,7 @@ JsValue* INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const J
 	strncpy(v.u.string->s + first_length,second,second_lenth);
 	v.u.string->s[length] = 0;
 	v.u.string->length = length;
-	return &v;
+	return v;
 	
 }
 
