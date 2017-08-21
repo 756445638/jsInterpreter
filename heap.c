@@ -67,7 +67,6 @@ void gc_mark_env(ExecuteEnvironment* env){
 
 
 void gc_mark(ExecuteEnvironment* env){
-
 	while(NULL != env){
 		gc_mark_env(env);
 		env = env->outter;
@@ -104,6 +103,7 @@ int gc_sweep_get_mark(const Heap* h,int line){
 
 
 void gc_sweep(JsInterpreter* inter){
+
 	if(NULL == inter->heap){
 		return ;
 	}

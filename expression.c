@@ -214,8 +214,8 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 		*dest = value;
 	}
 	push_stack(&inter->stack,dest);
-	gc_mark(env);
-	gc_sweep(inter);
+	//gc_mark(env);
+	//gc_sweep(inter);
 	return 0;
 }
 
@@ -363,8 +363,6 @@ int eval_method_and_function_call(
 	this.typ = JS_VALUE_TYPE_OBJECT;
 	this.u.object = object;
 	INTERPRETE_creaet_variable(inter,callenv,"this",&this,line);
-	gc_mark(callenv);
-	gc_sweep(inter);
 	StatementList* list = func->block->list;
 		StamentResult ret ;
 		char returned = 0;
