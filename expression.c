@@ -465,7 +465,7 @@ int eval_new_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression*
 		arraye.u.expression_list = new->args;
 		return eval_array_expression( inter,env,&arraye);
 	}
-	ERROR_runtime_error(RUNTIME_ERROR_UNKOWN_NEW_TYPE,"",e->line);
+	ERROR_runtime_error(RUNTIME_ERROR_UNKOWN_NEW_TYPE,new->identifier,e->line);
 	return RUNTIME_ERROR_UNKOWN_NEW_TYPE;
 }
 
@@ -600,9 +600,12 @@ int eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,JsValue
 int eval_array_method_pop(JsInterpreter* inter,JsValue* array){
 	JsArray* arr = *(array->u.array);
 	if(arr->length <= 0){
+		 JsValue v;
+		 v.typ = JS_VALUE_TYPE_NULL;
+		push_stack(&inter->stack,&v);
 		return 0;
 	}
-	arr--;
+	arr->length--;
 	JsValue v = arr->elements[arr->length];
 	push_stack(&inter->stack,&v);
 	return 0;

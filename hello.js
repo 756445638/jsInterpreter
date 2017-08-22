@@ -29,7 +29,19 @@ lily.sayHai();
 
 lily.howl();
 
-console.log(lily.desp);
+var push = function(arr){
+	for(var i = 0;i<10;i++){
+		arr.push(i);
+	}
+	return  arr;
+}
+
+var arr = push(new Array());
+arr.push(lily);
+
+arr[arr.length-1].address.pop();
+arr[arr.length-1].sayHai();
+
 
 
 
