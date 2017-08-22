@@ -1,61 +1,35 @@
 
+var animal = {};
+animal.desp = "I am a animal";
+animal.howl = function(){
+	console.log("Woo Woo!!!!!!!!!!!!!!!!!");
+}
 
-var MKHuman = function(age,name){
-console.log(name);
+function MKHuman(name,age){
+	this.name= name;
 	this.age = age;
-	this.name = name;
-	console.log(this.name);
 	this.sayHai = function(){
-		console.log("my name is " + this.name + ", I am " + this.age + " years old");
-		console.log(this.address);
+		console.log("Mine name is " + this.name + ", I am " + this.age + " years old!!!!!!!!!!!!!!");
+		for(var i = 0;i<this.address.length;i++){
+			console.log("Mine " + (i + 1) + "st address is " + this.address[i]);
+		}
 	}
-	
+	this.prototype = animal;
 	return this;
 }
 
-var lily = MKHuman(18,"lily");
 
 
-lily.address = ["shanghai","log angels"];
+lily = MKHuman("lily",18);
+
+lily.address = ["shanghai","chengdu"];
 
 
 lily.sayHai();
 
+lily.howl();
 
-
-
-var animal = {};
-animal.howl = function(){
-	console.log("Woo Woo!!");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+console.log(lily.desp);
 
 
 

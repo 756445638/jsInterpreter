@@ -19,7 +19,7 @@ JsFunctionList   jstypeof;
 JsFunctionBuildin typeof_buildin;
 
 
-static unsigned int create_heap_count = 0;
+
 
 
 
@@ -168,18 +168,16 @@ JsValue* INTERPRETE_create_object_field(JsInterpreter* inter,JsObject* obj,const
 	if(NULL == list){
 		return NULL;
 	}
+	list->next = NULL;
 	list->kv.key = (char*)(list+1);
 	strncpy(list->kv.key,key,length);
 	list->kv.key[length] = 0;
-	list->next == NULL;
+
 	if(NULL == obj->eles){
 		obj->eles = list;
 	}else{
-		JsKvList* last = obj->eles;
-		while(NULL != last->next){
-			last = last->next;
-		}
-		last->next = list;
+		list->next = obj->eles;
+		obj->eles = list;
 	}
 	if(NULL != value){
 		list->kv.value = *value;
@@ -242,6 +240,9 @@ StamentResult INTERPRETE_execute_statement_for_in(
 
 	if(JS_VALUE_TYPE_OBJECT == target.typ){
 		JsKvList* list = target.u.object->eles;
+		if(NULL == list){
+			goto end;
+		}
 		var = INTERPRETE_creaet_variable(inter,forinenv,in->identifer,NULL,-1);
 		var->value.typ = JS_VALUE_TYPE_STRING_LITERAL;
 		while(NULL != list){
@@ -504,8 +505,7 @@ INTERPRETE_creaet_variable(
 		int line
 ){
 
-	
-	
+		
 	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList),line);
 	if(NULL == newlist){
 		return NULL;
@@ -514,11 +514,8 @@ INTERPRETE_creaet_variable(
 	if(NULL == env->vars){
 		env->vars = newlist;
 	}else{
-		VariableList* t = env->vars;
-		while(NULL != t->next){
-			t = t->next;
-		}
-		t->next = newlist;
+		newlist->next = env->vars;
+		env->vars = newlist;
 	}
 	newlist->var.name = name;
 	if(NULL != v){
@@ -632,6 +629,8 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				break;
 		}
 	push_heap(inter->heap,h);
+	extern create_heap_count;
+	create_heap_count++;
 	return v;
 }
 

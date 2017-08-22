@@ -1,6 +1,8 @@
 #include "error.h"
 #include "heap.h"
 
+unsigned int create_heap_count = 0;
+
 
 void
 push_heap(Heap* head,Heap* h){
@@ -46,6 +48,9 @@ void gc_mark_value(JsValue* const v){
 			}
 			break;
 		case JS_VALUE_TYPE_OBJECT:
+			if(JS_OBJECT_TYPE_BUILDIN == v->u.object->typ){
+				break;
+			}
 			kvlist = v->u.object->eles;
 			v->u.object->mark = 1;
 			while(NULL != kvlist){

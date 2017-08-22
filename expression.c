@@ -214,8 +214,11 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 		*dest = value;
 	}
 	push_stack(&inter->stack,dest);
-	//gc_mark(env);
-	//gc_sweep(inter);
+	extern create_heap_count;
+	if( 0 == (create_heap_count % GC_SWEEP_TIMING)){
+		gc_mark(env);
+		gc_sweep(inter);
+	}
 	return 0;
 }
 
@@ -333,8 +336,8 @@ int eval_method_and_function_call(
 	if(NULL == object){
 		JsValue createobject = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
 		object = createobject.u.object;
+		object->eles = NULL;
 	}
-	
 	ParameterList* paras = func->parameter_list;
 	JsValue v ;
 	v.typ = JS_VALUE_TYPE_NULL;
