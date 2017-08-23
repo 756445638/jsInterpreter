@@ -405,14 +405,14 @@ StamentResult INTERPRETE_execute_statement_if(
 	
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
-	eval_expression(inter,env,i->condition);
+	ExecuteEnvironment* conditionenv = INTERPRETE_alloc_env(inter,env,line);
+	eval_expression(inter,conditionenv,i->condition);
 	JsValue v = pop_stack(&inter->stack);
 	JSBool istrue = is_js_value_true(&v);
 	StatementList* list;
 	if(JS_BOOL_TRUE == istrue){  /*handle true part*/
-		ExecuteEnvironment* ifenv = INTERPRETE_alloc_env(inter,env,line);
-		ret = INTERPRETE_execute_normal_statement_list(inter,ifenv,i->then->list);
-		INTERPRETE_free_env(inter, ifenv);
+		ret = INTERPRETE_execute_normal_statement_list(inter,conditionenv,i->then->list);
+		INTERPRETE_free_env(inter, conditionenv);
 		return ret;
 	}
 	

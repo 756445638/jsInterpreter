@@ -369,33 +369,35 @@ int eval_method_and_function_call(
 	this.u.object = object;
 	INTERPRETE_creaet_variable(inter,callenv,"this",&this,line);
 	StatementList* list = func->block->list;
-		StamentResult ret ;
-		char returned = 0;
-		while(NULL != list){
-				ret = INTERPRETE_execute_statement(inter, callenv, list->statement);
-				switch (ret.typ)
-					{
-						case STATEMENT_RESULT_TYPE_NORMAL:
-							break;/*nothing to do*/
-						case STATEMENT_RESULT_TYPE_CONTINUE:
-							INTERPRETE_free_env(inter, callenv);
-							ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE,"continue", list->statement->line);
-							return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
-						case STATEMENT_RESULT_TYPE_BREAK:
-							INTERPRETE_free_env(inter, callenv);
-							ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE,"break", list->statement->line);
-							return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
-						case STATEMENT_RESULT_TYPE_RETURN:
-							returned = 1;
-							goto funcend;
-					}
-				list = list->next;
-		}
+	StamentResult ret ;
+	while(NULL != list){
+			ret = INTERPRETE_execute_statement(inter, callenv, list->statement);
+			switch (ret.typ)
+				{
+					case STATEMENT_RESULT_TYPE_NORMAL:
+						break;/*nothing to do*/
+					case STATEMENT_RESULT_TYPE_CONTINUE:
+						INTERPRETE_free_env(inter, callenv);
+						ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE,"continue", list->statement->line);
+						return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
+					case STATEMENT_RESULT_TYPE_BREAK:
+						INTERPRETE_free_env(inter, callenv);
+						ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE,"break", list->statement->line);
+						return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
+					case STATEMENT_RESULT_TYPE_RETURN:
+						goto funcend;
+				}
+			list = list->next;
+	}
 funcend:
 	INTERPRETE_free_env(inter, callenv);
-	if(0 == returned){
-		v.typ = JS_VALUE_TYPE_NULL;
-		push_stack(&inter->stack, &v);
+	switch(ret.typ){
+		case STATEMENT_RESULT_TYPE_NORMAL:
+			v.typ = JS_VALUE_TYPE_NULL;
+			push_stack(&inter->stack, &v);
+			break;
+		case STATEMENT_RESULT_TYPE_RETURN:
+			break;
 	}
 	return 0;
 	
@@ -762,14 +764,18 @@ JsValue* get_left_value_from_current_env(ExecuteEnvironment* env,char* name){
 
 
 int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	VariableList* list = env->vars;
+	while(NULL != list){
+		if(0 == strcmp(list->var.name,e->u.create_var->identifier)){
+			ERROR_runtime_error(RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED,e->u.create_var->identifier , e->line);
+			return RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED;
+		}
+		list = list->next;
+	}
 	eval_expression(inter, env, e->u.create_var->expression);
 	JsValue value = pop_stack(&inter->stack);
-	JsValue* dest = get_left_value_from_current_env(env,e->u.create_var->identifier);
-	Variable* var;
-	if(NULL == dest){
-		var = INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  NULL, e->line);
-		dest = &var->value;
-	}
+	Variable* var = INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  NULL, e->line);
+	JsValue* dest = &var->value;
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
 		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);

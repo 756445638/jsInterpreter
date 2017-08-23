@@ -20,7 +20,7 @@ function MKHuman(name,age){
 
 
 
-lily = MKHuman("lily",18);
+var lily = MKHuman("lily",18);
 
 lily.address = ["shanghai","chengdu"];
 
@@ -55,5 +55,16 @@ arr[arr.length-1].sayHai();
 
 
 console.log(!0);
+
+lily =123;
+
+if(var a = 1){
+	console.log(1);
+}
+
+if(var a = 0){
+	console.log(1);
+}
+
 
 
