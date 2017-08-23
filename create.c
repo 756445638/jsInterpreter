@@ -102,8 +102,16 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
 
 
 
-JsFunction* CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
-	return INTERPRETE_create_function(current_interpreter, &current_interpreter->env,name, parameterlist,block,get_line_number());
+Expression* CREATE_function_expression(char* name,ParameterList* parameterlist,Block* block){
+	Expression* new = MEM_alloc(current_interpreter->interpreter_memory, sizeof(Expression) + sizeof(JsFunction), get_line_number());
+	new->line = get_line_number();
+	new->typ = EXPRESSION_TYPE_CREATE_FUNCTION;
+	new->u.func = (JsFunction*)(new + 1);
+	new->u.func->name = name;
+	new->u.func->parameter_list = parameterlist;
+	new->u.func->block = block;
+	new->u.func->typ = JS_FUNCTION_TYPE_USER;
+	return new;
 }
 
 

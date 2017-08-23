@@ -755,36 +755,21 @@ INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* variable){
 
 
 
-JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* env,const char* func,ParameterList* args,Block* block,int line){
+JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* env,JsFunction* func,int line){
 	JsFunctionList* funclist = MEM_alloc(inter->excute_memory, sizeof(JsFunctionList), line);
 	if(NULL == funclist){
 		return NULL;
 	}
 	funclist->next = NULL;
-	funclist->func.name = func;
-	funclist->func.typ = JS_FUNCTION_TYPE_USER,
-	funclist->func.parameter_list = args;
-	funclist->func.block = block;
-	funclist->func.typ = JS_FUNCTION_TYPE_USER;
+	funclist->func = *func;
 	if(NULL == env->funcs){
 		env->funcs = funclist;
-		return &funclist->func;
+	}else{
+		funclist->next = env->funcs;
+		env->funcs = funclist;
 	}
-
-	JsFunctionList* list = env->funcs;
-	while(NULL != list->next){
-		list = list->next;
-	}
-	list->next = funclist;
 	return &funclist->func;
 }
-
-
-
-
-
-
-
 
 
 

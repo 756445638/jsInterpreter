@@ -495,6 +495,16 @@ int eval_assign_function_expression(JsInterpreter* inter,ExecuteEnvironment* env
 }
 
 
+int eval_create_function_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
+	JsFunction* func = e->u.func;
+	INTERPRETE_create_function(inter, env, func, e->line);
+	JsValue v;
+	v.typ = JS_VALUE_TYPE_FUNCTION;
+	push_stack(&inter->stack, &v);
+	return 0;
+}
+
+
 int eval_not_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	eval_expression(inter, env, e->u.unary);
 	JsValue v = pop_stack(&inter->stack);
@@ -587,6 +597,8 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_assign_function_expression(inter,env,e);
 			case EXPRESSION_TYPE_NOT:
 				return eval_not_expression(inter, env, e);
+			case EXPRESSION_TYPE_CREATE_FUNCTION:
+				return eval_create_function_expression(inter,env,e);
 		}
 	
 	return 0;

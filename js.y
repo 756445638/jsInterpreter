@@ -52,8 +52,7 @@ translation_unit
         | translation_unit definition_or_statement
         ;
 definition_or_statement
-        : function_definition
-        | statement
+        : statement
         {
             current_interpreter->statement_list
                 = CREATE_chain_statement_list(current_interpreter->statement_list, $1);
@@ -63,11 +62,15 @@ definition_or_statement
 function_definition
         : FUNCTION IDENTIFIER LP parameter_list RP block
         {
-            CREATE_global_function($2, $4, $6);
+        	
+            Expression* e = CREATE_function_expression($2, $4, $6);
+            $$ = CREATE_expression_statement(e);
+            
         }
         | FUNCTION IDENTIFIER LP RP block
         {
-            CREATE_global_function($2, NULL, $5);
+           Expression* e = CREATE_function_expression($2, NULL, $5);
+           $$ = CREATE_expression_statement(e);
         }
         ;
 
@@ -126,6 +129,7 @@ statement
     | continue_statement
     | break_statement
     | SEMICOLON
+    |function_definition
 
 
 break_statement

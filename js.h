@@ -249,7 +249,8 @@ typedef enum {
     EXPRESSION_TYPE_IDENTIFIER,/*identifier right value*/
     EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE,
     EXPRESSION_TYPE_NULL,
-    EXPRESSION_TYPE_NEW
+    EXPRESSION_TYPE_NEW,
+    EXPRESSION_TYPE_CREATE_FUNCTION
     
 }EXPRESSION_TYPE;
 
@@ -273,6 +274,7 @@ struct Expression_tag {
 		ExpressionNew * new;
 		ExpressionAssignFunction* assign_function;
 		ExpressionObjectKVList* object_kv_list;
+		JsFunction* func;
     }u;
 };
 

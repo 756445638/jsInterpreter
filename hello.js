@@ -13,6 +13,7 @@ function MKHuman(name,age){
 		for(var i = 0;i<this.address.length;i++){
 			console.log("Mine " + (i + 1) + "st address is " + this.address[i]);
 		}
+		
 	}
 	this.prototype = animal;
 	return this;
