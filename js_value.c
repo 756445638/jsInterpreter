@@ -491,11 +491,20 @@ JSBool js_value_greater_or_equal(const JsValue* v1,const JsValue* v2){
 }
 
 
-
+void js_print_object(JsObject* object){
+	printf("object:{");
+	JsKvList* eles = object->eles;
+	while(NULL != eles){
+		printf("%s:",eles->kv.key);
+		js_print(&eles->kv.value);
+		printf(" ");
+		eles = eles->next;
+	}
+	printf("}");
+}
 
 JsValue js_print(const JsValue *value){
-	JsValue v ;
-	v.typ = JS_VALUE_TYPE_NULL;
+	JsValue v = *value;
 	switch (value->typ)
 		{
 			case JS_VALUE_TYPE_BOOL:
@@ -527,7 +536,7 @@ JsValue js_print(const JsValue *value){
 				printf("function");
 				break;
 			case JS_VALUE_TYPE_OBJECT:
-				printf("object");
+				js_print_object(value->u.object);
 				break;
 			case JS_VALUE_TYPE_STRING_LITERAL:
 				printf("%s",value->u.literal_string);
@@ -535,6 +544,12 @@ JsValue js_print(const JsValue *value){
 		return v;
 
 }
+
+
+
+
+
+
 
 
 void js_print_array(JsArray* array){

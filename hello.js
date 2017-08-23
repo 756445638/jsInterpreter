@@ -13,7 +13,6 @@ function MKHuman(name,age){
 		for(var i = 0;i<this.address.length;i++){
 			console.log("Mine " + (i + 1) + "st address is " + this.address[i]);
 		}
-		
 	}
 	this.prototype = animal;
 	return this;
@@ -38,7 +37,10 @@ var push = function(arr){
 }
 
 var arr = push(new Array());
+
 arr.push(lily);
+
+console.log(arr);
 
 arr[arr.length-1].address.pop();
 arr[arr.length-1].sayHai();
