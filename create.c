@@ -215,7 +215,7 @@ CREATE_chain_elsif_list(StatementElsifList* list,StatementElsifList* els){
 }
 
 Statement* 
-CREATE_while_statement(Expression* condition, Block* block){
+CREATE_while_statement(Expression* condition, Block* block,char isdo){
     Statement* s = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Statement) + sizeof(StatementWhile),get_line_number());
     if(NULL == s){
         return NULL;
@@ -224,6 +224,7 @@ CREATE_while_statement(Expression* condition, Block* block){
     s->u.while_statement = (StatementWhile*) (s + 1);
     s->u.while_statement->condition  = condition;
     s->u.while_statement->block = block;
+	s->u.while_statement->isdo = isdo;
 	s->line = get_line_number();
     return s;
 }

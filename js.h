@@ -334,6 +334,7 @@ typedef struct StatementForIn_tag {
 typedef struct StatementWhile_tag {
     Expression* condition;
     Block* block;
+	char isdo;
 }StatementWhile;
 
 

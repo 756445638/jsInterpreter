@@ -454,14 +454,24 @@ StamentResult INTERPRETE_execute_statement_while(
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	StatementList* list;
+	char isdo_done;
+	if(0 == w->isdo){
+		isdo_done = 1;
+	}else{
+		isdo_done = 0;
+	}
 	for(;;){
 again:
-		eval_expression(inter,whileenv,w->condition);
-		JsValue v = pop_stack(&inter->stack);
-		JSBool is_true = is_js_value_true(&v);
-		if(JS_BOOL_TRUE != is_true){
-			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
-			goto end;
+		if(0 == isdo_done){
+			isdo_done = 1;
+		}else{
+			eval_expression(inter,whileenv,w->condition);
+			JsValue v = pop_stack(&inter->stack);
+			JSBool is_true = is_js_value_true(&v);
+			if(JS_BOOL_TRUE != is_true){
+				ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+				goto end;
+			}
 		}
 		list = w->block->list;
 		while(NULL != list){

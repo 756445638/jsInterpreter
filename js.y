@@ -168,7 +168,11 @@ elsif
 while_statement
     :WHILE LP expression RP block
     {
-        $$ = CREATE_while_statement($3, $5);
+        $$ = CREATE_while_statement($3, $5,0);
+    }
+    | DO block WHILE LP expression RP SEMICOLON
+    {
+		$$ = CREATE_while_statement($5, $2,1);
     }
     ;
 
