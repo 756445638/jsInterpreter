@@ -160,7 +160,7 @@ int eval_relation_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expre
 }
 
 
-int eval_plus_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
+int eval_self_op_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	eval_expression(inter,env,e->u.binary->right);/*get assign value*/
 	JsValue value = pop_stack(&inter->stack);
 	JsValue *dest = get_left_value(inter,env,e->u.binary->left);
@@ -168,27 +168,29 @@ int eval_plus_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Ex
 			ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,"",e->line);
 			return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
 	}
-	JsValue newvalue = js_value_add(inter,dest,&value,e->line);
-	*dest = newvalue;
-	push_stack(&inter->stack,dest);
-	return 0;
-}
-
-
-
-int eval_minus_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
-	eval_expression(inter,env,e->u.binary->right);/*get assign value*/
-	JsValue value = pop_stack(&inter->stack);
-	JsValue *dest = get_left_value(inter,env,e->u.binary->left);
-	if(NULL == dest){
-			ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,"",e->line);
-			return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
+	JsValue newvalue ;
+	switch(e->typ){
+		case EXPRESSION_TYPE_PLUS_ASSIGN:
+			newvalue = js_value_add(inter,dest,&value,e->line);
+			break;
+		case EXPRESSION_TYPE_MINUS_ASSIGN:
+			newvalue = js_value_sub(dest, &value);
+			break;
+		case EXPRESSION_TYPE_MUL_ASSIGN:
+			newvalue = js_value_mul(dest, &value);
+			break;
+		case EXPRESSION_TYPE_DIV_ASSIGN:
+			newvalue = js_value_div(dest, &value);
+			break;
+		case EXPRESSION_TYPE_MOD_ASSIGN:
+			newvalue = js_value_mod(dest, &value);
+			break;
 	}
-	JsValue newvalue = js_value_sub(dest,&value);
 	*dest = newvalue;
 	push_stack(&inter->stack,dest);
 	return 0;
 }
+
 
 
 
@@ -518,11 +520,13 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				push_stack(&inter->stack,&v);
 				break;
 			case EXPRESSION_TYPE_ASSIGN:
-				return eval_assign_expression(inter,env,e);
+				return eval_assign_expression(inter, env,  e);
 			case EXPRESSION_TYPE_PLUS_ASSIGN:
-				return eval_plus_assign_expression(inter, env, e);
 			case EXPRESSION_TYPE_MINUS_ASSIGN:
-				return eval_minus_assign_expression(inter, env, e);
+			case EXPRESSION_TYPE_MUL_ASSIGN:
+			case EXPRESSION_TYPE_DIV_ASSIGN:
+			case EXPRESSION_TYPE_MOD_ASSIGN:
+				return eval_self_op_assign_expression(inter,env,e);
 			case EXPRESSION_TYPE_NE:
 			case EXPRESSION_TYPE_EQ:
 			case EXPRESSION_TYPE_GE:

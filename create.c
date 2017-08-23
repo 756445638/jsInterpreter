@@ -344,12 +344,12 @@ CREATE_assign_expression(Expression* e1,Expression* e2){
 
 
 Expression*
-CREATE_plus_assign_expression(Expression* e1,Expression* e2){
+CREATE_self_assign_op_expression(EXPRESSION_TYPE typ,Expression* e1,Expression* e2){
     Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) , get_line_number()); 
     if(NULL == e){
         return NULL;
     }
-    e->typ = EXPRESSION_TYPE_PLUS_ASSIGN;
+    e->typ = typ;
     e->u.binary = (ExpressionBinary*)(e + 1);
     e->u.binary->left = e1;
     e->u.binary->right = e2;
@@ -358,19 +358,6 @@ CREATE_plus_assign_expression(Expression* e1,Expression* e2){
 }
 
 
-Expression*
-CREATE_minus_assign_expression(Expression* e1,Expression* e2){
-    Expression* e= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionBinary) , get_line_number()); 
-    if(NULL == e){
-        return NULL;
-    }
-    e->typ = EXPRESSION_TYPE_MINUS_ASSIGN;
-    e->u.binary = (ExpressionBinary*)(e + 1);
-    e->u.binary->left = e1;
-    e->u.binary->right = e2;
-	e->line = get_line_number();
-    return e;
-}
 
 
 

@@ -59,6 +59,9 @@ yywrap(void)
 <INITIAL>"in"            return IN;
 <INITIAL>"+="            return PLUS_ASSIGN;
 <INITIAL>"-="            return MINUS_ASSIGN;
+<INITIAL>"*="            return MUL_ASSIGN;
+<INITIAL>"/="            return DIV_ASSIGN;
+<INITIAL>"%="            return MOD_ASSIGN;
 <INITIAL>"typeof"            return TYPEOF;
 
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {

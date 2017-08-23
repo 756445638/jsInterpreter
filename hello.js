@@ -45,3 +45,10 @@ arr[arr.length-1].sayHai();
 
 
 
+var abc =5;
+
+abc /= 2.5;
+console.log(abc);
+
+
+

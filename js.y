@@ -24,7 +24,8 @@
 %token <expression>     STRING_LITERAL
 %token <identifier>     IDENTIFIER
 %token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN 
-        PLUS_ASSIGN MINUS_ASSIGN LOGICAL_OR TYPEOF
+        PLUS_ASSIGN MINUS_ASSIGN   MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
+        LOGICAL_OR TYPEOF 
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND 
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
@@ -235,14 +236,27 @@ expression
     }
     | postfix_expression PLUS_ASSIGN expression
     {
-		$$ = CREATE_plus_assign_expression($1, $3);
+		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_PLUS_ASSIGN,$1, $3);
     }
 
     | postfix_expression MINUS_ASSIGN expression
     {
-		$$ = CREATE_minus_assign_expression($1,$3);
+		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_MINUS_ASSIGN,$1,$3);
     }
-
+	| postfix_expression MUL_ASSIGN expression
+    {
+		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_MUL_ASSIGN,$1,$3);
+    }
+    | postfix_expression DIV_ASSIGN expression
+    {
+		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_DIV_ASSIGN,$1,$3);
+    }
+    | postfix_expression MOD_ASSIGN expression
+    {
+		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_MOD_ASSIGN,$1,$3);
+    }
+	
+	
     |VAR IDENTIFIER ASSIGN expression
     {
         $$ = CREATE_localvariable_declare_expression($2, $4);
