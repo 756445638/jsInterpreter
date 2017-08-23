@@ -495,6 +495,23 @@ int eval_assign_function_expression(JsInterpreter* inter,ExecuteEnvironment* env
 }
 
 
+int eval_not_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
+	eval_expression(inter, env, e->u.unary);
+	JsValue v = pop_stack(&inter->stack);
+	if(JS_VALUE_TYPE_BOOL == v.typ){
+		v.u.boolvalue = js_reverse_bool(v.u.boolvalue);
+	}else{
+		JSBool istrue = js_reverse_bool(is_js_value_true(&v));
+		v.typ = JS_VALUE_TYPE_BOOL;
+		v.u.boolvalue = istrue;
+	}
+
+	push_stack(&inter->stack, &v);
+	return 0;
+
+}
+
+
 int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	JsValue v ;
 	/*bool expression*/
@@ -568,6 +585,8 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_method_call_expression(inter,env,e);
 			case EXPRESSION_TYPE_ASSIGN_FUNCTION:
 				return eval_assign_function_expression(inter,env,e);
+			case EXPRESSION_TYPE_NOT:
+				return eval_not_expression(inter, env, e);
 		}
 	
 	return 0;

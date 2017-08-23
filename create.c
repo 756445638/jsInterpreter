@@ -100,7 +100,8 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
     return f;
 }
 
- 
+
+
 JsFunction* CREATE_global_function(char* name,ParameterList* parameterlist,Block* block){
 	return INTERPRETE_create_function(current_interpreter, &current_interpreter->env,name, parameterlist,block,get_line_number());
 }
@@ -412,6 +413,24 @@ CREATE_minus_expression(Expression* e){
 	new->line = get_line_number();
     return new;
 }
+
+Expression* 
+CREATE_not_expression(Expression* e){
+	Expression* new= MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) , get_line_number()); 
+    if(NULL == new){
+        return NULL;
+    }
+    new->typ = EXPRESSION_TYPE_NOT;
+    new->u.unary = e;
+	new->line = get_line_number();
+    return new;
+}
+
+
+
+
+
+
 
 Expression* 
 CREATE_index_expression(Expression* e,INDEX_TYPE typ,Expression* index,char* identifier){

@@ -283,6 +283,10 @@ end:
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s){
 	StamentResult ret;
 	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	if(NULL == s){
+
+		return ret;
+	}
 	if(STATEMENT_TYPE_EXPRESSION == s->typ){
 		ret = INTERPRETE_execute_statement_expression(inter,env,s->u.expression_statement);
 	}

@@ -25,7 +25,7 @@
 %token <identifier>     IDENTIFIER
 %token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN 
         PLUS_ASSIGN MINUS_ASSIGN   MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
-        LOGICAL_OR TYPEOF DO
+        LOGICAL_OR TYPEOF DO NOT
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND 
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
@@ -125,6 +125,7 @@ statement
     | return_statement
     | continue_statement
     | break_statement
+    | SEMICOLON
 
 
 break_statement
@@ -344,6 +345,11 @@ unary_expression
     {
         $$ = CREATE_minus_expression($2);
     }
+    | NOT postfix_expression
+    {
+		$$ = CREATE_not_expression($2);
+    }
+    ;
 postfix_expression
     :primary_expression
     |postfix_expression LB expression RB

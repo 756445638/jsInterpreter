@@ -14,7 +14,7 @@ yywrap(void)
 }
 
 %}
-%start COMMENT STRING_LITERAL_STATE
+%start COMMENT STRING_LITERAL_STATE  MULTI_LINE_COMMENT
 %%
 <INITIAL>"function"     return FUNCTION;
 <INITIAL>"if"           return IF;
@@ -41,6 +41,7 @@ yywrap(void)
 <INITIAL>"||"           return LOGICAL_OR;
 <INITIAL>"="            return ASSIGN;
 <INITIAL>"=="           return EQ;
+<INITIAL>"==="           return EQ;
 <INITIAL>"!="           return NE;
 <INITIAL>">"            return GT;
 <INITIAL>">="           return GE;
@@ -64,6 +65,17 @@ yywrap(void)
 <INITIAL>"/="           return DIV_ASSIGN;
 <INITIAL>"%="           return MOD_ASSIGN;
 <INITIAL>"typeof"       return TYPEOF;
+<INITIAL>"!"       return NOT;
+
+<INITIAL>"/*"       	BEGIN MULTI_LINE_COMMENT;
+<MULTI_LINE_COMMENT>\n {
+	increment_line_number();
+}
+<MULTI_LINE_COMMENT>.      ;
+<MULTI_LINE_COMMENT>"*/" {
+	BEGIN INITIAL;
+}
+
 
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
     yylval.identifier = CREATE_identifier(yytext);

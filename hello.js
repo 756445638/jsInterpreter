@@ -42,7 +42,15 @@ arr.push(lily);
 arr[arr.length-1].address.pop();
 arr[arr.length-1].sayHai();
 
+/*
+
+	cccccccccccccccccccc
 
 
+*/
+
+
+
+console.log(!0);
 
 

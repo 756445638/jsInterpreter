@@ -19,6 +19,9 @@ push_heap(Heap* head,Heap* h){
 
 
 void print_heap(Heap* head){
+	if(NULL == head){
+		return ;
+	}
 	Heap* next = head->next;
 	while(next != head){
 		printf("typ:%d line:%d\n",next->typ,next->line);
