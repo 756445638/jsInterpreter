@@ -43,12 +43,12 @@ arr[arr.length-1].address.pop();
 arr[arr.length-1].sayHai();
 
 
+var i = 0;
 
-
-var abc =5;
-
-abc /= 2.5;
-console.log(abc);
+while(i < 10){
+	console.log(i);
+	i++;
+}
 
 
 

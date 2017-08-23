@@ -19,7 +19,8 @@ yywrap(void)
 <INITIAL>"function"     return FUNCTION;
 <INITIAL>"if"           return IF;
 <INITIAL>"else"         return ELSE;
-<INITIAL>else[ ]*if        return ELSIF;
+<INITIAL>else[ ]*if     return ELSIF;
+<INITIAL>"do"			return DO;
 <INITIAL>"while"        return WHILE;
 <INITIAL>"for"          return FOR;
 <INITIAL>"return"       return RETURN_T;
@@ -56,13 +57,13 @@ yywrap(void)
 <INITIAL>"var"          return VAR;
 <INITIAL>"new"          return NEW;
 <INITIAL>":"            return COLON;
-<INITIAL>"in"            return IN;
-<INITIAL>"+="            return PLUS_ASSIGN;
-<INITIAL>"-="            return MINUS_ASSIGN;
-<INITIAL>"*="            return MUL_ASSIGN;
-<INITIAL>"/="            return DIV_ASSIGN;
-<INITIAL>"%="            return MOD_ASSIGN;
-<INITIAL>"typeof"            return TYPEOF;
+<INITIAL>"in"           return IN;
+<INITIAL>"+="           return PLUS_ASSIGN;
+<INITIAL>"-="           return MINUS_ASSIGN;
+<INITIAL>"*="           return MUL_ASSIGN;
+<INITIAL>"/="           return DIV_ASSIGN;
+<INITIAL>"%="           return MOD_ASSIGN;
+<INITIAL>"typeof"       return TYPEOF;
 
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
     yylval.identifier = CREATE_identifier(yytext);
