@@ -287,7 +287,8 @@ typedef enum {
     STATEMENT_TYPE_WHILE,
     STATEMENT_TYPE_CONTINUE,
     STATEMENT_TYPE_RETURN,
-    STATEMENT_TYPE_BREAK
+    STATEMENT_TYPE_BREAK,
+    STATEMENT_TYPE_SWITCH
 }STATEMENT_TYPE;
 
 
@@ -346,6 +347,10 @@ typedef struct StatementReturn_tag {
 }StatementReturn;
 
 
+ typedef struct StatementSwitch_tag StatementSwitch;
+ 
+
+
 struct Statement_tag{
     STATEMENT_TYPE typ;
 	int line;
@@ -356,8 +361,12 @@ struct Statement_tag{
 		StatementForIn* forin_statement;
         StatementWhile* while_statement;
         Expression* return_expression;
+		StatementSwitch* switch_statement;
     }u;
 };
+
+
+
 
 
 typedef struct StatementList_tag {
@@ -365,6 +374,20 @@ typedef struct StatementList_tag {
     struct StatementList_tag* next;
 }StatementList;
 
+
+
+typedef struct  StatementSwitchCaseList_tag {
+	Expression* match;
+	StatementList* list;
+	int line;
+	struct StatementSwitchCaseList_tag* next;
+}StatementSwitchCaseList;
+
+struct StatementSwitch_tag{
+	Expression* condition;
+	StatementSwitchCaseList* list;
+	StatementList* defaultpart;
+};
 
 struct Block_tag{
     StatementList* list;

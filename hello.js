@@ -59,12 +59,25 @@ console.log(!0);
 lily =123;
 
 if(var a = 1){
-	console.log(1);
+	console.log(typeof a);
 }
 
-if(var a = 0){
-	console.log(1);
+
+var p = function(abc){
+	switch(abc){
+		case 0:
+		console.log("case 0");
+		//break;
+		case 1:
+		console.log("case 1");
+		break;
+		default:
+			console.log("no 0 no 1");
+	}
 }
+
+p(0);
+
 
 
 

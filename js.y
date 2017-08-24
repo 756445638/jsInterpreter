@@ -18,6 +18,7 @@
     JsFunction          *function;
     ExpressionObjectKVList* objectkvlist;
     ExpressionObjectKV* objectkv;
+    StatementSwitchCaseList* switchcaselist;
 }
 %token <expression>     INT_LITERAL
 %token <expression>     DOUBLE_LITERAL
@@ -25,7 +26,7 @@
 %token <identifier>     IDENTIFIER
 %token FUNCTION IF ELSE ELSIF WHILE FOR RETURN_T BREAK CONTINUE NULL_T COLON NEW IN 
         PLUS_ASSIGN MINUS_ASSIGN   MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
-        LOGICAL_OR TYPEOF DO NOT
+        LOGICAL_OR TYPEOF DO NOT SWITCH CASE  DEFAULT
         LP RP LC RC LB RB SEMICOLON COMMA ASSIGN LOGICAL_AND 
         EQ NE GT GE LT LE ADD SUB MUL DIV MOD TRUE_T FALSE_T DOT VAR
         INCREMENT DECREMENT
@@ -37,7 +38,7 @@
         additive_expression multiplicative_expression
         unary_expression postfix_expression primary_expression array_literal
 %type   <expression_list> expression_list
-%type   <statement> statement 
+%type   <statement> statement  switch_statement
         if_statement while_statement for_statement
         return_statement break_statement continue_statement
 %type   <statement_list> statement_list
@@ -46,6 +47,7 @@
 %type   <function> function_definition function_noname_definition
 %type   <objectkvlist>  objectkvlist
 %type   <objectkv>  objectkv
+%type  <switchcaselist> switch_statement_cases switch_statement_case
 %%
 translation_unit
         : definition_or_statement
@@ -130,8 +132,30 @@ statement
     | break_statement
     | SEMICOLON
     |function_definition
+    | switch_statement
 
 
+switch_statement_case
+	:CASE expression COLON statement_list
+	{
+		$$ = CREATE_switch_case($2,$4);
+	}
+
+switch_statement_cases
+	:switch_statement_cases switch_statement_case
+	{
+		$$ = CREATE_chain_switch_case($1,$2);
+	}
+	|switch_statement_case
+switch_statement
+	: SWITCH LP expression RP LC switch_statement_cases RC
+	{
+		$$ = CREATE_switch_statement($3,$6,NULL);
+	} 
+	| SWITCH LP expression RP LC switch_statement_cases  DEFAULT COLON statement_list RC
+	{
+		$$ = CREATE_switch_statement($3,$6,$9);
+	}
 break_statement
     :BREAK SEMICOLON
     {

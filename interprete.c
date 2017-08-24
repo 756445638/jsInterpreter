@@ -18,7 +18,8 @@ VariableList console_var_list;
 JsFunctionList   jstypeof;
 JsFunctionBuildin typeof_buildin;
 
-
+unsigned int create_heap_count = 0;
+char gc_sweep_execute = 0;
 
 
 
@@ -278,7 +279,75 @@ end:
 }
 
 
+StamentResult
+INTERPRETE_execute_statement_switch(JsInterpreter* inter,ExecuteEnvironment* env,StatementSwitch* s){
+	StamentResult ret;
+	ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+	eval_expression( inter,  env, s->condition);
+	JsValue value = pop_stack(&inter->stack);
+	ExecuteEnvironment* senv =  INTERPRETE_alloc_env(inter, env, s->condition->line);
+	StatementSwitchCaseList* list = s->list;
+	JsValue match;
+	JSBool istrue;
+	char casematched = 0;
+	while(NULL != list){
+		eval_expression(inter, senv, list->match);
+		match = pop_stack(&inter->stack);
+		istrue = js_value_equal(&value, &match);
+		if(JS_BOOL_TRUE == istrue){
+			casematched = 1;
+			break;
+		}
+		list = list->next;
+	}
+	if(1 == casematched){
+		while(NULL != list){
+		ret = INTERPRETE_execute_normal_statement_list(inter, senv, list->list);
+			switch (ret.typ)
+				{
+					case STATEMENT_RESULT_TYPE_NORMAL:
+						break;
+					case STATEMENT_RESULT_TYPE_CONTINUE:
+						goto end;
+					case STATEMENT_RESULT_TYPE_RETURN:
+						goto end;
+					case STATEMENT_RESULT_TYPE_BREAK:
+						ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+						goto end;
+				}
+			list = list->next;
+		}
+	}else{ /*default part*/
+		if(NULL == s->defaultpart){
+			goto end;
+		}
+		ret = INTERPRETE_execute_normal_statement_list(inter, senv, s->defaultpart);
+			switch (ret.typ)
+				{
+					case STATEMENT_RESULT_TYPE_NORMAL:
+						break;
+					case STATEMENT_RESULT_TYPE_CONTINUE:
+						goto end;
+					case STATEMENT_RESULT_TYPE_RETURN:
+						goto end;
+					case STATEMENT_RESULT_TYPE_BREAK:
+						ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
+						goto end;
+				}
+	}
+	
 
+
+	
+
+	
+
+end:
+	INTERPRETE_free_env(inter, env);
+	
+
+	return ret;
+}
 
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s){
 	StamentResult ret;
@@ -320,7 +389,15 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 		ret.typ = STATEMENT_RESULT_TYPE_BREAK;
 	}
 
-	
+	if(STATEMENT_TYPE_SWITCH == s->typ){
+		ret = INTERPRETE_execute_statement_switch(inter,env,s->u.switch_statement);
+	}
+
+	if(1 == gc_sweep_execute){
+		gc_mark(env);
+		gc_sweep(inter);
+		gc_sweep_execute = 0;
+	}
 	
 	return ret;
    
@@ -643,8 +720,11 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				break;
 		}
 	push_heap(inter->heap,h);
-	extern create_heap_count;
+	create_heap_count;
 	create_heap_count++;
+	if(0 == (create_heap_count % GC_SWEEP_TIMING)){
+		gc_sweep_execute = 1;	
+	}
 	return v;
 }
 

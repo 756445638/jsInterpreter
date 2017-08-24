@@ -65,7 +65,10 @@ yywrap(void)
 <INITIAL>"/="           return DIV_ASSIGN;
 <INITIAL>"%="           return MOD_ASSIGN;
 <INITIAL>"typeof"       return TYPEOF;
-<INITIAL>"!"       return NOT;
+<INITIAL>"!"       		return NOT;
+<INITIAL>"switch"		return SWITCH;
+<INITIAL>"case"			return CASE;
+<INITIAL>"default"		return DEFAULT;
 
 <INITIAL>"/*"       	BEGIN MULTI_LINE_COMMENT;
 <MULTI_LINE_COMMENT>\n {

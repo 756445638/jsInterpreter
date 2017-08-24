@@ -1,7 +1,7 @@
 #include "error.h"
 #include "heap.h"
 
-unsigned int create_heap_count = 0;
+
 
 
 void

@@ -216,11 +216,6 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 		*dest = value;
 	}
 	push_stack(&inter->stack,dest);
-	extern create_heap_count;
-	if( 0 == (create_heap_count % GC_SWEEP_TIMING)){
-		gc_mark(env);
-		gc_sweep(inter);
-	}
 	return 0;
 }
 

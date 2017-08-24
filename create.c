@@ -369,6 +369,38 @@ CREATE_self_assign_op_expression(EXPRESSION_TYPE typ,Expression* e1,Expression* 
 
 
 
+StatementSwitchCaseList*
+CREATE_switch_case(Expression* match,StatementList* list){
+	StatementSwitchCaseList* s = MEM_alloc(current_interpreter->interpreter_memory, sizeof(StatementSwitchCaseList), get_line_number());
+	s->line = get_line_number();
+	s->match = match;
+	s->list = list;
+	s->next = NULL;
+	return s;
+}
+
+
+StatementSwitchCaseList*
+CREATE_chain_switch_case(StatementSwitchCaseList* list,StatementSwitchCaseList* e){
+	StatementSwitchCaseList* lis = list;
+	while(NULL != lis->next){
+		lis = lis->next;
+	}
+	lis->next = e ;
+	return list;
+}
+
+Statement*
+CREATE_switch_statement(Expression* condition,StatementSwitchCaseList* list,StatementList* d){
+	Statement* s = MEM_alloc(current_interpreter->interpreter_memory, sizeof(StatementSwitch) + sizeof(Statement), get_line_number());
+	s->typ = STATEMENT_TYPE_SWITCH;
+	s->u.switch_statement = (StatementSwitch*)(s + 1);
+	s->u.switch_statement->condition = condition;
+	s->u.switch_statement->list = list;
+	s->u.switch_statement->defaultpart = d;
+	return s;
+}
+
 
 
 

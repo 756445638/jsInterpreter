@@ -533,7 +533,7 @@ JsValue js_print(const JsValue *value){
 				js_print_array(*value->u.array);
 				break;
 			case JS_VALUE_TYPE_FUNCTION:
-				printf("function");
+				printf("function:%s",value->u.func->name);
 				break;
 			case JS_VALUE_TYPE_OBJECT:
 				js_print_object(value->u.object);
