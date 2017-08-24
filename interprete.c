@@ -393,11 +393,7 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 		ret = INTERPRETE_execute_statement_switch(inter,env,s->u.switch_statement);
 	}
 
-	if(1 == gc_sweep_execute){
-		gc_mark(env);
-		gc_sweep(inter);
-		gc_sweep_execute = 0;
-	}
+	
 	
 	return ret;
    

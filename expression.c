@@ -215,6 +215,12 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}else{
 		*dest = value;
 	}
+	extern gc_sweep_execute;
+	if(1 == gc_sweep_execute){
+		gc_mark(env);
+		gc_sweep(inter);
+		gc_sweep_execute = 0;
+	}
 	push_stack(&inter->stack,dest);
 	return 0;
 }
@@ -759,18 +765,20 @@ JsValue* get_left_value_from_current_env(ExecuteEnvironment* env,char* name){
 
 
 int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
+	JsValue* dest = NULL;
 	VariableList* list = env->vars;
 	while(NULL != list){
 		if(0 == strcmp(list->var.name,e->u.create_var->identifier)){
-			ERROR_runtime_error(RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED,e->u.create_var->identifier , e->line);
-			return RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED;
+			dest = &list->var.value;
 		}
 		list = list->next;
 	}
 	eval_expression(inter, env, e->u.create_var->expression);
 	JsValue value = pop_stack(&inter->stack);
-	Variable* var = INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  NULL, e->line);
-	JsValue* dest = &var->value;
+	if(NULL == dest){
+		Variable* var = INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier,  NULL, e->line);
+	 	dest = &var->value;
+	}
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
 		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);

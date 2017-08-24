@@ -1,4 +1,5 @@
 
+
 var animal = {};
 animal.desp = "I am a animal";
 animal.howl = function(){
@@ -45,12 +46,8 @@ console.log(arr);
 arr[arr.length-1].address.pop();
 arr[arr.length-1].sayHai();
 
-/*
-
-	cccccccccccccccccccc
 
 
-*/
 
 
 
@@ -74,10 +71,39 @@ var p = function(abc){
 		default:
 			console.log("no 0 no 1");
 	}
+	console.log(typeof abc);
 }
 
-p(0);
+p(false);
 
 
 
 
+
+
+
+
+
+function bubbleSort(arr) {
+    var len = arr.length;
+    for (var i = 0; i < len; i++) {
+        for (var j = 0; j < len - 1 - i; j++) {
+            if (arr[j] > arr[j+1]) {        // 相邻元素两两对比
+                var temp = arr[j+1];        // 元素交换
+                arr[j+1] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+    return arr;
+}
+
+console.log(bubbleSort(new Array(15,152,45,78112,458,12,33,3231,3231,13354,122)));
+
+
+
+
+for(var i = 0;i<10;i++){
+	var vvv = 123;
+	console.log(vvv);
+}
