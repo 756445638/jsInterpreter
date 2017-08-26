@@ -591,8 +591,8 @@ INTERPRETE_creaet_variable(
 		int line
 ){
 
-		
-	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList),line);
+	int length = strlen(name);
+	VariableList* newlist =(VariableList* ) MEM_alloc(inter->excute_memory,sizeof(VariableList) + length + 1,line);
 	if(NULL == newlist){
 		return NULL;
 	}
@@ -603,7 +603,9 @@ INTERPRETE_creaet_variable(
 		newlist->next = env->vars;
 		env->vars = newlist;
 	}
-	newlist->var.name = name;
+	newlist->var.name = (char*)(newlist + 1);
+	strncpy(newlist->var.name,name,length);
+	newlist->var.name[length] = 0;
 	if(NULL != v){
 		newlist->var.value = *v;
 	}else{
@@ -818,12 +820,12 @@ INTERPRETE_search_func_from_env(ExecuteEnvironment* env,char* function){
 
 JsValue *
 INTERPRETE_search_variable_from_env(ExecuteEnvironment* env,char* variable){
-	int length = strlen(variable);
 	VariableList* list;
+	JsFunctionList* funclist;
 	while(NULL != env){
 		list = env->vars;
 		while(NULL != list){
-			if(0 == strncmp(list->var.name,variable,length)){
+			if(0 == strcmp(list->var.name,variable)){
 				return &list->var.value;
 			}
 			list = list->next;

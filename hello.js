@@ -7,6 +7,7 @@ animal.howl = function(){
 }
 
 function MKHuman(name,age){
+	console.log(typeof age);
 	this.name= name;
 	this.age = age;
 	this.sayHai = function(){

@@ -371,7 +371,6 @@ int eval_method_and_function_call(
 		INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,line);
 		paras = paras->next;
 	}
-
 	INTERPRETE_creaet_variable(inter,callenv,"arguments",&arguments,line);
 	JsValue this;
 	this.typ = JS_VALUE_TYPE_OBJECT;
@@ -415,6 +414,9 @@ funcend:
 
 
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
+	
+	INTERPRETE_search_func_from_env
+
 	/*only support search global function now!!*/		
 	JsFunction* func = INTERPRETE_search_func_from_env(env,e->u.function_call->func);
 	if(NULL == func){
