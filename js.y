@@ -220,6 +220,12 @@ return_statement
     {
         $$ = CREATE_return_statement($2);
     }
+    | RETURN_T function_noname_definition
+    {
+		Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_FUNCTION);
+		e->u.func = $2;
+		$$ = CREATE_return_statement(e);
+    }
     ;
 continue_statement
     :CONTINUE SEMICOLON

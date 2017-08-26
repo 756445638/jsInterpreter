@@ -611,6 +611,11 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_method_call_expression(inter,env,e);
 			case EXPRESSION_TYPE_ASSIGN_FUNCTION:
 				return eval_assign_function_expression(inter,env,e);
+			case EXPRESSION_TYPE_FUNCTION:
+				v.typ = JS_VALUE_TYPE_FUNCTION;
+				v.u.func = e->u.func;
+				push_stack(&inter->stack,&v);
+				return 0;
 			case EXPRESSION_TYPE_NOT:
 				return eval_not_expression(inter, env, e);
 			case EXPRESSION_TYPE_CREATE_FUNCTION:

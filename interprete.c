@@ -382,7 +382,6 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 		}else{
 			eval_expression( inter, env,s->u.return_expression);
 		}
-		
 		ret.typ = STATEMENT_RESULT_TYPE_RETURN;
 	}
 	if(STATEMENT_TYPE_BREAK == s->typ){
