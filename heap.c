@@ -107,7 +107,6 @@ void gc_mark(ExecuteEnvironment* env){
 }
 
 
-
 void gc_sweep_object(JsInterpreter* inter,JsObject* object){
 	JsKvList* list = object->eles;
 	JsKvList* next = list;
@@ -117,7 +116,6 @@ void gc_sweep_object(JsInterpreter* inter,JsObject* object){
 		list = next;
 	}
 }
-
 
 
 
@@ -195,7 +193,6 @@ void gc_sweep(JsInterpreter* inter){
 		env = env->next;
 	}
 	inter->heapenv = remains_env;
-	
 }
 
 

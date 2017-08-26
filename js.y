@@ -180,6 +180,12 @@ if_statement
     {
         $$ = CREATE_if_statement($3, $5, $6, $8);
     }
+    | IF LP expression RP statement
+    {
+		StatementList* s = CREATE_statement_list($5);
+		Block* b = CREATE_block(s);
+		$$  = CREATE_if_statement($3,b,NULL,NULL);
+    }
     ;
 elsif_list
     :elsif
@@ -203,6 +209,12 @@ while_statement
     {
 		$$ = CREATE_while_statement($5, $2,1);
     }
+    | WHILE LP expression RP statement
+    {
+		StatementList* s = CREATE_statement_list($5);
+		Block* b = CREATE_block(s);
+		$$ = CREATE_while_statement($3, b,0);
+    }
     ;
 
 for_statement
@@ -213,6 +225,18 @@ for_statement
     | FOR LP VAR IDENTIFIER IN expression RP block
     {
         $$ = CREATE_for_in_statement($4,$6,$8);
+    }
+    | FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP statement
+    {
+		StatementList* s = CREATE_statement_list($9);
+		Block* b = CREATE_block(s);
+		$$ = CREATE_for_statement($3, $5, $7, b);
+    }
+    |  FOR LP VAR IDENTIFIER IN expression RP statement
+    {
+		StatementList* s = CREATE_statement_list($8);
+		Block* b = CREATE_block(s);
+		$$ = CREATE_for_in_statement($4,$6,b);
     }
     ;
 return_statement
@@ -299,6 +323,11 @@ expression
     |VAR IDENTIFIER ASSIGN expression
     {
         $$ = CREATE_localvariable_declare_expression($2, $4);
+    }
+    | VAR IDENTIFIER
+    {
+        Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_UNDEFINED);
+        $$ = CREATE_localvariable_declare_expression($2, e);
     }
     ;
 logical_or_expression

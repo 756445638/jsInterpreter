@@ -571,6 +571,10 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				v.typ = JS_VALUE_TYPE_NULL;
 				push_stack(&inter->stack,&v);
 				break;
+			case EXPRESSION_TYPE_UNDEFINED:
+				v.typ = JS_VALUE_TYPE_UNDEFINED;
+				push_stack(&inter->stack,&v);
+				break;
 			case EXPRESSION_TYPE_ASSIGN:
 				return eval_assign_expression(inter, env,  e);
 			case EXPRESSION_TYPE_PLUS_ASSIGN:
