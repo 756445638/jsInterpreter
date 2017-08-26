@@ -206,11 +206,14 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
-		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
-		JsString* string  = *(newv.u.string);
+		Heap* h= INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
+		JsString* string  = h->u.string;
 		strncpy(string->s,value.u.literal_string,length);
 		string->s[length] = 0;
 		string->length = length;
+		JsValue newv;
+		newv.typ = JS_VALUE_TYPE_STRING;
+		newv.u.string = h;
 		*dest = newv;
 	}else{
 		*dest = value;
@@ -228,7 +231,7 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
   
 int eval_array_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,JsValue* array,ExpressionIndex* index,int line){
 	JsValue key;
-	JsArray* arr = *(array->u.array);
+	JsArray* arr = array->u.array->u.array;
 	if(INDEX_TYPE_EXPRESSION == index->typ){
 		eval_expression(inter,  env, index->index);
 		key = pop_stack(&inter->stack);
@@ -283,12 +286,12 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 	
 	JsValue* value = NULL;
 	if(INDEX_TYPE_IDENTIFIER == index->typ){
-		value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,index->identifier);		
+		value = (JsValue *)INTERPRETE_search_field_from_object_include_prototype(v.u.object,index->identifier);		
 	}else{/*index_type_expression*/
 		eval_expression(inter,env,e->u.index->index);
 		JsValue key = pop_stack(&inter->stack);
 		if(JS_VALUE_TYPE_STRING == key.typ){
-			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,(*key.u.string)->s);		
+			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,*key.u.string->u.string->s);		
 		}
 		if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
 			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object,key.u.literal_string);	
@@ -307,8 +310,11 @@ int eval_index_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expression* e){
 	int length = get_expression_list_length(e->u.expression_list);
-	JsValue v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,length * 2 + 1,e->line);
-	JsArray* array = *v.u.array;
+	Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,length * 2 + 1,e->line);
+	JsValue v ;
+	v.typ = JS_VALUE_TYPE_ARRAY;
+	v.u.array = h;
+	JsArray* array = h->u.array;
 	array->length = 0;
 	ExpressionList* list = e->u.expression_list;
 	JsValue vv ;
@@ -337,15 +343,17 @@ int eval_method_and_function_call(
 
 	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,env,line);
 	if(NULL == object){
-		JsValue createobject = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
-		object = createobject.u.object;
-		object->eles = NULL;
+		Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
+		object = h->u.object;
 	}
 	ParameterList* paras = func->parameter_list;
 	JsValue v ;
 	v.typ = JS_VALUE_TYPE_NULL;
 	int args_count = get_expression_list_length(args);
-	JsValue arguments = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,args_count,line);
+	Heap* arguments_h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,args_count,line);
+	JsValue arguments ;
+	arguments.typ = JS_VALUE_TYPE_ARRAY;
+	arguments.u.array = arguments_h;
 	while(NULL != args){
 		/*make value*/
 		eval_expression(inter, env, args->expression);
@@ -354,8 +362,8 @@ int eval_method_and_function_call(
 			INTERPRETE_creaet_variable(inter,callenv,paras->identifier,&v,line);
 			paras = paras->next;
 		}
-		(*arguments.u.array)->elements[(*arguments.u.array)->length] = v;
-		(*arguments.u.array)->length++;
+		arguments_h->u.array->elements[arguments_h->u.array->length] = v;
+		arguments_h->u.array->length++;
 		args = args->next;
 	}
 	v.typ = JS_VALUE_TYPE_NULL;
@@ -424,8 +432,10 @@ int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,E
 
 
 int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
-	JsValue  v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
-
+	Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
+	JsValue  v;
+	v.typ = JS_VALUE_TYPE_OBJECT;
+	v.u.object = h->u.object;
 	ExpressionObjectKVList* list = e->u.object_kv_list;
 	JsValue value;
 	while(NULL != list){
@@ -446,7 +456,7 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 			if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
 				INTERPRETE_create_object_field(inter,v.u.object,key.u.literal_string,&value,list->kv->value->line);
 			}else{
-				INTERPRETE_create_object_field(inter,v.u.object,(*key.u.string)->s,&value,list->kv->value->line);
+				INTERPRETE_create_object_field(inter,v.u.object,key.u.string->u.string->s,&value,list->kv->value->line);
 			}
 		}
 		list = list->next;
@@ -461,7 +471,10 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 int eval_new_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 	ExpressionNew* new = e->u.new;
 	if(0 == strcmp("Object",new->identifier)){
-		JsValue v = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
+		Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,e->line);
+		JsValue v ;
+		v.typ = JS_VALUE_TYPE_OBJECT;
+		v.u.object = h->u.object;
 		push_stack(&inter->stack,&v);
 		return 0;
 	}
@@ -610,18 +623,21 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 
 int eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,JsValue* array,ExpressionMethodCall* call){
 	int length = get_expression_list_length(call->args);
-	if((length + (*array->u.array)->length) > (*array->u.array)->alloc){
-		JsValue new = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,2 * (length + (*array->u.array)->length) + 1,call->e->line);
-		(*new.u.array)->length = (*array->u.array)->length;
+	int total_length = length + array->u.array->u.array->length;
+	if(total_length > array->u.array->u.array->alloc){
+		Heap* h =  INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_ARRAY,2 * total_length + 1,call->e->line);
+		h->u.array->length =  array->u.array->u.array->length;
 		int i = 0 ;
-		for(;i<(*array->u.array)->length;i++){  /*copy old values*/
-			(*new.u.array)->elements[i] = (*array->u.array)->elements[i];
+		for(;i<h->u.array->length;i++){  /*copy old values*/
+			h->u.array->elements[i] = array->u.array->u.array->elements[i];
 		}
-		*array->u.array = (*new.u.array);
+		JsArray* tmp = h->u.array;
+		h->u.array = array->u.array->u.array;
+		array->u.array->u.array = tmp;
 	}
 	ArgumentList* list = call->args;
 	JsValue v;
-	JsArray * arr = *(array->u.array);
+	JsArray * arr = array->u.array->u.array;
 	while(NULL != list){
 		eval_expression(inter,env,list->expression);
 		v = pop_stack(&inter->stack);
@@ -636,7 +652,7 @@ int eval_array_method_push(JsInterpreter * inter,ExecuteEnvironment *env,JsValue
 }
 
 int eval_array_method_pop(JsInterpreter* inter,JsValue* array){
-	JsArray* arr = *(array->u.array);
+	JsArray* arr = array->u.array->u.array;
 	if(arr->length <= 0){
 		 JsValue v;
 		 v.typ = JS_VALUE_TYPE_NULL;
@@ -781,8 +797,11 @@ int eval_create_variable_expression(JsInterpreter * inter,ExecuteEnvironment *en
 	}
 	if(JS_VALUE_TYPE_STRING_LITERAL == value.typ){
 		int length = strlen(value.u.literal_string);
-		JsValue newv = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
-		JsString* string = *(newv.u.string);
+		Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_STRING,length + 1,e->line);
+		JsValue newv;
+		newv.typ = JS_VALUE_TYPE_STRING;
+		newv.u.string = h;
+		JsString* string = h->u.string;
 		strncpy(string->s,value.u.literal_string,length);
 		string->s[length] = 0;
 		string->length = length;
@@ -810,7 +829,7 @@ JsValue* get_left_value_index(JsInterpreter* inter,ExecuteEnvironment* env,Expre
 			ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE,"",e->line);
 			return NULL;
 		}
-		JsArray* array = *(v.u.array);
+		JsArray* array = v.u.array->u.array;
 		eval_expression(inter,env, index->index);
 		JsValue key = pop_stack(&inter->stack);
 		if(JS_VALUE_TYPE_INT != key.typ){
@@ -834,10 +853,9 @@ JsValue* get_left_value_index(JsInterpreter* inter,ExecuteEnvironment* env,Expre
 			if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
 				fieldname = key.u.literal_string;
 			}else if(JS_VALUE_TYPE_STRING == key.typ){
-				fieldname = (*key.u.string)->s;
+				fieldname = key.u.string->u.string->s;
 			}
 		}
-		
 		if(NULL == fieldname){
 			ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE,"",e->line);
 			return NULL;

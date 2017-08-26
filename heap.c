@@ -40,11 +40,11 @@ void gc_mark_value(JsValue* const v){
 	JsArray* array;
 	switch(v->typ){
 		case JS_VALUE_TYPE_STRING:
-			string = *v->u.string;
+			string = v->u.string->u.string;
 			string->mark = 1;
 			break;
 		case JS_VALUE_TYPE_ARRAY:
-			array = *v->u.array;
+			array = v->u.array->u.array;
 			array->mark = 1;
 			for(i = 0;i<array->length;i++){
 				gc_mark_value(array->elements + i);
@@ -146,6 +146,7 @@ void gc_sweep(JsInterpreter* inter){
 		next = index->next;
 		prev->next = next;
 		next->prev = prev;
+		MEM_free(inter->excute_memory,index->u.array);
 		MEM_free(inter->excute_memory,index);
 		index = prev;
 	}

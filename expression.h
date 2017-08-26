@@ -2,7 +2,7 @@
 #define EXPRESSION_H
 
 #include "js.h"
-
+#include "heap.h"
 
 
 

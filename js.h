@@ -44,6 +44,12 @@ typedef struct JsObject_tag JsObject;
 typedef struct JsKv_tag JsKv;
 typedef struct JsKvList_tag JsKvList;
 
+
+typedef struct Heap_tag Heap;
+
+
+
+
 struct JsValue_tag {
     JS_VALUE_TYPE typ;
     union{
@@ -51,8 +57,8 @@ struct JsValue_tag {
         int intvalue;
         double floatvalue;
 		JsFunction* func;
-		JsArray** array;
-		JsString** string;
+		Heap* array;
+		Heap* string;
 		JsObject* object;
 		char* literal_string;
     }u;
@@ -88,6 +94,7 @@ struct JsObject_tag{
 	char mark;
 	JS_OBJECT_TYPE typ;
 	JsKvList* eles; 
+	int line;
 };
 
 
@@ -99,6 +106,7 @@ struct JsString_tag {
 	int length;
 	int alloc;
 	char mark;
+	int line;
 };
 
 
@@ -107,6 +115,7 @@ struct JsArray_tag {
     int length;
     int alloc;
 	char mark;
+	int line;
 };
 
 
@@ -427,7 +436,7 @@ typedef struct Stack_tag{
 
 
 
-typedef struct Heap_tag {
+struct Heap_tag {
 	struct Heap_tag * prev;
 	struct Heap_tag * next;
 	JS_VALUE_TYPE typ;
@@ -437,7 +446,7 @@ typedef struct Heap_tag {
 		JsArray* array;
 	}u;
     int line;/*alloc by which line*/
-}Heap;
+};
 
 
 
