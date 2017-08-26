@@ -20,9 +20,9 @@ JsValue pop_stack(Stack* s){
 	return  s->vs[s->sp];
 }
 
-JsValue* peek_stack(Stack* s,int index){
-	JsValue* v =  s->vs + s->sp-index-1;
-	return v;
+JsValue peek_stack(Stack* s,int index){
+	int offset = s->sp - index - 1;
+	return  s->vs[offset];
 }
 
 

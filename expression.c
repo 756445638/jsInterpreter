@@ -332,6 +332,7 @@ int eval_array_expression(JsInterpreter * inter,ExecuteEnvironment* env,Expressi
 
 
 
+
 int eval_method_and_function_call(
 	JsInterpreter* inter,
 	ExecuteEnvironment* env,
@@ -340,11 +341,22 @@ int eval_method_and_function_call(
 	ArgumentList* args,
 	int line
 	){
-
 	ExecuteEnvironment* callenv = INTERPRETE_alloc_env(inter,env,line);
+	ExecuteEnvironment* closureenv = NULL;
 	if(NULL == object){
 		Heap* h = INTERPRETE_creaet_heap(inter,JS_VALUE_TYPE_OBJECT,0,line);
 		object = h->u.object;
+		closureenv = get_last_not_null_outter_env(func->env);
+		if(NULL != closureenv){
+			callenv->outter = func->env;
+			closureenv->outter = env;
+		}
+	}else{
+		closureenv = get_last_not_null_outter_env(object->env);
+		if(NULL != closureenv){
+			callenv->outter = object->env;
+			closureenv->outter = env;
+		}
 	}
 	ParameterList* paras = func->parameter_list;
 	JsValue v ;
@@ -398,25 +410,23 @@ int eval_method_and_function_call(
 			list = list->next;
 	}
 funcend:
-	INTERPRETE_free_env(inter, callenv);
-	switch(ret.typ){
-		case STATEMENT_RESULT_TYPE_NORMAL:
-			v.typ = JS_VALUE_TYPE_NULL;
-			push_stack(&inter->stack, &v);
-			break;
-		case STATEMENT_RESULT_TYPE_RETURN:
-			break;
+	callenv->outter = env;
+	if(NULL != closureenv){
+		closureenv->outter = NULL;
+	}
+	if(STATEMENT_RESULT_TYPE_RETURN != ret.typ){/*push a default value*/
+		v.typ = JS_VALUE_TYPE_NULL;
+		push_stack(&inter->stack, &v);
+		INTERPRETE_free_env( inter, callenv);
+	}else{
+		INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter,callenv,&ret);
 	}
 	return 0;
 	
 }
 
 
-
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
-	
-	INTERPRETE_search_func_from_env
-
 	/*only support search global function now!!*/		
 	JsFunction* func = INTERPRETE_search_func_from_env(env,e->u.function_call->func);
 	if(NULL == func){
@@ -445,7 +455,6 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 			eval_expression(inter, env, list->kv->value);
 			value = pop_stack(&inter->stack);
 			INTERPRETE_create_object_field(inter,v.u.object,list->kv->identifier_key,&value,list->kv->value->line);
-
 		}else{/*expression*/
 			eval_expression(inter, env, list->kv->expression_key);
 			JsValue key = pop_stack(&inter->stack);
@@ -463,7 +472,6 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 		}
 		list = list->next;
 	}
-	
 	push_stack(&inter->stack,&v);
 	return 0;
 }
@@ -533,7 +541,6 @@ int eval_not_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression*
 		v.typ = JS_VALUE_TYPE_BOOL;
 		v.u.boolvalue = istrue;
 	}
-
 	push_stack(&inter->stack, &v);
 	return 0;
 

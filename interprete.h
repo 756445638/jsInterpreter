@@ -72,5 +72,19 @@ INTERPRETE_alloc_env(JsInterpreter* inter,ExecuteEnvironment* outter,int line);
 
 
 
+
+
+void INTERPRETE_check_return_value_free_or_push_in_envheap(
+	JsInterpreter* inter,
+	ExecuteEnvironment* env,
+	StamentResult* ret
+);
+
+
+
+ExecuteEnvironment*
+get_last_not_null_outter_env(ExecuteEnvironment* env);
+
+
 #endif
 

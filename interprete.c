@@ -65,13 +65,12 @@ void INTERPRETE_add_buildin(JsInterpreter* inter){
 	console_log.next = NULL;
 	console_object.eles = &console_log;	
 	console_object.typ = JS_OBJECT_TYPE_BUILDIN;
+	console_object.env = NULL;
 	console_var_list.next = NULL;
 	console_var_list.var.name = "console";
 	console_var_list.var.value.typ = JS_VALUE_TYPE_OBJECT;
 	console_var_list.var.value.u.object = &console_object;
-	
 	inter->env.vars = &console_var_list;
-
 	/*buildin function typeof*/
 	jstypeof.func.typ= JS_FUNCTION_TYPE_BUILDIN;
 	jstypeof.func.buildin = &typeof_buildin;
@@ -80,7 +79,6 @@ void INTERPRETE_add_buildin(JsInterpreter* inter){
 	typeof_buildin.args_count = 1;
 	typeof_buildin.u.func1 = js_typeof;
 
-	
 		
 	inter->env.funcs = &jstypeof;
 
@@ -272,8 +270,7 @@ end:
 	if(STATEMENT_RESULT_TYPE_RETURN != ret.typ){
 		ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	}
-
-	INTERPRETE_free_env(inter, forinenv);
+	INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, forinenv,&ret);
 	return ret;
 	
 }
@@ -343,11 +340,29 @@ INTERPRETE_execute_statement_switch(JsInterpreter* inter,ExecuteEnvironment* env
 	
 
 end:
-	INTERPRETE_free_env(inter, env);
-	
-
+	INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, senv,&ret);
 	return ret;
 }
+
+
+void INTERPRETE_mark_js_value_env(JsValue* v,ExecuteEnvironment* env){
+	int i = 0;
+	switch(v->typ){
+				case JS_VALUE_TYPE_FUNCTION:
+					v->u.func->env = NULL;
+					break;
+				case JS_VALUE_TYPE_OBJECT:
+					v->u.object->env = NULL;
+					break;
+				case JS_VALUE_TYPE_ARRAY:
+					for(;i<v->u.array->u.array->length;i++){
+						INTERPRETE_mark_js_value_env(v->u.array->u.array->elements + i,env);
+					}
+					break;
+		}
+}
+
+
 
 StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironment* env,Statement* s){
 	StamentResult ret;
@@ -381,6 +396,8 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 			push_stack(&inter->stack,&v);
 		}else{
 			eval_expression( inter, env,s->u.return_expression);
+			JsValue v = peek_stack(&inter->stack,0);
+			INTERPRETE_mark_js_value_env(&v,NULL);
 		}
 		ret.typ = STATEMENT_RESULT_TYPE_RETURN;
 	}
@@ -391,8 +408,6 @@ StamentResult INTERPRETE_execute_statement(JsInterpreter* inter,ExecuteEnvironme
 	if(STATEMENT_TYPE_SWITCH == s->typ){
 		ret = INTERPRETE_execute_statement_switch(inter,env,s->u.switch_statement);
 	}
-
-	
 	
 	return ret;
    
@@ -454,7 +469,7 @@ end:
 		if(STATEMENT_RESULT_TYPE_RETURN != ret.typ){
 			ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 		}
-		INTERPRETE_free_env(inter,forenv);
+		INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter,forenv,&ret);
 		return ret;
 }
 
@@ -484,14 +499,14 @@ StamentResult INTERPRETE_execute_statement_if(
 	StatementList* list;
 	if(JS_BOOL_TRUE == istrue){  /*handle true part*/
 		ret = INTERPRETE_execute_normal_statement_list(inter,conditionenv,i->then->list);
-		INTERPRETE_free_env(inter, conditionenv);
+		INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, conditionenv,&ret);
 		return ret;
 	}
 	
 	if(NULL == i->elseIfList && NULL != i->els){ /*handle else part*/
 		ExecuteEnvironment* ifenv = (ExecuteEnvironment*)INTERPRETE_alloc_env(inter,env,line);
 		ret =  INTERPRETE_execute_normal_statement_list(inter,ifenv,i->els->list);
-		INTERPRETE_free_env(inter, ifenv);
+		INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, ifenv,&ret);
 		return ret;
 	}
 	if(NULL == i->elseIfList){
@@ -505,7 +520,7 @@ StamentResult INTERPRETE_execute_statement_if(
 		if(JS_BOOL_TRUE == istrue){
 			ExecuteEnvironment* ifenv = (ExecuteEnvironment*)INTERPRETE_alloc_env(inter,env,line);
 			ret = INTERPRETE_execute_normal_statement_list(inter,ifenv,elsifnext->elsif.block->list);
-			INTERPRETE_free_env(inter, ifenv);
+			INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, ifenv,&ret);
 			return ret;
 		}
 		elsifnext = elsifnext->next;
@@ -513,7 +528,7 @@ StamentResult INTERPRETE_execute_statement_if(
 
 	ExecuteEnvironment* ifenv = (ExecuteEnvironment*)INTERPRETE_alloc_env(inter,env,line);
 	ret =  INTERPRETE_execute_normal_statement_list(inter,ifenv,i->els->list);
-	INTERPRETE_free_env(inter, ifenv);
+	INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, ifenv,&ret);
 	return ret;
 		
 }
@@ -572,7 +587,7 @@ end:
 	if(STATEMENT_RESULT_TYPE_RETURN != ret.typ){
 		ret.typ = STATEMENT_RESULT_TYPE_NORMAL;
 	}
-	INTERPRETE_free_env(inter,whileenv);
+	INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter,whileenv,&ret);
 	return ret;
 }
 
@@ -625,6 +640,8 @@ INTERPRETE_alloc_env(JsInterpreter* inter,ExecuteEnvironment* outter,int line){
 	env->funcs = NULL;
 	env->outter = outter;
 	env->vars = NULL;
+	env->next = NULL;
+	env->mark = 0 ;
 	return env;
 }
 
@@ -710,6 +727,7 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 				h->u.object->mark = 0;
 				h->u.object->eles = NULL;
 				h->u.object->line = line;
+				h->u.object->env = NULL;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
 				h->u.array = (JsArray*)p;
@@ -859,6 +877,74 @@ JsFunction* INTERPRETE_create_function(JsInterpreter* inter,ExecuteEnvironment* 
 
 
 
+
+
+
+void INTERPRETE_check_return_value_free_env_or_push_in_envheap(
+	JsInterpreter* inter,
+	ExecuteEnvironment* env,
+	StamentResult* ret
+){
+	if( STATEMENT_RESULT_TYPE_RETURN != ret->typ){
+		INTERPRETE_free_env( inter, env);
+		return ;
+	}
+	JsValue value = peek_stack(&inter->stack,0);
+	char is_object_embed_array = 0;
+	if(JS_VALUE_TYPE_ARRAY == value.typ){
+		int i = 0;
+		for(;i<value.u.array->u.array->length;i++){
+			if(JS_VALUE_TYPE_OBJECT == value.u.array->u.array->elements[i].typ){
+				is_object_embed_array = 1;
+				if(NULL  == value.u.array->u.array->elements[i].u.object->env){
+					value.u.array->u.array->elements[i].u.object->env = env;
+				}
+			}
+		}
+	}
+	if(
+		is_object_embed_array == 0 /*no object in a array*/
+		&& JS_VALUE_TYPE_FUNCTION != value.typ
+		&& JS_VALUE_TYPE_OBJECT != value.typ
+	)
+	{
+		INTERPRETE_free_env( inter, env);
+		return ;
+	}
+	switch(value.typ){
+		case JS_VALUE_TYPE_FUNCTION:
+			if(NULL == value.u.func->env){
+				value.u.func->env = env;
+			}
+			break;
+		case JS_VALUE_TYPE_OBJECT:
+			if(NULL == value.u.object->env){
+				value.u.object->env = env;
+			}
+			break;
+	}
+	/*put env in heap*/
+	if(NULL == inter->heapenv){
+		inter->heapenv = env;
+	}else{
+		env->next = inter->heapenv;
+		inter->heapenv = env;
+	}
+}
+
+
+
+ExecuteEnvironment*
+get_last_not_null_outter_env(ExecuteEnvironment* env){
+	while(NULL != env){
+		if(NULL == env->outter){
+			return env;
+		}else{
+			env = env->outter;
+		}
+	}
+	return NULL;
+}
 
 
 

@@ -23,6 +23,7 @@ JS_create_interpreter(){
         return NULL;
     }
     interpreter->statement_list = NULL;
+	interpreter->heapenv = NULL;
     interpreter->interpreter_memory = inter_memory;
 	interpreter->heap = NULL;
 	interpreter->env.outter = NULL;
@@ -97,6 +98,7 @@ JsFunction* CREATE_function(char* name,ParameterList* parameterlist,Block* block
     f->block = block;
     f->parameter_list = parameterlist;
     f->name = name;
+	f->env = NULL;
     return f;
 }
 
@@ -111,6 +113,7 @@ Expression* CREATE_function_expression(char* name,ParameterList* parameterlist,B
 	new->u.func->parameter_list = parameterlist;
 	new->u.func->block = block;
 	new->u.func->typ = JS_FUNCTION_TYPE_USER;
+	new->u.func->env = NULL;
 	return new;
 }
 
@@ -419,6 +422,8 @@ CREATE_assign_function_expression(Expression* dest,char* identifier,JsFunction* 
 	e->line = get_line_number();
     return e;
 }
+
+
 
 
 

@@ -15,6 +15,8 @@ JsValue pop_stack(Stack* s);
 
 
 
+JsValue peek_stack(Stack* s,int index);
+
 
 #endif 
 

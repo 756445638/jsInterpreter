@@ -38,6 +38,7 @@ void gc_mark_value(JsValue* const v){
 	JsKvList * kvlist ;
 	JsString* string;
 	JsArray* array;
+	ExecuteEnvironment* env;
 	switch(v->typ){
 		case JS_VALUE_TYPE_STRING:
 			string = v->u.string->u.string;
@@ -60,6 +61,18 @@ void gc_mark_value(JsValue* const v){
 				gc_mark_value(&kvlist->kv.value);
 				kvlist = kvlist->next;
 			}
+			env = v->u.object->env;
+			while(NULL != env){
+				env->mark = 1;
+				env = env->outter;
+			}
+			break;
+		case JS_VALUE_TYPE_FUNCTION:
+			env = v->u.func->env;
+			while(NULL != env){
+				env->mark = 1;
+				env = env->outter;
+			}
 			break;
 	}
 }
@@ -70,7 +83,19 @@ void gc_mark_env(ExecuteEnvironment* env){
 			gc_mark_value(&list->var.value);
 			list = list->next;
 	}
+	JsFunctionList* funclist = env->funcs;
+	ExecuteEnvironment* closure_env;
+	while(NULL != funclist){
+		closure_env = funclist->func.env;
+		while(NULL != closure_env){
+			closure_env->mark = 1;
+			closure_env = closure_env->outter;
+		}
+		funclist = funclist->next;
+	}
 }
+
+
 
 
 
@@ -150,6 +175,26 @@ void gc_sweep(JsInterpreter* inter){
 		MEM_free(inter->excute_memory,index);
 		index = prev;
 	}
+
+	//free envs
+	ExecuteEnvironment* remains_env= NULL;
+	ExecuteEnvironment* env = inter->heapenv;
+	while(NULL != env){
+		if(1 == env->mark){
+			if(NULL == env){
+				remains_env = env;
+				remains_env->next = NULL;
+			}else{
+				env->next = remains_env;
+				remains_env = env;
+			}
+			env = env->next;
+			continue;
+		}
+		INTERPRETE_free_env(inter, env);
+		env = env->next;
+	}
+	inter->heapenv = remains_env;
 	
 }
 

@@ -48,6 +48,8 @@ typedef struct JsKvList_tag JsKvList;
 typedef struct Heap_tag Heap;
 
 
+typedef  struct ExecuteEnvironment_tag ExecuteEnvironment;
+
 
 
 struct JsValue_tag {
@@ -95,6 +97,7 @@ struct JsObject_tag{
 	JS_OBJECT_TYPE typ;
 	JsKvList* eles; 
 	int line;
+	ExecuteEnvironment* env;
 };
 
 
@@ -418,6 +421,7 @@ struct JsFunction_tag {
     Block* block;
     ParameterList* parameter_list;
 	JsFunctionBuildin* buildin;
+	ExecuteEnvironment* env;
 };
 
 
@@ -453,11 +457,13 @@ struct Heap_tag {
 
 
 
-typedef  struct ExecuteEnvironment_tag {
+struct ExecuteEnvironment_tag {
 	JsFunctionList* funcs;
 	VariableList* vars;
-	struct ExecuteEnvironment_tag* outter;
-}ExecuteEnvironment;
+	char mark;
+	struct ExecuteEnvironment_tag* next;/*for manage in heap*/
+	struct ExecuteEnvironment_tag* outter;  /*for js excute*/
+};
 
 
 
@@ -471,6 +477,7 @@ typedef struct  JsInterpreter_tag {
 	Stack stack;
 	ExecuteEnvironment env;
 	Heap* heap;  /*header heap is not use*/
+	ExecuteEnvironment* heapenv;
 }JsInterpreter;
 
 
