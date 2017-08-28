@@ -42,6 +42,20 @@ mem_binary_tree_get_successor(MemoryBinayTree* node){
 }
 
 
+
+void mem_binary_tree_delete_tree(MemoryBinayTree* tree){
+	if(NULL == tree){
+		return ;
+	}
+	if(NULL != tree->left){
+		mem_binary_tree_delete_tree(tree->left);
+	}
+	if(NULL != tree->right){
+		mem_binary_tree_delete_tree(tree->right);
+	}
+	free(tree);
+}
+
 void mem_binary_tree_delete(MemoryBinayTree * head, char* p){
 	MemoryBinayTree* position = head;
 	char found = 0;
@@ -178,7 +192,7 @@ void MEM_close_storage(Memory* m){
     }
     int i = 0;
 	for(;i<MOD_NUMBER;i++){
-		
+		mem_binary_tree_delete_tree( m->table[i]);
 	}
     free(m);
 }
