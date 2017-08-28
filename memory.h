@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <malloc.h>
 
-#define MOD_NUMBER (1333)
+#define MOD_NUMBER (13337)
 
 typedef struct MemoryBinayTree_s  {
 	struct MemoryBinayTree_s * parent;
@@ -13,7 +13,6 @@ typedef struct MemoryBinayTree_s  {
 	char* pointer;
 	int line;
 }MemoryBinayTree;
-
 
 
 

@@ -223,10 +223,6 @@ void MEM_free(Memory *m,char* p){
 	unsigned long offset = (unsigned long)p;
 	offset %= MOD_NUMBER;
 	MemoryBinayTree* head = m->table[offset];
-	if(NULL == head){
-		printf("trying to free unmalloced memory");
-		return ;
-	}
 	mem_binary_tree_delete(head, p);
 }
 
