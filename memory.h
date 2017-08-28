@@ -4,15 +4,27 @@
 #include <stdio.h>
 #include <malloc.h>
 
+#define MOD_NUMBER (1333)
 
-/*it is a linked list,first node is not for use*/
+typedef struct MemoryBinayTree_s  {
+	struct MemoryBinayTree_s * parent;
+	struct MemoryBinayTree_s * left;
+	struct MemoryBinayTree_s * right;
+	char* pointer;
+	int line;
+}MemoryBinayTree;
+
+
+
+
+
 typedef struct Memory_s {
-    char* pointer;
-    int line;
-    struct Memory_s* prev;
-    struct Memory_s* next;
-    
+    MemoryBinayTree* table[MOD_NUMBER];
 } Memory;
+
+
+
+
 
 
 char* MEM_alloc(Memory *m,int size,int line);
