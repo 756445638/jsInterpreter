@@ -226,6 +226,10 @@ for_statement
     {
         $$ = CREATE_for_in_statement($4,$6,$8);
     }
+    |FOR LP IDENTIFIER IN expression RP block
+    {
+		$$ = CREATE_for_in_statement($3,$5,$7);
+    }
     | FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP statement
     {
 		StatementList* s = CREATE_statement_list($9);
@@ -237,6 +241,12 @@ for_statement
 		StatementList* s = CREATE_statement_list($8);
 		Block* b = CREATE_block(s);
 		$$ = CREATE_for_in_statement($4,$6,b);
+    }
+    |  FOR LP IDENTIFIER IN expression RP statement
+    {
+		StatementList* s = CREATE_statement_list($7);
+		Block* b = CREATE_block(s);
+		$$ = CREATE_for_in_statement($3,$5,b);
     }
     ;
 return_statement
@@ -438,6 +448,14 @@ postfix_expression
     | postfix_expression DECREMENT
     {
         $$ = CREATE_incdec_expression($1, EXPRESSION_TYPE_DECREMENT);
+    }
+    |INCREMENT postfix_expression
+    {
+		$$ = CREATE_incdec_expression($2, EXPRESSION_TYPE_PRE_INCREMENT);
+    }
+    |DECREMENT postfix_expression
+    {
+		$$ = CREATE_incdec_expression($2, EXPRESSION_TYPE_PRE_DECREMENT);
     }
     ;
 argument_list

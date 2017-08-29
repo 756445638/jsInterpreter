@@ -40,12 +40,17 @@ int eval_increment_decrement_expression(JsInterpreter * inter,ExecuteEnvironment
 		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND,"varialbe not defined or can not use as left value",e->line);
 		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
 	}
-	if(EXPRESSION_TYPE_INCREMENT == e->typ){
+	JsValue oldvalue = *left;
+	if(EXPRESSION_TYPE_INCREMENT == e->typ || EXPRESSION_TYPE_PRE_INCREMENT == e->typ){
 		*left = js_increment_or_decrment( left,1);
 	}else{
 		*left = js_increment_or_decrment( left,0);
 	}
-	push_stack(&inter->stack,left);
+	if(EXPRESSION_TYPE_PRE_DECREMENT == e->typ || EXPRESSION_TYPE_PRE_INCREMENT == e->typ){
+		push_stack(&inter->stack,left);
+	}else{
+		push_stack(&inter->stack,&oldvalue);
+	}
 	return 0;
 }
 
@@ -603,6 +608,8 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 				return eval_logical_expression(inter,env,e);
 			case EXPRESSION_TYPE_INCREMENT:
 			case EXPRESSION_TYPE_DECREMENT:
+			case EXPRESSION_TYPE_PRE_DECREMENT:
+			case EXPRESSION_TYPE_PRE_INCREMENT:
 				return eval_increment_decrement_expression(inter,env,e);
 			case EXPRESSION_TYPE_NEGATIVE:
 				return eval_negative_expression(inter,env,e);

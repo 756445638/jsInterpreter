@@ -34,9 +34,15 @@ lily.sayHai();
 lily.howl();
 
 
-for(var i in (var arr = new Array(1,2,3)))
-	console.log(arr[i]);
-	console.log("##");
+for(i in (var arr = new Array(1,2,3)))
+{
+var a = 0;
+console.log(arr[++a]);
+}
+
+
+
+
 
 
 
