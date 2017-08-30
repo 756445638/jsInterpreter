@@ -4,18 +4,19 @@ git clone https://github.com/756445638/jsInterpreter
 
 cd jsInterpreter 
 
-depends: flex bison make gcc (on fedora execute "dnf -y install flex bison make gcc")
+depends: flex bison make gcc (on fedora execute "dnf(or yum) -y install flex bison make gcc",on ubuntu execute "apt-get -y install flex bison make gcc")
 
-make clean && make
+make
 
 examples:
-./jsinterpreter example/hello.js
 
-./jsinterpreter example/closure.js
+	./jsinterpreter example/hello.js
 
-./jsinterpreter example/recursive.js
+	./jsinterpreter example/closure.js
 
-./jsinterpreter example/bubblesort.js
+	./jsinterpreter example/recursive.js
 
-./jsinterpreter example/gc_test.js
+	./jsinterpreter example/bubblesort.js
+
+	./jsinterpreter example/gc_test.js
 
