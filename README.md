@@ -4,7 +4,7 @@ git clone https://github.com/756445638/jsInterpreter
 
 cd jsInterpreter 
 
-depends: flex bison make gcc (on fedora excute "dnf -y install flex bison make gcc")
+depends: flex bison make gcc (on fedora execute "dnf -y install flex bison make gcc")
 
 make clean && make
 
