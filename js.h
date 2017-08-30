@@ -9,7 +9,7 @@
 #define ISZORE(x) ((x<0.000001) && (x>-0.000001))
 #define BUILDIN_FUNCTION_MAX_ARGS 10
 
-#define GC_SWEEP_TIMING 1
+#define GC_SWEEP_TIMING (5000)
 
 typedef enum {
     JS_BOOL_TRUE =1 ,

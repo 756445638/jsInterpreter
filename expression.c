@@ -223,11 +223,11 @@ int eval_assign_expression(JsInterpreter * inter,ExecuteEnvironment* env,Express
 	}else{
 		*dest = value;
 	}
-	extern gc_sweep_execute;
-	if(1 == gc_sweep_execute){
+	extern gc_sweep_should_executing;
+	if(1 == gc_sweep_should_executing){
 		gc_mark(env);
 		gc_sweep(inter);
-		gc_sweep_execute = 0;
+		gc_sweep_should_executing = 0;
 	}
 	push_stack(&inter->stack,dest);
 	return 0;
@@ -779,15 +779,22 @@ int eval_buildin_function(JsInterpreter * inter,ExecuteEnvironment *env,JsFuncti
 
 
 int eval_identifier_expression(JsInterpreter * inter,ExecuteEnvironment *env,Expression* e){
-	JsValue* v = INTERPRETE_search_variable_from_env(env, e->u.identifier);
+	JsValue* v = INTERPRETE_search_variable_from_env(env, e->u.identifier);	
 	if(NULL == v){
-		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, e->u.identifier, e->line);
-		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
+		JsFunction* func =  INTERPRETE_search_func_from_env(env,e->u.identifier);
+		if(NULL == func){
+			ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, e->u.identifier, e->line);
+			return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
+		}else{
+			JsValue vv;
+			vv.typ = JS_VALUE_TYPE_FUNCTION;
+			vv.u.func = func;
+			v = &vv;
+		}
 	}
 	push_stack(&inter->stack, v);
 	return 0;
 }
-
 
 
 JsValue* get_left_value_from_current_env(ExecuteEnvironment* env,char* name){
@@ -920,9 +927,7 @@ JsValue* get_left_value(JsInterpreter* inter,ExecuteEnvironment* env,Expression*
 		return get_left_value_index(inter,env,e);
 	}
 
-	
 	ERROR_runtime_error(RUNTIME_ERROR_CAN_NOT_USE_THIS_AS_LEFT_VALUE,"",e->line);
-
 	
 	return NULL;
 }

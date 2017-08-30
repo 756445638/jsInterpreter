@@ -19,7 +19,7 @@ JsFunctionList   jstypeof;
 JsFunctionBuildin typeof_buildin;
 
 unsigned int create_heap_count = 0;
-char gc_sweep_execute = 0;
+char gc_sweep_should_executing = 0;
 
 
 
@@ -742,11 +742,10 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	create_heap_count;
 	create_heap_count++;
 	if(0 == (create_heap_count % GC_SWEEP_TIMING)){
-		gc_sweep_execute = 1;	
+		gc_sweep_should_executing = 1;	
 	}
 	return h;
 }
-
 
 
 

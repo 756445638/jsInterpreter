@@ -532,7 +532,7 @@ JsValue js_print(const JsValue *value){
 				printf("%f",value->u.floatvalue);
 				break;
 			case JS_VALUE_TYPE_STRING:
-				printf("\"%s\"",value->u.string->u.string->s);
+				printf("%s",value->u.string->u.string->s);
 				break;
 			case JS_VALUE_TYPE_NULL:
 				printf("null");
