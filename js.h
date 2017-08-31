@@ -208,6 +208,7 @@ typedef struct ExpressionMethodCall_tag {
 typedef struct ExpressionFunctionCall_tag {
     char* func;
     ArgumentList* args;
+	Expression* e;
 }ExpressionFunctionCall;
 
 typedef struct ExpressionObjectKV_tag {
@@ -258,6 +259,7 @@ typedef enum {
     EXPRESSION_TYPE_INDEX,
     EXPRESSION_TYPE_METHOD_CALL,
     EXPRESSION_TYPE_FUNCTION_CALL,
+    EXPRESSION_TYPE_EXPRESSION_FUNCTION_CALL,
     EXPRESSION_TYPE_INCREMENT,
     EXPRESSION_TYPE_PRE_INCREMENT,
     EXPRESSION_TYPE_PRE_DECREMENT,

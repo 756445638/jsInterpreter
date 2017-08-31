@@ -432,8 +432,19 @@ funcend:
 
 
 int eval_function_call_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
-	/*only support search global function now!!*/		
-	JsFunction* func = INTERPRETE_search_func_from_env(env,e->u.function_call->func);
+	/*only support search global function now!!*/
+	JsFunction* func = NULL;
+	if(NULL != e->u.function_call->func){
+		func = INTERPRETE_search_func_from_env(env,e->u.function_call->func);
+	}else{
+		eval_expression(inter,env,e->u.function_call->e);
+		JsValue v = pop_stack(&inter->stack);
+		if(JS_VALUE_TYPE_FUNCTION != v.typ){
+			ERROR_runtime_error(RUNTIME_ERROR_NOT_A_FUNCTION,"",e->line);
+			return RUNTIME_ERROR_NOT_A_FUNCTION;
+		}
+		func = v.u.func;
+	}
 	if(NULL == func){
 		ERROR_runtime_error(RUNTIME_ERROR_FUNCTION_NOT_FOUND,e->u.function_call->func,e->line);
 		return RUNTIME_ERROR_FUNCTION_NOT_FOUND;
@@ -632,6 +643,7 @@ int eval_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expression* e){
 			case EXPRESSION_TYPE_OBJECT:
 				return eval_object_expression(inter,env,e);
 			case EXPRESSION_TYPE_FUNCTION_CALL:
+			case EXPRESSION_TYPE_EXPRESSION_FUNCTION_CALL:
 				return eval_function_call_expression(inter,env,e);
 			case EXPRESSION_TYPE_IDENTIFIER:
 				return eval_identifier_expression(inter,env,e);

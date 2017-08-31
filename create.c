@@ -558,18 +558,30 @@ CREATE_chain_argument_list(ExpressionList* list, Expression* e){
 }
 
 Expression*
-CREATE_function_call_expression(char* funcname,ArgumentList* args){
+CREATE_function_call_expression(char* funcname,Expression* pre,ArgumentList* args){
     Expression* e = MEM_alloc(current_interpreter->interpreter_memory,sizeof(Expression) + sizeof(ExpressionFunctionCall),get_line_number());
     if(NULL == e){
         return NULL;
     }
-    e->typ = EXPRESSION_TYPE_FUNCTION_CALL;
+	if(NULL == e){
+		 e->typ = EXPRESSION_TYPE_FUNCTION_CALL;
+	}else{
+		e->typ = EXPRESSION_TYPE_EXPRESSION_FUNCTION_CALL;
+	}
+   
     e->u.function_call = (ExpressionFunctionCall*)(e +1);
     e->u.function_call->func = funcname;
+	e->u.function_call->e = pre;
     e->u.function_call->args = args;
 	e->line = get_line_number();
     return e;
 }
+
+
+
+
+
+
 
 Expression*
 CREATE_identifier_expression(char* identifier){ 

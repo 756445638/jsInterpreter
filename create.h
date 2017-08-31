@@ -88,7 +88,7 @@ ExpressionList*
 CREATE_chain_argument_list(ExpressionList* list, Expression* e);
 
 Expression*
-CREATE_function_call_expression(char* funcname,ArgumentList* args);
+CREATE_function_call_expression(char* funcname,Expression* e,ArgumentList* args);
 
 Expression*
 CREATE_identifier_expression(char* identifier);
