@@ -463,11 +463,11 @@ postfix_expression
     {
 		$$ = CREATE_incdec_expression($2, EXPRESSION_TYPE_PRE_DECREMENT);
     }
-    | primary_expression LP argument_list RP
+    | expression LP argument_list RP
     {
     	$$ = CREATE_function_call_expression(NULL,$1,$3);
     }
-    | primary_expression LP RP
+    | expression LP RP
     {
     	$$ = CREATE_function_call_expression(NULL,$1,NULL);
     }
