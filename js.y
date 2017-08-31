@@ -478,7 +478,7 @@ argument_list
         ;
 
 primary_expression
-       : LP expression RP
+        :LP expression RP
         {
             $$ = $2;
         }
