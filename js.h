@@ -10,6 +10,7 @@
 #define BUILDIN_FUNCTION_MAX_ARGS 10
 
 #define GC_SWEEP_TIMING (5000)
+#define MAX_INT  2147483647 
 
 typedef enum {
     JS_BOOL_TRUE =1 ,

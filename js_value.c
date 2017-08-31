@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include "interprete.h"
 #include "error.h"
+#include <stdlib.h>
 
 JSBool is_js_value_true(const JsValue* v){
 	if(JS_VALUE_TYPE_BOOL== v->typ){
@@ -272,16 +273,23 @@ JsValue js_value_div(const JsValue* v1,const JsValue* v2){
 	if(JS_VALUE_TYPE_INT == v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		if(0 != v2->u.intvalue){
 			v.u.floatvalue = ((double)v1->u.intvalue )/ ((double)v2->u.intvalue);
+		}else{
+			v.typ = JS_VALUE_TYPE_INT;
+			v.u.intvalue = MAX_INT;
 		}
 	}
 	if(JS_VALUE_TYPE_FLOAT== v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		if(0 != v2->u.intvalue){
 			v.u.floatvalue = v1->u.floatvalue / ((double)v2->u.intvalue);
+		}else{
+			v.u.floatvalue = MAX_INT;
 		}
 	}
 	if(JS_VALUE_TYPE_INT== v1->typ && JS_VALUE_TYPE_FLOAT == v2->typ){
 		if(!ISZORE(v2->u.floatvalue)){
 			v.u.floatvalue = ((double)v1->u.intvalue)/v2->u.floatvalue;
+		}else{
+			v.u.floatvalue = MAX_INT;
 		}
 	}
 	if(JS_VALUE_TYPE_FLOAT== v1->typ && JS_VALUE_TYPE_FLOAT == v2->typ){
@@ -289,6 +297,49 @@ JsValue js_value_div(const JsValue* v1,const JsValue* v2){
 		v.u.floatvalue = v1->u.floatvalue / v2->u.floatvalue;
 	}
 	return v;
+}
+
+double js_parse_string(char* str){
+	return atof(str);
+}
+
+double js_value_to_double(const JsValue * v){
+	double d = MAX_INT;
+	switch(v->typ){
+		case JS_VALUE_TYPE_BOOL:
+			if(JS_BOOL_TRUE == v->u.boolvalue){
+				d = 1.0;
+			}else{
+				d = 0.0;
+			}
+		break;
+		case JS_VALUE_TYPE_INT:
+			d = v->u.intvalue;
+			break;
+		case JS_VALUE_TYPE_FLOAT:
+			d = v->u.floatvalue;
+			break;
+		case JS_VALUE_TYPE_ARRAY:
+			d = 1.0;
+			break;
+		case JS_VALUE_TYPE_NULL:
+			d = 0.0;
+			break;
+		case JS_VALUE_TYPE_UNDEFINED:
+			d = 0.0;
+			break;
+		case JS_VALUE_TYPE_OBJECT:
+			d = 1.0;
+			break;
+		case JS_VALUE_TYPE_STRING_LITERAL:
+			d = js_parse_string(v->u.literal_string);
+			break;
+		case JS_VALUE_TYPE_STRING:
+			d = js_parse_string(v->u.string->u.string->s);
+			break;
+	}
+	return d;
+	 
 }
 
 JsValue js_value_sub(const JsValue* v1,const JsValue* v2){
@@ -309,6 +360,12 @@ JsValue js_value_sub(const JsValue* v1,const JsValue* v2){
 		v.typ = JS_VALUE_TYPE_FLOAT;
 		v.u.floatvalue = v1->u.floatvalue - v2->u.floatvalue;
 	}
+
+	/* see all data as double*/
+	v.typ = JS_VALUE_TYPE_FLOAT;
+	v.u.floatvalue = js_value_to_double(v1) - js_value_to_double(v2);
+	
+
 	return v;
 }
 
