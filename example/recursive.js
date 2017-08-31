@@ -1,7 +1,7 @@
 
-var arr = [1,2,3,4,5,6,7];
+var arr = [1,2,3,4,5];
 var m = arr.length;
-var n = 3;
+var n = 2;
 
 var deepCopyArr = function(arr){
 	var res = [];
@@ -32,8 +32,10 @@ selectMFromN(arr,[],0,m,n,result);
 
 console.log("select " + n +" from "+m+" have " + result.length + " possibilities,which are:");
 
-for(var i in result)
+for(var i in result){
 	console.log(result[i]);
+}
+	
 
 
 

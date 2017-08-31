@@ -340,12 +340,6 @@ expression
         Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_UNDEFINED);
         $$ = CREATE_localvariable_declare_expression($2, e);
     }
-    | function_noname_definition
-    {
-		Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_FUNCTION);
-		e->u.func = $1;
-		$$ = e;
-    }
     ;
 logical_or_expression
     :logical_and_expression
@@ -463,15 +457,14 @@ postfix_expression
     {
 		$$ = CREATE_incdec_expression($2, EXPRESSION_TYPE_PRE_DECREMENT);
     }
-    | expression LP argument_list RP
+    | postfix_expression LP argument_list RP
     {
     	$$ = CREATE_function_call_expression(NULL,$1,$3);
     }
-    | expression LP RP
+    | postfix_expression LP RP
     {
     	$$ = CREATE_function_call_expression(NULL,$1,NULL);
     }
-    
     ;
 argument_list
         : expression
@@ -485,15 +478,7 @@ argument_list
         ;
 
 primary_expression
-        : IDENTIFIER LP argument_list RP
-        {
-            $$ = CREATE_function_call_expression($1,NULL, $3);
-        }
-        | IDENTIFIER LP RP
-        {
-            $$ = CREATE_function_call_expression($1,NULL, NULL);
-        }
-        | LP expression RP
+       : LP expression RP
         {
             $$ = $2;
         }
@@ -524,6 +509,12 @@ primary_expression
         	ExpressionList* args = CREATE_argument_list($2);
 			$$ = CREATE_function_call_expression("typeof",NULL, args);
         }
+        | function_noname_definition
+	    {
+			Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_FUNCTION);
+			e->u.func = $1;
+			$$ = e;
+	    }
         ;
 
 new_object

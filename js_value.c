@@ -347,18 +347,22 @@ JsValue js_value_sub(const JsValue* v1,const JsValue* v2){
 	if(JS_VALUE_TYPE_INT == v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		v.typ = JS_VALUE_TYPE_INT;
 		v.u.intvalue = v1->u.intvalue - v2->u.intvalue;
+		return v;
 	}
 	if(JS_VALUE_TYPE_FLOAT== v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		v.typ = JS_VALUE_TYPE_FLOAT;
 		v.u.floatvalue = v1->u.floatvalue - v2->u.intvalue;
+		return v;
 	}
 	if(JS_VALUE_TYPE_INT== v1->typ && JS_VALUE_TYPE_FLOAT == v2->typ){
 		v.typ = JS_VALUE_TYPE_FLOAT;
 		v.u.floatvalue = v1->u.intvalue - v2->u.floatvalue;
+		return v;
 	}
 	if(JS_VALUE_TYPE_FLOAT== v1->typ && JS_VALUE_TYPE_FLOAT == v2->typ){
 		v.typ = JS_VALUE_TYPE_FLOAT;
 		v.u.floatvalue = v1->u.floatvalue - v2->u.floatvalue;
+		return v;
 	}
 
 	/* see all data as double*/
