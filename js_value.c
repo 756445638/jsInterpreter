@@ -208,6 +208,10 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 			case JS_VALUE_TYPE_STRING_LITERAL:
 				v = *value;
 				break;
+			case JS_VALUE_TYPE_OBJECT:
+				v.typ = JS_VALUE_TYPE_STRING_LITERAL;
+				v.u.literal_string = "object";
+				break;
 	}
 	return v;
 }
