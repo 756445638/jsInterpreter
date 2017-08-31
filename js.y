@@ -548,11 +548,19 @@ objectkvlist
 objectkv
     :IDENTIFIER COLON expression
     {
-        $$ = CREATE_object_kv($1,NULL,$3);
+        $$ = CREATE_object_kv($1,NULL,$3,NULL);
     }
     |expression COLON expression
     {
-        $$ = CREATE_object_kv(NULL,$1,$3);
+        $$ = CREATE_object_kv(NULL,$1,$3,NULL);
+    }
+	| IDENTIFIER COLON function_noname_definition
+	{
+		 $$ = CREATE_object_kv($1,NULL,NULL,$3);
+	}
+    |expression COLON function_noname_definition
+    {
+		 $$ = CREATE_object_kv(NULL,$1,NULL,$3);
     }
     ;
 

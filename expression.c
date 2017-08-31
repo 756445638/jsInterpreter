@@ -457,9 +457,14 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 	JsValue value;
 	while(NULL != list){
 		if(NULL != list->kv->identifier_key){
-			eval_expression(inter, env, list->kv->value);
-			value = pop_stack(&inter->stack);
-			INTERPRETE_create_object_field(inter,v.u.object,list->kv->identifier_key,&value,list->kv->value->line);
+			if(NULL != list->kv->value){
+				eval_expression(inter, env, list->kv->value);
+				value = pop_stack(&inter->stack);
+			}else{
+				value.typ = JS_VALUE_TYPE_FUNCTION;
+				value.u.func = list->kv->func;
+			}
+			INTERPRETE_create_object_field(inter,v.u.object,list->kv->identifier_key,&value,list->kv->line);
 		}else{/*expression*/
 			eval_expression(inter, env, list->kv->expression_key);
 			JsValue key = pop_stack(&inter->stack);
@@ -467,8 +472,13 @@ int eval_object_expression(JsInterpreter* inter,ExecuteEnvironment* env,Expressi
 				ERROR_runtime_error(RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE,"only string can be used as object key",list->kv->expression_key->line);
 				return RUNTIME_ERROR_INDEX_HAS_WRONG_TYPE;
 			}
-			eval_expression(inter, env, list->kv->value);
-			value = pop_stack(&inter->stack);
+			if(NULL != list->kv->value){
+				eval_expression(inter, env, list->kv->value);
+				value = pop_stack(&inter->stack);
+			}else{
+				value.typ = JS_VALUE_TYPE_FUNCTION;
+				value.u.func = list->kv->func;
+			}
 			if(JS_VALUE_TYPE_STRING_LITERAL == key.typ){
 				INTERPRETE_create_object_field(inter,v.u.object,key.u.literal_string,&value,list->kv->value->line);
 			}else{

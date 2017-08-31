@@ -59,3 +59,11 @@ function eval_grade(grades){
 
 eval_grade(grades);
 
+
+
+
+
+for(;arr[i];){
+
+	
+}

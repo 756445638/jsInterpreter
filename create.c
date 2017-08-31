@@ -665,11 +665,13 @@ CREATE_new_expression(char* identifer,ExpressionList* args){
 
 
 
-ExpressionObjectKV* CREATE_object_kv(char* identifier_key,Expression* expression_key,Expression* value){
+ExpressionObjectKV* CREATE_object_kv(char* identifier_key,Expression* expression_key,Expression* value,JsFunction* func){
 	ExpressionObjectKV* new = MEM_alloc(current_interpreter->interpreter_memory,sizeof(ExpressionObjectKV) ,get_line_number());
 	new->identifier_key = identifier_key;
 	new->expression_key = expression_key;
 	new->value = value;
+	new->func = func;
+	new->line = get_line_number();
 	return new;
 	
 }

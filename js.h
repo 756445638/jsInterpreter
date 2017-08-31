@@ -213,6 +213,8 @@ typedef struct ExpressionObjectKV_tag {
 	char* identifier_key;
 	Expression* expression_key;
 	Expression* value;
+	JsFunction* func;
+	int line;
 } ExpressionObjectKV;
 
 

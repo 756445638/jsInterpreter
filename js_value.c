@@ -170,7 +170,6 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 	switch (value->typ)
 		{
 			case JS_VALUE_TYPE_BOOL:
-				v.typ = JS_VALUE_TYPE_STRING;
 				if(JS_BOOL_TRUE == value->u.boolvalue){
 					v.u.literal_string = "true";
 				}else{
@@ -191,19 +190,19 @@ JsValue js_to_string(JsInterpreter* inter,const JsValue* value,int line){
 				v = *value;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
-				v.typ = JS_VALUE_TYPE_STRING;
+				v.typ = JS_VALUE_TYPE_STRING_LITERAL;
 				v.u.literal_string = "array";
 				break;
 			case JS_VALUE_TYPE_FUNCTION:
-				v.typ = JS_VALUE_TYPE_STRING;
+				v.typ = JS_VALUE_TYPE_STRING_LITERAL;
 				v.u.literal_string = "function";
 				break;
 			case JS_VALUE_TYPE_NULL:
-				v.typ = JS_VALUE_TYPE_STRING;
+				v.typ = JS_VALUE_TYPE_STRING_LITERAL;
 				v.u.literal_string = "null";
 				break;
 			case JS_VALUE_TYPE_UNDEFINED:
-				v.typ = JS_VALUE_TYPE_STRING;
+				v.typ = JS_VALUE_TYPE_STRING_LITERAL;
 				v.u.literal_string = "undefined";
 				break;
 			case JS_VALUE_TYPE_STRING_LITERAL:
@@ -289,7 +288,7 @@ JsValue js_value_div(const JsValue* v1,const JsValue* v2){
 }
 
 JsValue js_value_sub(const JsValue* v1,const JsValue* v2){
-	JsValue v;
+	JsValue v = *v1;
 	if(JS_VALUE_TYPE_INT == v1->typ && JS_VALUE_TYPE_INT == v2->typ){
 		v.typ = JS_VALUE_TYPE_INT;
 		v.u.intvalue = v1->u.intvalue - v2->u.intvalue;
@@ -326,13 +325,11 @@ JSBool js_value_equal_string(const JsValue* v1,const JsValue* v2){
 	}else{
 		second = v2->u.literal_string;
 	}
-
 	if(0 == strcmp(first, second)){
 		return JS_BOOL_TRUE;
 	}else{
 		return JS_BOOL_FALSE;
 	}
-	
 }
 
 
