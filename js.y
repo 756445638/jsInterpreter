@@ -79,11 +79,11 @@ function_definition
 function_noname_definition
     :FUNCTION LP RP block
     {
-        $$ = CREATE_function("", NULL, $4);
+        $$ = CREATE_function(NULL, NULL, $4);
     }
     |FUNCTION LP parameter_list RP block
     {
-        $$ = CREATE_function("", $3, $5);
+        $$ = CREATE_function(NULL, $3, $5);
     }
     ;
 
@@ -131,6 +131,9 @@ statement
     | continue_statement
     | break_statement
     | SEMICOLON
+    {
+		$$ = NULL;
+    }
     |function_definition
     | switch_statement
 
@@ -328,8 +331,6 @@ expression
     {
 		$$ = CREATE_self_assign_op_expression(EXPRESSION_TYPE_MOD_ASSIGN,$1,$3);
     }
-	
-	
     |VAR IDENTIFIER ASSIGN expression
     {
         $$ = CREATE_localvariable_declare_expression($2, $4);
@@ -339,6 +340,12 @@ expression
         Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_UNDEFINED);
         $$ = CREATE_localvariable_declare_expression($2, e);
     }
+    | function_noname_definition
+    {
+		Expression* e = CREATE_alloc_expression(EXPRESSION_TYPE_FUNCTION);
+		e->u.func = $1;
+		$$ = e;
+    }
     ;
 logical_or_expression
     :logical_and_expression
@@ -347,7 +354,6 @@ logical_or_expression
         $$ = CREATE_binary_expression(EXPRESSION_TYPE_LOGICAL_OR, $1, $3);
     }
     ;
-
 logical_and_expression
     :equality_expression
     |logical_and_expression LOGICAL_AND equality_expression

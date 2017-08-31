@@ -65,6 +65,9 @@ Expression* CREATE_alloc_expression(EXPRESSION_TYPE typ){
 
 
 StatementList* CREATE_chain_statement_list(StatementList* list,Statement* s){
+	if(NULL == s){
+		return list;
+	}
     if(NULL == list){
        StatementList* list = MEM_alloc(current_interpreter->interpreter_memory,sizeof(StatementList),get_line_number());
        if(NULL == list){
@@ -171,6 +174,9 @@ CREATE_expression_statement(Expression* e){
 	s->line = get_line_number();
     return s;
 }
+
+
+
 
 Statement*
 CREATE_break_statement(){
