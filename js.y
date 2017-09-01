@@ -38,13 +38,13 @@
         additive_expression multiplicative_expression
         unary_expression postfix_expression primary_expression array_literal
 %type   <expression_list> expression_list
-%type   <statement> statement  switch_statement
+%type   <statement> statement  switch_statement function_definition
         if_statement while_statement for_statement
         return_statement break_statement continue_statement
 %type   <statement_list> statement_list
 %type   <block> block block_or_statement
 %type   <elsif> elsif elsif_list
-%type   <function> function_definition function_noname_definition
+%type   <function> function_noname_definition
 %type   <objectkvlist>  objectkvlist
 %type   <objectkv>  objectkv
 %type  <switchcaselist> switch_statement_cases switch_statement_case
