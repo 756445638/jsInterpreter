@@ -42,7 +42,7 @@
         if_statement while_statement for_statement
         return_statement break_statement continue_statement
 %type   <statement_list> statement_list
-%type   <block> block
+%type   <block> block block_or_statement
 %type   <elsif> elsif elsif_list
 %type   <function> function_definition function_noname_definition
 %type   <objectkvlist>  objectkvlist
@@ -166,12 +166,24 @@ break_statement
     }
     ;
 
+
+block_or_statement
+	:block
+	{
+		$$ = $1;
+	}
+	|statement
+	{
+		StatementList* s = CREATE_statement_list($1);
+		$$ = CREATE_block(s);
+	}
+	;
 if_statement
-    :IF LP expression RP block
+    :IF LP expression RP block_or_statement
     {
          $$ = CREATE_if_statement($3, $5, NULL, NULL);
     }
-    | IF LP expression RP block ELSE block
+    | IF LP expression RP block_or_statement ELSE block_or_statement
     {
         $$ = CREATE_if_statement($3, $5, NULL, $7);
     }
@@ -182,12 +194,6 @@ if_statement
     | IF LP expression RP block elsif_list ELSE block
     {
         $$ = CREATE_if_statement($3, $5, $6, $8);
-    }
-    | IF LP expression RP statement
-    {
-		StatementList* s = CREATE_statement_list($5);
-		Block* b = CREATE_block(s);
-		$$  = CREATE_if_statement($3,b,NULL,NULL);
     }
     ;
 elsif_list
@@ -204,7 +210,7 @@ elsif
     ;
 
 while_statement
-    :WHILE LP expression RP block
+    :WHILE LP expression RP block_or_statement
     {
         $$ = CREATE_while_statement($3, $5,0);
     }
@@ -212,44 +218,20 @@ while_statement
     {
 		$$ = CREATE_while_statement($5, $2,1);
     }
-    | WHILE LP expression RP statement
-    {
-		StatementList* s = CREATE_statement_list($5);
-		Block* b = CREATE_block(s);
-		$$ = CREATE_while_statement($3, b,0);
-    }
     ;
 
 for_statement
-    :FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP block
+    :FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP block_or_statement
     {
         $$ = CREATE_for_statement($3, $5, $7, $9);
     }
-    | FOR LP VAR IDENTIFIER IN expression RP block
+    | FOR LP VAR IDENTIFIER IN expression RP block_or_statement
     {
         $$ = CREATE_for_in_statement($4,$6,$8);
     }
-    |FOR LP IDENTIFIER IN expression RP block
+    |FOR LP IDENTIFIER IN expression RP block_or_statement
     {
 		$$ = CREATE_for_in_statement($3,$5,$7);
-    }
-    | FOR LP expression_opt SEMICOLON expression_opt SEMICOLON expression_opt RP statement
-    {
-		StatementList* s = CREATE_statement_list($9);
-		Block* b = CREATE_block(s);
-		$$ = CREATE_for_statement($3, $5, $7, b);
-    }
-    |  FOR LP VAR IDENTIFIER IN expression RP statement
-    {
-		StatementList* s = CREATE_statement_list($8);
-		Block* b = CREATE_block(s);
-		$$ = CREATE_for_in_statement($4,$6,b);
-    }
-    |  FOR LP IDENTIFIER IN expression RP statement
-    {
-		StatementList* s = CREATE_statement_list($7);
-		Block* b = CREATE_block(s);
-		$$ = CREATE_for_in_statement($3,$5,b);
     }
     ;
 return_statement
