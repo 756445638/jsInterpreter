@@ -164,10 +164,7 @@ yywrap(void)
     increment_line_number();
 }
 
-<STRING_LITERAL_STATE_SIGNAL>\\\"      appendchar_temprory_string('"');
-<STRING_LITERAL_STATE_SIGNAL>\\n       appendchar_temprory_string('\n');
-<STRING_LITERAL_STATE_SIGNAL>\\t       appendchar_temprory_string('\t');
-<STRING_LITERAL_STATE_SIGNAL>\\\\      appendchar_temprory_string('\\');
+<STRING_LITERAL_STATE_SIGNAL>\\\'      appendchar_temprory_string('\'');
 <STRING_LITERAL_STATE_SIGNAL>.         appendchar_temprory_string(yytext[0]);
 
 
