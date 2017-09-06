@@ -14,7 +14,7 @@ yywrap(void)
 }
 
 %}
-%start COMMENT STRING_LITERAL_STATE  MULTI_LINE_COMMENT
+%start COMMENT STRING_LITERAL_STATE   STRING_LITERAL_STATE_SIGNAL   MULTI_LINE_COMMENT
 %%
 <INITIAL>"function"     return FUNCTION;
 <INITIAL>"if"           return IF;
@@ -100,6 +100,13 @@ yywrap(void)
     alloc_temprory_string();
     BEGIN STRING_LITERAL_STATE;
 }
+<INITIAL>\' {
+    alloc_temprory_string();
+    BEGIN STRING_LITERAL_STATE_SIGNAL;
+}
+
+
+
 <INITIAL>[ \t] ;
 <INITIAL>\n {
     increment_line_number();
@@ -130,6 +137,17 @@ yywrap(void)
     BEGIN INITIAL;
     return STRING_LITERAL;
 }
+<STRING_LITERAL_STATE_SIGNAL>\'        {
+    Expression *expression = CREATE_alloc_expression(EXPRESSION_TYPE_STRING);
+    appendchar_temprory_string('\0');
+    expression->u.string = literal_string_holder->s;
+    yylval.expression = expression;
+    BEGIN INITIAL;
+    return STRING_LITERAL;
+}
+
+
+
 <STRING_LITERAL_STATE>\n        {
     appendchar_temprory_string('\n');
     increment_line_number();
@@ -139,4 +157,19 @@ yywrap(void)
 <STRING_LITERAL_STATE>\\t       appendchar_temprory_string('\t');
 <STRING_LITERAL_STATE>\\\\      appendchar_temprory_string('\\');
 <STRING_LITERAL_STATE>.         appendchar_temprory_string(yytext[0]);
+
+
+<STRING_LITERAL_STATE_SIGNAL>\n        {
+    appendchar_temprory_string('\n');
+    increment_line_number();
+}
+
+<STRING_LITERAL_STATE_SIGNAL>\\\"      appendchar_temprory_string('"');
+<STRING_LITERAL_STATE_SIGNAL>\\n       appendchar_temprory_string('\n');
+<STRING_LITERAL_STATE_SIGNAL>\\t       appendchar_temprory_string('\t');
+<STRING_LITERAL_STATE_SIGNAL>\\\\      appendchar_temprory_string('\\');
+<STRING_LITERAL_STATE_SIGNAL>.         appendchar_temprory_string(yytext[0]);
+
+
+
 %%
