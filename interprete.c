@@ -211,7 +211,7 @@ StamentResult INTERPRETE_execute_statement_for_in(
 	Variable* var;
 	/*handle array part*/
 	if(JS_VALUE_TYPE_ARRAY == target.typ){
-		JsArray* array= target.u.array->u.array;
+		JsArray* array= target.u.array;
 		int length = array->length;
 		int i = 0;
 		for(;i<length;i++){
@@ -355,8 +355,8 @@ void INTERPRETE_mark_js_value_env(JsValue* v,ExecuteEnvironment* env){
 					v->u.object->env = NULL;
 					break;
 				case JS_VALUE_TYPE_ARRAY:
-					for(;i<v->u.array->u.array->length;i++){
-						INTERPRETE_mark_js_value_env(v->u.array->u.array->elements + i,env);
+					for(;i<v->u.array->length;i++){
+						INTERPRETE_mark_js_value_env(v->u.array->elements + i,env);
 					}
 					break;
 		}
@@ -675,9 +675,8 @@ void INTERPRETE_free_env(JsInterpreter* inter,ExecuteEnvironment* env){
 }
 
 
-Heap*
+void*
 INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line){
-	
 	Heap * h = MEM_alloc(inter->excute_memory,  sizeof(Heap),line);
 	if(NULL == h){
 		ERROR_runtime_error(RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,"", line);
@@ -686,10 +685,10 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	int allocsize = 0;
 	switch(typ){
 		case JS_VALUE_TYPE_STRING:
-			allocsize = sizeof(JsString) + sizeof(char) * size;
+			allocsize =  sizeof(char) * size;
 			break;
 		case JS_VALUE_TYPE_ARRAY:
-			allocsize = sizeof(JsArray) + sizeof(JsValue) * size;
+			allocsize = sizeof(JsValue) * size;
 			break;
 		case JS_VALUE_TYPE_OBJECT:
 			allocsize = sizeof(JsObject);
@@ -713,29 +712,26 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	switch (typ)
 		{
 			case JS_VALUE_TYPE_STRING:
-				h->u.string = (JsString*)p;
-				h->u.string->alloc = size;
-				h->u.string->length = 0;
-				h->u.string->s = (char*)(h->u.string+1);
-				h->u.string->s[0] = 0;
-				h->u.string->mark = 0;
-				h->u.string->line = line;
+				h->u.string.alloc = size;
+				h->u.string.length = 0;
+				h->u.string.s = (char*)p;
+				h->u.string.s[0] = 0;
+				h->u.string.mark = 0;
+				h->u.string.line = line;
 				break;
 			
 			case JS_VALUE_TYPE_OBJECT:
-				h->u.object = (JsObject*)p;
-				h->u.object->mark = 0;
-				h->u.object->eles = NULL;
-				h->u.object->line = line;
-				h->u.object->env = NULL;
+				h->u.object.mark = 0;
+				h->u.object.eles = NULL;
+				h->u.object.line = line;
+				h->u.object.env = NULL;
 				break;
 			case JS_VALUE_TYPE_ARRAY:
-				h->u.array = (JsArray*)p;
-				h->u.array->mark = 0;
-				h->u.array->length = 0;
-				h->u.array->alloc = size;
-				h->u.array->line = line;
-				h->u.array->elements = (JsValue*)(h->u.array + 1);
+				h->u.array.mark = 0;
+				h->u.array.length = 0;
+				h->u.array.alloc = size;
+				h->u.array.line = line;
+				h->u.array.elements = (JsValue*)p;
 				break;
 		}
 	push_heap(inter->heap,h);
@@ -744,10 +740,16 @@ INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line)
 	if(0 == (create_heap_count % GC_SWEEP_TIMING)){
 		gc_sweep_should_executing = 1;	
 	}
+	switch (typ){
+		case JS_VALUE_TYPE_STRING:
+			return &h->u.string;
+		case JS_VALUE_TYPE_OBJECT:
+			return &h->u.object;
+		case JS_VALUE_TYPE_ARRAY:
+			return &h->u.array;
+	}
 	return h;
 }
-
-
 
 
 
@@ -763,7 +765,7 @@ JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const Js
 	int second_lenth;
 	JsString* string;
 	if(JS_VALUE_TYPE_STRING == v1->typ){
-		string = v1->u.string->u.string;
+		string = v1->u.string;
 		first = string->s;
 		first_length = string->length;
 	}else{/*string literal*/
@@ -771,7 +773,7 @@ JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const Js
 		first_length = strlen(v1->u.literal_string);
 	}
 	if(JS_VALUE_TYPE_STRING == v2->typ){
-			string = v2->u.string->u.string;
+			string = v2->u.string;
 			second= string->s;
 			second_lenth = string->length;
 	}else{/*string literal*/
@@ -781,9 +783,8 @@ JsValue INTERPRETE_concat_string(JsInterpreter* inter,const JsValue* v1,const Js
 	int length = first_length + second_lenth;
 	JsValue v ;
 	v.typ = JS_VALUE_TYPE_STRING;
-	Heap* h = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
-	string = h->u.string;
-	v.u.string = h;
+	v.u.string = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1,  line);
+	string = v.u.string;
 	strncpy(string->s,first,first_length);
 	strncpy(string->s + first_length,second,second_lenth);
 	string->s[length] = 0;
@@ -892,11 +893,11 @@ void INTERPRETE_check_return_value_free_env_or_push_in_envheap(
 	char is_object_embed_array = 0;
 	if(JS_VALUE_TYPE_ARRAY == value.typ){
 		int i = 0;
-		for(;i<value.u.array->u.array->length;i++){
-			if(JS_VALUE_TYPE_OBJECT == value.u.array->u.array->elements[i].typ){
+		for(;i<value.u.array->length;i++){
+			if(JS_VALUE_TYPE_OBJECT == value.u.array->elements[i].typ){
 				is_object_embed_array = 1;
-				if(NULL  == value.u.array->u.array->elements[i].u.object->env){
-					value.u.array->u.array->elements[i].u.object->env = env;
+				if(NULL  == value.u.array->elements[i].u.object->env){
+					value.u.array->elements[i].u.object->env = env;
 				}
 			}
 		}

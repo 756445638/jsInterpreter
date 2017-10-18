@@ -60,8 +60,8 @@ struct JsValue_tag {
         int intvalue;
         double floatvalue;
 		JsFunction* func;
-		Heap* array;
-		Heap* string;
+		JsArray* array;
+		JsString* string;
 		JsObject* object;
 		char* literal_string;
     }u;
@@ -454,9 +454,9 @@ struct Heap_tag {
 	struct Heap_tag * next;
 	JS_VALUE_TYPE typ;
 	union{
-		JsString* string;
-		JsObject* object;
-		JsArray* array;
+		JsString string;
+		JsObject object;
+		JsArray array;
 	}u;
     int line;/*alloc by which line*/
 };

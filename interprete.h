@@ -35,7 +35,7 @@ INTERPRETE_creaet_variable(
 
 
 
-Heap* INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line);
+void* INTERPRETE_creaet_heap(JsInterpreter* inter,JS_VALUE_TYPE typ,int size,int line);
 
 
 

@@ -41,14 +41,12 @@ void gc_mark_value(JsValue* const v){
 	ExecuteEnvironment* env;
 	switch(v->typ){
 		case JS_VALUE_TYPE_STRING:
-			string = v->u.string->u.string;
-			string->mark = 1;
+			v->u.string->mark = 1;
 			break;
 		case JS_VALUE_TYPE_ARRAY:
-			array = v->u.array->u.array;
-			array->mark = 1;
-			for(i = 0;i<array->length;i++){
-				gc_mark_value(array->elements + i);
+			v->u.array->mark = 1;
+			for(i = 0;i<v->u.array->length;i++){
+				gc_mark_value(v->u.array->elements + i);
 			}
 			break;
 		case JS_VALUE_TYPE_OBJECT:
@@ -122,19 +120,21 @@ void gc_sweep_object(JsInterpreter* inter,JsObject* object){
 int gc_sweep_get_mark(const Heap* h,int line){
 	switch(h->typ){
 		case JS_VALUE_TYPE_STRING:
-			return h->u.string->mark;
+			return h->u.string.mark;
 		case JS_VALUE_TYPE_ARRAY:
-			return h->u.array->mark;
+			return h->u.array.mark;
 		case JS_VALUE_TYPE_OBJECT:
-			return h->u.object->mark;
+			return h->u.object.mark;
 		default:
 			ERROR_runtime_error(RUNTIME_ERROR_NORMAL_VALUE_ON_HEAP,"",line);
 	}
 }
 
 
-void gc_sweep(JsInterpreter* inter){
 
+
+
+void gc_sweep(JsInterpreter* inter){
 	if(NULL == inter->heap){
 		return ;
 	}
@@ -146,13 +146,13 @@ void gc_sweep(JsInterpreter* inter){
 		if(1 == gc_sweep_get_mark(index,index->line)){ /*reset mark*/
 			switch(index->typ){
 				case JS_VALUE_TYPE_STRING:
-					index->u.string->mark = 0;
+					index->u.string.mark = 0;
 					break;
 				case JS_VALUE_TYPE_ARRAY:
-					index->u.array->mark = 0;
+					index->u.array.mark = 0;
 					break;
 				case JS_VALUE_TYPE_OBJECT:
-					index->u.object->mark = 0;
+					index->u.object.mark = 0;
 					break;
 				default:
 					ERROR_runtime_error(RUNTIME_ERROR_NORMAL_VALUE_ON_HEAP,"",index->line);
@@ -162,14 +162,19 @@ void gc_sweep(JsInterpreter* inter){
 		}
 		/*let`s sweep*/
 		if(JS_VALUE_TYPE_OBJECT == index->typ){
-			gc_sweep_object(inter,index->u.object);
+			gc_sweep_object(inter,&index->u.object);
+		}
+		if(JS_VALUE_TYPE_STRING == index->typ){
+			MEM_free(inter->excute_memory,index->u.string.s);
+		}
+		if(JS_VALUE_TYPE_ARRAY== index->typ){
+			MEM_free(inter->excute_memory,index->u.array.elements);
 		}
 		/*remove*/
 		prev = index->prev;
 		next = index->next;
 		prev->next = next;
 		next->prev = prev;
-		MEM_free(inter->excute_memory,index->u.array);
 		MEM_free(inter->excute_memory,index);
 		index = prev;
 	}
