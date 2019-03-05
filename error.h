@@ -3,14 +3,14 @@
 
 #include "message.h"
 
+typedef enum
+{
+	CHARACTER_INVALID_ERR = 1,
+	CANNOT_ALLOC_MEMORY,
+} COMPILE_ERROR;
 
-
-typedef enum {
-    CHARACTER_INVALID_ERR = 1,
-    CANNOT_ALLOC_MEMORY,
-}COMPILE_ERROR;
-
-typedef enum{
+typedef enum
+{
 	RUNTIME_ERROR_VARIABLE_NOT_FOUND = 1,
 	RUNTIME_ERROR_VARIALBE_ALEAY_DECLARED,
 	RUNTIME_ERROR_CANNOT_ALLOC_MEMORY,
@@ -27,19 +27,10 @@ typedef enum{
 	RUNTIME_ERROR_CAN_NOT_USE_THIS_AS_LEFT_VALUE,
 	RUNTIME_ERROR_UNKOWN_NEW_TYPE,
 	RUNTIME_ERROR_NORMAL_VALUE_ON_HEAP
-}RUNTIME_ERROR;
+} RUNTIME_ERROR;
 
+void ERROR_compile_error(COMPILE_ERROR typ, char *buf);
 
-
-void ERROR_compile_error(COMPILE_ERROR typ,char* buf);
-
-
-void ERROR_runtime_error(RUNTIME_ERROR typ,char* who,int line);
-
-
-
-
-
-
+void ERROR_runtime_error(RUNTIME_ERROR typ, char *who, int line);
 
 #endif

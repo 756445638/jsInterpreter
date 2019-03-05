@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include "stack.h"
 
-
-void push_stack(Stack* s,const JsValue* v){
-	if(s->sp >= s->alloc -1){ /*TODO:: alloc more memory*/
+void push_stack(Stack *s, const JsValue *v)
+{
+	if (s->sp >= s->alloc - 1)
+	{ /*TODO:: alloc more memory*/
 		printf("stack overflow\n");
 		_exit(3);
 	}
@@ -14,17 +15,17 @@ void push_stack(Stack* s,const JsValue* v){
 	s->sp++;
 }
 
-
-JsValue pop_stack(Stack* s){
+JsValue pop_stack(Stack *s)
+{
 	s->sp--;
-	return  s->vs[s->sp];
+	return s->vs[s->sp];
 }
 
-JsValue peek_stack(Stack* s,int index){
+JsValue peek_stack(Stack *s, int index)
+{
 	int offset = s->sp - index - 1;
-	return  s->vs[offset];
+	return s->vs[offset];
 }
-
 
 /*
 int main(){
@@ -58,15 +59,3 @@ int main(){
 
 
 */
-
-
-
-
-
-
-
-
-
-
-
-

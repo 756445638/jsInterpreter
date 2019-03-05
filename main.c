@@ -5,50 +5,48 @@
 #include <unistd.h>
 #include "interprete.h"
 
-int yyerror(char* str){
-    fprintf(stderr,"compile failed,line:%d,err:%s\n",get_line_number(),str);
+int yyerror(char *str)
+{
+    fprintf(stderr, "compile failed,line:%d,err:%s\n", get_line_number(), str);
     return 0;
 }
 
-
-int main(int argc,char **argv){
+int main(int argc, char **argv)
+{
     FILE *fp;
-    if(argc != 2){
-        fprintf(stderr,"Usage:%s filename\n",argv[0]);
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage:%s filename\n", argv[0]);
         _exit(1);
     }
     fp = fopen(argv[1], "r");
-    if (fp == NULL) {
+    if (fp == NULL)
+    {
         fprintf(stderr, "%s not found.\n", argv[1]);
         exit(1);
     }
-	
+
     /*create interpreter*/
-    JsInterpreter* interpreter =  JS_create_interpreter();
-    if(NULL == interpreter){
-        fprintf(stderr,"create interpreter failed...\n");
+    JsInterpreter *interpreter = JS_create_interpreter();
+    if (NULL == interpreter)
+    {
+        fprintf(stderr, "create interpreter failed...\n");
         _exit(1);
     }
 
-
-	INTERPRETE_add_buildin(interpreter);
+    INTERPRETE_add_buildin(interpreter);
     current_interpreter = interpreter;
     extern int yyparse(void);
     extern FILE *yyin;
-    
 
     yyin = fp;
-    if (yyparse()) {
+    if (yyparse())
+    {
         fprintf(stderr, "Error ! Error ! Error !\n");
         _exit(4);
     }
 
-	INTERPRETE_interprete(interpreter);
-	
-	
-
-    
+    INTERPRETE_interprete(interpreter);
 
     return 0;
-
 }
