@@ -13,8 +13,8 @@ JsKvList console_log;
 JsObject console_object;
 VariableList console_var_list;
 
-JsFunctionList jstypeof;
-JsFunctionBuildin typeof_buildin;
+JsFunctionList js_type_of;
+JsFunctionBuildin type_of_build_in;
 
 unsigned int create_heap_count = 0;
 char gc_sweep_should_executing = 0;
@@ -70,15 +70,17 @@ void INTERPRETE_add_buildin(JsInterpreter *inter)
 	console_var_list.var.value.u.object = &console_object;
 	inter->env.vars = &console_var_list;
 	/*buildin function typeof*/
-	jstypeof.func.typ = JS_FUNCTION_TYPE_BUILDIN;
-	jstypeof.func.buildin = &typeof_buildin;
-	jstypeof.func.name = "typeof";
-	jstypeof.next = NULL;
-	typeof_buildin.args_count = 1;
-	typeof_buildin.u.func1 = js_typeof;
+	js_type_of.func.typ = JS_FUNCTION_TYPE_BUILDIN;
+	js_type_of.func.buildin = &type_of_build_in;
+	js_type_of.func.name = "typeof";
+	js_type_of.next = NULL;
+	type_of_build_in.args_count = 1;
+	type_of_build_in.u.func1 = js_typeof;
 
-	inter->env.funcs = &jstypeof;
+	inter->env.funcs = &js_type_of;
 }
+
+
 
 StatementResult INTERPRETE_execute_normal_statement_list(JsInterpreter *inter, ExecuteEnvironment *env, StatementList *list)
 {
@@ -807,7 +809,7 @@ JsValue INTERPRETER_concat_string(JsInterpreter *inter, const JsValue *v1, const
 	char *first;
 	int first_length;
 	char *second;
-	int second_lenth;
+	int second_length;
 	JsString *string;
 	if (JS_VALUE_TYPE_STRING == v1->typ)
 	{
@@ -824,20 +826,20 @@ JsValue INTERPRETER_concat_string(JsInterpreter *inter, const JsValue *v1, const
 	{
 		string = v2->u.string;
 		second = string->s;
-		second_lenth = string->length;
+		second_length = string->length;
 	}
 	else
 	{ /*string literal*/
 		second = v2->u.literal_string;
-		second_lenth = strlen(v2->u.literal_string);
+		second_length = strlen(v2->u.literal_string);
 	}
-	int length = first_length + second_lenth;
+	int length = first_length + second_length;
 	JsValue v;
 	v.typ = JS_VALUE_TYPE_STRING;
 	v.u.string = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_STRING, length + 1, line);
 	string = v.u.string;
 	strncpy(string->s, first, first_length);
-	strncpy(string->s + first_length, second, second_lenth);
+	strncpy(string->s + first_length, second, second_length);
 	string->s[length] = 0;
 	string->length = length;
 	return v;

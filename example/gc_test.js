@@ -1,7 +1,7 @@
 
 function string(){
 	arr = new Array();
-	for(var i = 0;i<300000;i++){
+	for(var i = 0;i<30000;i++){
 		arr.push(i + "st");
 	}
 }
