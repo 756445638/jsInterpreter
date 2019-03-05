@@ -23,7 +23,7 @@ int eval_negative_expression(JsInterpreter *inter, ExecuteEnvironment *env, Expr
 {
 	eval_expression(inter, env, e->u.unary);
 	JsValue v = pop_stack(&inter->stack);
-	v = js_nagetive(&v); /*write value back*/
+	v = js_negative(&v); /*write value back*/
 	push_stack(&inter->stack, &v);
 	return 0;
 }
@@ -33,17 +33,18 @@ int eval_increment_decrement_expression(JsInterpreter *inter, ExecuteEnvironment
 	JsValue *left = get_left_value(inter, env, e->u.unary);
 	if (NULL == left)
 	{
-		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, "varialbe not defined or can not use as left value", e->line);
+		ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, 
+			"variable not defined or can not use as left value", e->line);
 		return RUNTIME_ERROR_VARIABLE_NOT_FOUND;
 	}
 	JsValue oldvalue = *left;
 	if (EXPRESSION_TYPE_INCREMENT == e->typ || EXPRESSION_TYPE_PRE_INCREMENT == e->typ)
 	{
-		*left = js_increment_or_decrment(left, 1);
+		*left = js_increment_or_decrement(left, 1);
 	}
 	else
 	{
-		*left = js_increment_or_decrment(left, 0);
+		*left = js_increment_or_decrement(left, 0);
 	}
 	if (EXPRESSION_TYPE_PRE_DECREMENT == e->typ || EXPRESSION_TYPE_PRE_INCREMENT == e->typ)
 	{
@@ -225,7 +226,7 @@ int eval_assign_expression(JsInterpreter *inter, ExecuteEnvironment *env, Expres
 	if (JS_VALUE_TYPE_STRING_LITERAL == value.typ)
 	{
 		int length = strlen(value.u.literal_string);
-		JsString *string = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1, e->line);
+		JsString *string = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_STRING, length + 1, e->line);
 		strncpy(string->s, value.u.literal_string, length);
 		string->s[length] = 0;
 		string->length = length;
@@ -306,7 +307,7 @@ int eval_index_expression(JsInterpreter *inter, ExecuteEnvironment *env, Express
 	JsValue *value = NULL;
 	if (INDEX_TYPE_IDENTIFIER == index->typ)
 	{
-		value = (JsValue *)INTERPRETE_search_field_from_object_include_prototype(v.u.object, index->identifier);
+		value = (JsValue *)INTERPRETER_search_field_from_object_include_prototype(v.u.object, index->identifier);
 	}
 	else
 	{ /*index_type_expression*/
@@ -314,11 +315,11 @@ int eval_index_expression(JsInterpreter *inter, ExecuteEnvironment *env, Express
 		JsValue key = pop_stack(&inter->stack);
 		if (JS_VALUE_TYPE_STRING == key.typ)
 		{
-			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object, *key.u.string->s);
+			value = INTERPRETER_search_field_from_object_include_prototype(v.u.object, *key.u.string->s);
 		}
 		if (JS_VALUE_TYPE_STRING_LITERAL == key.typ)
 		{
-			value = INTERPRETE_search_field_from_object_include_prototype(v.u.object, key.u.literal_string);
+			value = INTERPRETER_search_field_from_object_include_prototype(v.u.object, key.u.literal_string);
 		}
 	}
 	if (NULL == value)
@@ -335,7 +336,7 @@ int eval_array_expression(JsInterpreter *inter, ExecuteEnvironment *env, Express
 	int length = get_expression_list_length(e->u.expression_list);
 	JsValue v;
 	v.typ = JS_VALUE_TYPE_ARRAY;
-	JsArray *array = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_ARRAY, length * 2 + 1, e->line);
+	JsArray *array = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_ARRAY, length * 2 + 1, e->line);
 	v.u.array = array;
 	array->length = 0;
 	ExpressionList *list = e->u.expression_list;
@@ -360,11 +361,11 @@ int eval_method_and_function_call(
 	ArgumentList *args,
 	int line)
 {
-	ExecuteEnvironment *callenv = INTERPRETE_alloc_env(inter, env, line);
+	ExecuteEnvironment *callenv = INTERPRETER_alloc_env(inter, env, line);
 	ExecuteEnvironment *closureenv = NULL;
 	if (NULL == object)
 	{
-		object = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_OBJECT, 0, line);
+		object = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_OBJECT, 0, line);
 		closureenv = get_last_not_null_outter_env(func->env);
 		if (NULL != closureenv)
 		{
@@ -387,7 +388,7 @@ int eval_method_and_function_call(
 	int args_count = get_expression_list_length(args);
 
 	JsValue arguments;
-	JsArray *arguments_arr = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_ARRAY, args_count, line);
+	JsArray *arguments_arr = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_ARRAY, args_count, line);
 	arguments.typ = JS_VALUE_TYPE_ARRAY;
 	arguments.u.array = arguments_arr;
 	while (NULL != args)
@@ -397,7 +398,7 @@ int eval_method_and_function_call(
 		v = pop_stack(&inter->stack);
 		if (NULL != paras)
 		{
-			INTERPRETE_creaet_variable(inter, callenv, paras->identifier, &v, line);
+			INTERPRETER_create_variable(inter, callenv, paras->identifier, &v, line);
 			paras = paras->next;
 		}
 		arguments_arr->elements[arguments_arr->length] = v;
@@ -407,29 +408,29 @@ int eval_method_and_function_call(
 	v.typ = JS_VALUE_TYPE_NULL;
 	while (NULL != paras)
 	{ /*args are more than paras,no big deal*/
-		INTERPRETE_creaet_variable(inter, callenv, paras->identifier, &v, line);
+		INTERPRETER_create_variable(inter, callenv, paras->identifier, &v, line);
 		paras = paras->next;
 	}
-	INTERPRETE_creaet_variable(inter, callenv, "arguments", &arguments, line);
+	INTERPRETER_create_variable(inter, callenv, "arguments", &arguments, line);
 	JsValue this;
 	this.typ = JS_VALUE_TYPE_OBJECT;
 	this.u.object = object;
-	INTERPRETE_creaet_variable(inter, callenv, "this", &this, line);
+	INTERPRETER_create_variable(inter, callenv, "this", &this, line);
 	StatementList *list = func->block->list;
-	StamentResult ret;
+	StatementResult ret;
 	while (NULL != list)
 	{
-		ret = INTERPRETE_execute_statement(inter, callenv, list->statement);
+		ret = INTERPRETER_execute_statement(inter, callenv, list->statement);
 		switch (ret.typ)
 		{
 		case STATEMENT_RESULT_TYPE_NORMAL:
 			break; /*nothing to do*/
 		case STATEMENT_RESULT_TYPE_CONTINUE:
-			INTERPRETE_free_env(inter, callenv);
+			INTERPRETER_free_env(inter, callenv);
 			ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE, "continue", list->statement->line);
 			return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
 		case STATEMENT_RESULT_TYPE_BREAK:
-			INTERPRETE_free_env(inter, callenv);
+			INTERPRETER_free_env(inter, callenv);
 			ERROR_runtime_error(RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE, "break", list->statement->line);
 			return RUNTIME_ERROR_CONTINUE_RETURN_BREAK_CAN_NOT_BE_IN_THIS_SCOPE;
 		case STATEMENT_RESULT_TYPE_RETURN:
@@ -447,11 +448,11 @@ funcend:
 	{ /*push a default value*/
 		v.typ = JS_VALUE_TYPE_NULL;
 		push_stack(&inter->stack, &v);
-		INTERPRETE_free_env(inter, callenv);
+		INTERPRETER_free_env(inter, callenv);
 	}
 	else
 	{
-		INTERPRETE_check_return_value_free_env_or_push_in_envheap(inter, callenv, &ret);
+		INTERPRETER_check_return_value_free_env_or_push_in_envheap(inter, callenv, &ret);
 	}
 	return 0;
 }
@@ -462,7 +463,7 @@ int eval_function_call_expression(JsInterpreter *inter, ExecuteEnvironment *env,
 	JsFunction *func = NULL;
 	if (NULL != e->u.function_call->func)
 	{
-		func = INTERPRETE_search_func_from_env(env, e->u.function_call->func);
+		func = INTERPRETER_search_func_from_env(env, e->u.function_call->func);
 	}
 	else
 	{
@@ -482,8 +483,8 @@ int eval_function_call_expression(JsInterpreter *inter, ExecuteEnvironment *env,
 	}
 	if (JS_FUNCTION_TYPE_BUILDIN == func->typ)
 	{
-		/*execute buildin function*/
-		return eval_buildin_function(inter, env, func->buildin, e->u.function_call->args);
+		/*execute build in function*/
+		return eval_build_in_function(inter, env, func->buildin, e->u.function_call->args);
 	}
 
 	return eval_method_and_function_call(inter, env, NULL, func, e->u.function_call->args, e->line);
@@ -494,8 +495,7 @@ int eval_object_expression(JsInterpreter *inter, ExecuteEnvironment *env, Expres
 
 	JsValue v;
 	v.typ = JS_VALUE_TYPE_OBJECT;
-	v.u.object = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_OBJECT, 0, e->line);
-	;
+	v.u.object = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_OBJECT, 0, e->line);
 	ExpressionObjectKVList *list = e->u.object_kv_list;
 	JsValue value;
 	while (NULL != list)
@@ -555,7 +555,7 @@ int eval_new_expression(JsInterpreter *inter, ExecuteEnvironment *env, Expressio
 	{
 		JsValue v;
 		v.typ = JS_VALUE_TYPE_OBJECT;
-		v.u.object = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_OBJECT, 0, e->line);
+		v.u.object = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_OBJECT, 0, e->line);
 		;
 		push_stack(&inter->stack, &v);
 		return 0;
@@ -615,9 +615,9 @@ int eval_not_expression(JsInterpreter *inter, ExecuteEnvironment *env, Expressio
 	}
 	else
 	{
-		JSBool istrue = js_reverse_bool(is_js_value_true(&v));
+		JSBool is_true = js_reverse_bool(is_js_value_true(&v));
 		v.typ = JS_VALUE_TYPE_BOOL;
-		v.u.boolvalue = istrue;
+		v.u.boolvalue = is_true;
 	}
 	push_stack(&inter->stack, &v);
 	return 0;
@@ -724,13 +724,13 @@ int eval_array_method_push(JsInterpreter *inter, ExecuteEnvironment *env, JsValu
 	int total_length = length + array->u.array->length;
 	if (total_length > array->u.array->alloc)
 	{ //resize array
-		JsValue *t = MEM_alloc(inter->excute_memory, sizeof(JsValue) * total_length, call->e->line);
+		JsValue *t = MEM_alloc(inter->execute_memory, sizeof(JsValue) * total_length, call->e->line);
 		int i = 0;
 		for (; i < array->u.array->length; i++)
 		{ //copy from old
 			t[i] = array->u.array->elements[i];
 		}
-		MEM_free(inter->excute_memory, array->u.array->elements);
+		MEM_free(inter->execute_memory, array->u.array->elements);
 		array->u.array->elements = t;
 	}
 	ArgumentList *list = call->args;
@@ -799,7 +799,7 @@ int eval_method_call_expression(JsInterpreter *inter, ExecuteEnvironment *env, E
 		return RUNTIME_ERROR_IS_NOT_AN_OBJECT;
 	}
 
-	JsValue *value = INTERPRETE_search_field_from_object_include_prototype(object.u.object, call->method);
+	JsValue *value = INTERPRETER_search_field_from_object_include_prototype(object.u.object, call->method);
 	if (NULL == value)
 	{
 		ERROR_runtime_error(RUNTIME_ERROR_FIELD_NOT_DEFINED, call->method, e->line);
@@ -814,7 +814,7 @@ int eval_method_call_expression(JsInterpreter *inter, ExecuteEnvironment *env, E
 	if (JS_FUNCTION_TYPE_BUILDIN == func->typ)
 	{
 		/*execute buildin function*/
-		return eval_buildin_function(inter, env, func->buildin, call->args);
+		return eval_build_in_function(inter, env, func->buildin, call->args);
 	}
 
 	/*call user function*/
@@ -822,9 +822,9 @@ int eval_method_call_expression(JsInterpreter *inter, ExecuteEnvironment *env, E
 	return eval_method_and_function_call(inter, env, object.u.object, func, call->args, e->line);
 }
 
-int eval_buildin_function(JsInterpreter *inter, ExecuteEnvironment *env, JsFunctionBuildin *func, ArgumentList *args)
+int eval_build_in_function(JsInterpreter *inter, ExecuteEnvironment *env, JsFunctionBuildin *func, ArgumentList *args)
 {
-	JsValue vs[BUILDIN_FUNCTION_MAX_ARGS];
+	JsValue vs[BUILD_IN_FUNCTION_MAX_ARGS];
 	int i = 0;
 	ArgumentList *list = args;
 	JsValue value;
@@ -832,7 +832,7 @@ int eval_buildin_function(JsInterpreter *inter, ExecuteEnvironment *env, JsFunct
 	{
 		eval_expression(inter, env, list->expression);
 		value = pop_stack(&inter->stack);
-		if (i < BUILDIN_FUNCTION_MAX_ARGS)
+		if (i < BUILD_IN_FUNCTION_MAX_ARGS)
 		{
 			vs[i] = value;
 			i++;
@@ -857,7 +857,7 @@ int eval_identifier_expression(JsInterpreter *inter, ExecuteEnvironment *env, Ex
 	JsValue *v = INTERPRETE_search_variable_from_env(env, e->u.identifier);
 	if (NULL == v)
 	{
-		JsFunction *func = INTERPRETE_search_func_from_env(env, e->u.identifier);
+		JsFunction *func = INTERPRETER_search_func_from_env(env, e->u.identifier);
 		if (NULL == func)
 		{
 			ERROR_runtime_error(RUNTIME_ERROR_VARIABLE_NOT_FOUND, e->u.identifier, e->line);
@@ -906,7 +906,7 @@ int eval_create_variable_expression(JsInterpreter *inter, ExecuteEnvironment *en
 	JsValue value = pop_stack(&inter->stack);
 	if (NULL == dest)
 	{
-		Variable *var = INTERPRETE_creaet_variable(inter, env, e->u.create_var->identifier, NULL, e->line);
+		Variable *var = INTERPRETER_create_variable(inter, env, e->u.create_var->identifier, NULL, e->line);
 		dest = &var->value;
 	}
 	if (JS_VALUE_TYPE_STRING_LITERAL == value.typ)
@@ -914,7 +914,7 @@ int eval_create_variable_expression(JsInterpreter *inter, ExecuteEnvironment *en
 		int length = strlen(value.u.literal_string);
 		JsValue newv;
 		newv.typ = JS_VALUE_TYPE_STRING;
-		newv.u.string = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, length + 1, e->line);
+		newv.u.string = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_STRING, length + 1, e->line);
 		strncpy(newv.u.string->s, value.u.literal_string, length);
 		newv.u.string->s[length] = 0;
 		newv.u.string->length = length;
@@ -1008,7 +1008,7 @@ JsValue *get_left_value(JsInterpreter *inter, ExecuteEnvironment *env, Expressio
 			env = env->outter;
 		}
 		/*no return,means variable not found,create in inter->env*/
-		var = INTERPRETE_creaet_variable(inter, &inter->env, e->u.identifier, NULL, e->line);
+		var = INTERPRETER_create_variable(inter, &inter->env, e->u.identifier, NULL, e->line);
 		return &var->value;
 	}
 

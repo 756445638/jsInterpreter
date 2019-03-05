@@ -19,8 +19,8 @@ JS_create_interpreter()
         MEM_close_storage(inter_memory);
         return NULL;
     }
-    interpreter->excute_memory = MEM_open_storage();
-    if (NULL == interpreter->excute_memory)
+    interpreter->execute_memory = MEM_open_storage();
+    if (NULL == interpreter->execute_memory)
     {
         MEM_close_storage(inter_memory);
         return NULL;
@@ -34,11 +34,11 @@ JS_create_interpreter()
     interpreter->env.funcs = NULL;
     interpreter->stack.sp = 0;
     interpreter->stack.alloc = 1024 * 1024;
-    interpreter->stack.vs = MEM_alloc(interpreter->excute_memory, sizeof(JsValue) * interpreter->stack.alloc, 0);
+    interpreter->stack.vs = MEM_alloc(interpreter->execute_memory, sizeof(JsValue) * interpreter->stack.alloc, 0);
     if (NULL == interpreter->stack.vs)
     {
         MEM_close_storage(inter_memory);
-        MEM_close_storage(interpreter->excute_memory);
+        MEM_close_storage(interpreter->execute_memory);
         return NULL;
     }
     return interpreter;
@@ -255,7 +255,7 @@ CREATE_chain_elsif_list(StatementElsifList *list, StatementElsifList *els)
 }
 
 Statement *
-CREATE_while_statement(Expression *condition, Block *block, char isdo)
+CREATE_while_statement(Expression *condition, Block *block, char is_do)
 {
     Statement *s = MEM_alloc(current_interpreter->interpreter_memory, sizeof(Statement) + sizeof(StatementWhile), get_line_number());
     if (NULL == s)
@@ -266,7 +266,7 @@ CREATE_while_statement(Expression *condition, Block *block, char isdo)
     s->u.while_statement = (StatementWhile *)(s + 1);
     s->u.while_statement->condition = condition;
     s->u.while_statement->block = block;
-    s->u.while_statement->isdo = isdo;
+    s->u.while_statement->is_do = is_do;
     s->line = get_line_number();
     return s;
 }
@@ -634,13 +634,13 @@ CREATE_identifier_expression(char *identifier)
 Expression *
 CREATE_localvariable_declare_expression(char *identifier, Expression *assignment)
 {
-    Expression *new = MEM_alloc(current_interpreter->interpreter_memory, sizeof(Expression) + sizeof(ExpressionCreateLocalVarialbe), get_line_number());
+    Expression *new = MEM_alloc(current_interpreter->interpreter_memory, sizeof(Expression) + sizeof(ExpressionCreateLocalVariable), get_line_number());
     if (NULL == new)
     {
         return NULL;
     }
     new->typ = EXPRESSION_TYPE_CREATE_LOCAL_VARIABLE;
-    new->u.create_var = (ExpressionCreateLocalVarialbe *)(new + 1);
+    new->u.create_var = (ExpressionCreateLocalVariable *)(new + 1);
     new->u.create_var->identifier = identifier;
     new->u.create_var->expression = assignment;
     new->line = get_line_number();

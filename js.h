@@ -6,8 +6,8 @@
 
 #define LINE_BUF_SIZE (1024)
 #define SMALL_FLOAT (0.000001)
-#define ISZORE(x) ((x < 0.000001) && (x > -0.000001))
-#define BUILDIN_FUNCTION_MAX_ARGS 10
+#define IS_ZOER(x) ((x < 0.000001) && (x > -0.000001))
+#define BUILD_IN_FUNCTION_MAX_ARGS 10
 
 #define GC_SWEEP_TIMING (5000)
 #define MAX_INT 2147483647
@@ -160,11 +160,11 @@ typedef struct ExpressionNew_tag
     ExpressionList *args;
 } ExpressionNew;
 
-typedef struct ExpressionCreateLocalVarialbe_tag
+typedef struct
 {
     char *identifier;
     Expression *expression;
-} ExpressionCreateLocalVarialbe;
+} ExpressionCreateLocalVariable;
 
 typedef enum
 {
@@ -280,7 +280,7 @@ struct Expression_tag
         Expression *unary;
         ExpressionFunctionCall *function_call;
         ExpressionMethodCall *method_call;
-        ExpressionCreateLocalVarialbe *create_var;
+        ExpressionCreateLocalVariable *create_var;
         char *string;
         ExpressionList *expression_list;
         ExpressionNew *new;
@@ -346,11 +346,11 @@ typedef struct StatementForIn_tag
     Block *block;
 } StatementForIn;
 
-typedef struct StatementWhile_tag
+typedef struct
 {
     Expression *condition;
     Block *block;
-    char isdo;
+    char is_do;
 } StatementWhile;
 
 typedef struct StatementReturn_tag
@@ -450,14 +450,14 @@ struct ExecuteEnvironment_tag
     VariableList *vars;
     char mark;
     struct ExecuteEnvironment_tag *next;   /*for manage in heap*/
-    struct ExecuteEnvironment_tag *outter; /*for js excute*/
+    struct ExecuteEnvironment_tag *outter; /*for js execute*/
 };
 
 /*runtime struct*/
 typedef struct JsInterpreter_tag
 {
     Memory *interpreter_memory;
-    Memory *excute_memory;
+    Memory *execute_memory;
     StatementList *statement_list;
     VariableList *vars;
     Stack stack;
@@ -474,9 +474,9 @@ typedef enum
     STATEMENT_RESULT_TYPE_BREAK
 } STATEMENT_RESULT_TYPE;
 
-typedef struct StamentResult_tag
+typedef struct
 {
     STATEMENT_RESULT_TYPE typ;
-} StamentResult;
+} StatementResult;
 
 #endif /*JS_H*/

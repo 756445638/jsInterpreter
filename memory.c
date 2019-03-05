@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include "memory.h"
 
-void mem_binary_tree_insert(MemoryBinayTree *head, MemoryBinayTree *node)
+void mem_binary_tree_insert(MemoryBinaryTree *head, MemoryBinaryTree *node)
 {
-	MemoryBinayTree *position = head;
+	MemoryBinaryTree *position = head;
 	for (;;)
 	{
 		if (node->pointer < position->pointer)
@@ -35,8 +35,8 @@ void mem_binary_tree_insert(MemoryBinayTree *head, MemoryBinayTree *node)
 	}
 }
 
-MemoryBinayTree *
-mem_binary_tree_get_successor(MemoryBinayTree *node)
+MemoryBinaryTree *
+mem_binary_tree_get_successor(MemoryBinaryTree *node)
 {
 	if (NULL == node->right)
 	{
@@ -49,7 +49,7 @@ mem_binary_tree_get_successor(MemoryBinayTree *node)
 	return node;
 }
 
-void mem_binary_tree_delete_tree(MemoryBinayTree *tree)
+void mem_binary_tree_delete_tree(MemoryBinaryTree *tree)
 {
 	if (NULL == tree)
 	{
@@ -66,9 +66,9 @@ void mem_binary_tree_delete_tree(MemoryBinayTree *tree)
 	free(tree);
 }
 
-void mem_binary_tree_delete(MemoryBinayTree *head, char *p)
+void mem_binary_tree_delete(MemoryBinaryTree *head, char *p)
 {
-	MemoryBinayTree *position = head;
+	MemoryBinaryTree *position = head;
 	char found = 0;
 	for (;;)
 	{
@@ -150,7 +150,7 @@ void mem_binary_tree_delete(MemoryBinayTree *head, char *p)
 		return;
 	}
 	/*case left and right child is not null*/
-	MemoryBinayTree *successor = mem_binary_tree_get_successor(position->left);
+	MemoryBinaryTree *successor = mem_binary_tree_get_successor(position->left);
 	/*successor is null*/
 	if (NULL == successor)
 	{
@@ -213,7 +213,7 @@ Memory *MEM_open_storage()
 	int i = 0;
 	for (; i < MOD_NUMBER; i++)
 	{
-		m->table[i] = (MemoryBinayTree *)malloc(sizeof(MemoryBinayTree));
+		m->table[i] = (MemoryBinaryTree *)malloc(sizeof(MemoryBinaryTree));
 		m->table[i]->parent = NULL;
 		m->table[i]->pointer = NULL;
 		m->table[i]->left = NULL;
@@ -239,7 +239,7 @@ void MEM_close_storage(Memory *m)
 
 char *MEM_alloc(Memory *m, int size, int line)
 {
-	MemoryBinayTree *new = (MemoryBinayTree *)malloc(sizeof(MemoryBinayTree) + size);
+	MemoryBinaryTree *new = (MemoryBinaryTree *)malloc(sizeof(MemoryBinaryTree) + size);
 	if (NULL == new)
 	{
 		return NULL;
@@ -264,6 +264,6 @@ void MEM_free(Memory *m, char *p)
 	}
 	unsigned long offset = (unsigned long)p;
 	offset %= MOD_NUMBER;
-	MemoryBinayTree *head = m->table[offset];
+	MemoryBinaryTree *head = m->table[offset];
 	mem_binary_tree_delete(head, p);
 }

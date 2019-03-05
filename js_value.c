@@ -87,7 +87,7 @@ JSBool js_reverse_bool(JSBool b)
 	}
 }
 
-JsValue js_increment_or_decrment(const JsValue *v, char increment)
+JsValue js_increment_or_decrement(const JsValue *v, char increment)
 {
 	JsValue ret = *v;
 	if (JS_VALUE_TYPE_INT == v->typ)
@@ -119,7 +119,7 @@ JsValue js_increment_or_decrment(const JsValue *v, char increment)
 	return ret;
 }
 
-JsValue js_nagetive(const JsValue *const v)
+JsValue js_negative(const JsValue *const v)
 {
 	JsValue ret = *v;
 	if (JS_VALUE_TYPE_INT == v->typ)
@@ -136,6 +136,8 @@ JsValue js_nagetive(const JsValue *const v)
 	}
 	return ret;
 }
+
+
 
 JsValue js_value_add(JsInterpreter *inter, const JsValue *const v1, const JsValue *const v2, int line)
 {
@@ -184,13 +186,13 @@ JsValue js_value_add(JsInterpreter *inter, const JsValue *const v1, const JsValu
 	if (JS_VALUE_TYPE_STRING == v1->typ || JS_VALUE_TYPE_STRING_LITERAL == v1->typ)
 	{
 		JsValue vv2 = js_to_string(inter, v2, line);
-		return INTERPRETE_concat_string(inter, v1, &vv2, line);
+		return INTERPRETER_concat_string(inter, v1, &vv2, line);
 	}
 
 	if (JS_VALUE_TYPE_STRING == v2->typ || JS_VALUE_TYPE_STRING_LITERAL == v2->typ)
 	{
 		JsValue vv1 = js_to_string(inter, v1, line);
-		return INTERPRETE_concat_string(inter, &vv1, v2, line);
+		return INTERPRETER_concat_string(inter, &vv1, v2, line);
 	}
 
 	return v;
@@ -214,11 +216,11 @@ JsValue js_to_string(JsInterpreter *inter, const JsValue *value, int line)
 		}
 		break;
 	case JS_VALUE_TYPE_INT: /*how to calculate size */
-		v.u.string = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, 100, line);
+		v.u.string = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_STRING, 100, line);
 		v.u.string->length = snprintf(v.u.string->s, 100, "%d", value->u.intvalue);
 		break;
 	case JS_VALUE_TYPE_FLOAT:
-		v.u.string = INTERPRETE_creaet_heap(inter, JS_VALUE_TYPE_STRING, 100, line);
+		v.u.string = INTERPRETER_create_heap(inter, JS_VALUE_TYPE_STRING, 100, line);
 		v.u.string->length = snprintf(v.u.string->s, 100, "%f", value->u.floatvalue);
 		break;
 	case JS_VALUE_TYPE_STRING:
@@ -340,7 +342,7 @@ JsValue js_value_div(const JsValue *v1, const JsValue *v2)
 	}
 	if (JS_VALUE_TYPE_INT == v1->typ && JS_VALUE_TYPE_FLOAT == v2->typ)
 	{
-		if (!ISZORE(v2->u.floatvalue))
+		if (!IS_ZOER(v2->u.floatvalue))
 		{
 			v.u.floatvalue = ((double)v1->u.intvalue) / v2->u.floatvalue;
 		}

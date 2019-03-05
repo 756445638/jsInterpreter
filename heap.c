@@ -32,7 +32,7 @@ void print_heap(Heap *head)
 void gc_mark_value(JsValue *const v)
 {
 	int i;
-	JsKvList *kvlist;
+	JsKvList *kv_list;
 	JsString *string;
 	JsArray *array;
 	ExecuteEnvironment *env;
@@ -53,12 +53,12 @@ void gc_mark_value(JsValue *const v)
 		{
 			break;
 		}
-		kvlist = v->u.object->eles;
+		kv_list = v->u.object->eles;
 		v->u.object->mark = 1;
-		while (NULL != kvlist)
+		while (NULL != kv_list)
 		{
-			gc_mark_value(&kvlist->kv.value);
-			kvlist = kvlist->next;
+			gc_mark_value(&kv_list->kv.value);
+			kv_list = kv_list->next;
 		}
 		env = v->u.object->env;
 		while (NULL != env)
@@ -116,7 +116,7 @@ void gc_sweep_object(JsInterpreter *inter, JsObject *object)
 	while (NULL != list)
 	{
 		next = list->next;
-		MEM_free(inter->excute_memory, list);
+		MEM_free(inter->execute_memory, list);
 		list = next;
 	}
 }
@@ -174,18 +174,18 @@ void gc_sweep(JsInterpreter *inter)
 		}
 		if (JS_VALUE_TYPE_STRING == index->typ)
 		{
-			MEM_free(inter->excute_memory, index->u.string.s);
+			MEM_free(inter->execute_memory, index->u.string.s);
 		}
 		if (JS_VALUE_TYPE_ARRAY == index->typ)
 		{
-			MEM_free(inter->excute_memory, index->u.array.elements);
+			MEM_free(inter->execute_memory, index->u.array.elements);
 		}
 		/*remove*/
 		prev = index->prev;
 		next = index->next;
 		prev->next = next;
 		next->prev = prev;
-		MEM_free(inter->excute_memory, index);
+		MEM_free(inter->execute_memory, index);
 		index = prev;
 	}
 
@@ -209,7 +209,7 @@ void gc_sweep(JsInterpreter *inter)
 			env = env->next;
 			continue;
 		}
-		INTERPRETE_free_env(inter, env);
+		INTERPRETER_free_env(inter, env);
 		env = env->next;
 	}
 	inter->heapenv = remains_env;

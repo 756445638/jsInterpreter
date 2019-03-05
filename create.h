@@ -36,7 +36,7 @@ StatementElsifList *
 CREATE_chain_elsif_list(StatementElsifList *list, StatementElsifList *els);
 
 Statement *
-CREATE_while_statement(Expression *condition, Block *block, char isdo);
+CREATE_while_statement(Expression *condition, Block *block, char is_do);
 
 Statement *
 CREATE_for_statement(Expression *init, Expression *condition, Expression *afterblock, Block *block);
